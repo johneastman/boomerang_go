@@ -56,11 +56,24 @@ func (p *parser) parseStatement() node.Node {
 		variableExpression := p.parseExpression(LOWEST)
 		expression = node.Node{
 			Type: node.ASSIGN_STMT,
-			Params: map[string]node.Node{
-				node.ASSIGN_STMT_IDENTIFIER: {Type: variableName.Type, Value: variableName.Literal},
-				node.EXPR:                   variableExpression,
+			Params: []node.Node{
+				{Type: variableName.Type, Value: variableName.Literal}, // Variable Name
+				variableExpression, // Variable Expression
 			},
 		}
+	} else if p.current.Type == tokens.PRINT {
+		p.advance()
+		if p.current.Type != tokens.OPEN_PAREN {
+			p.expectedToken(tokens.OPEN_PAREN)
+		}
+
+		p.advance()
+
+		expression = node.Node{
+			Type:   node.PRINT_STMT,
+			Params: p.parseParameters(),
+		}
+
 	} else {
 		expression = p.parseExpression(LOWEST)
 	}
@@ -95,9 +108,9 @@ func (p *parser) parsePrefix() node.Node {
 		expression := p.parsePrefix()
 		return node.Node{
 			Type: node.UNARY_EXPR,
-			Params: map[string]node.Node{
-				node.EXPR:     expression,
-				node.OPERATOR: {Type: op.Type, Value: op.Literal},
+			Params: []node.Node{
+				{Type: op.Type, Value: op.Literal}, // Operator
+				expression,                         // Expression
 			},
 		}
 
@@ -125,12 +138,31 @@ func (p *parser) parseInfix(left node.Node) node.Node {
 	right := p.parseExpression(p.getPrecedenceLevel(op))
 	return node.Node{
 		Type: node.BIN_EXPR,
-		Params: map[string]node.Node{
-			node.BIN_EXPR_LEFT:  left,
-			node.OPERATOR:       {Type: op.Type, Value: op.Literal},
-			node.BIN_EXPR_RIGHT: right,
+		Params: []node.Node{
+			left,                               // Left Expression
+			{Type: op.Type, Value: op.Literal}, // Operator
+			right,                              // Right Expression
 		},
 	}
+}
+
+func (p *parser) parseParameters() []node.Node {
+	params := []node.Node{}
+	for p.current.Type != tokens.CLOSED_PAREN {
+		expression := p.parseExpression(LOWEST)
+		params = append(params, expression)
+
+		if p.current.Type == tokens.COMMA {
+			p.advance()
+			continue
+		}
+
+		if p.current.Type == tokens.CLOSED_PAREN {
+			p.advance()
+			break
+		}
+	}
+	return params
 }
 
 func (p *parser) getPrecedenceLevel(operator tokens.Token) int {

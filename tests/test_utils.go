@@ -3,6 +3,8 @@ package tests
 import (
 	"boomerang/node"
 	"boomerang/tokens"
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -49,14 +51,35 @@ func AssertNodeEqual(t *testing.T, expected node.Node, actual node.Node) {
 		t.Fatalf("Expected value: %s, Actual value: %s\n", expected.Value, actual.Value)
 	}
 
-	keys := make([]string, 0, len(expected.Params))
-	for k := range expected.Params {
-		keys = append(keys, k)
+	if len(expected.Params) != len(actual.Params) {
+		t.Fatalf("Expected %d params, got %d", len(expected.Params), len(actual.Params))
 	}
 
-	for _, key := range keys {
-		expectedParamNode := expected.GetParam(key)
-		actualParamNode := actual.GetParam(key)
+	for i := 0; i < len(expected.Params); i++ {
+		expectedParamNode := expected.Params[i]
+		actualParamNode := actual.Params[i]
 		AssertNodeEqual(t, expectedParamNode, actualParamNode)
+	}
+}
+
+func AssertExpectedOutput(t *testing.T, expectedOutput string, f func()) {
+	rescueStdout := os.Stdout
+
+	defer func() {
+		// Reset STDOUT after function runs/if any errors occur
+		os.Stdout = rescueStdout
+	}()
+
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	// Execute code that should print to console
+	f()
+
+	w.Close()
+	actualOutput, _ := ioutil.ReadAll(r)
+
+	if expectedOutput != string(actualOutput) {
+		t.Fatalf("Expected %#v, got %#v", "1 2 3\n", actualOutput)
 	}
 }

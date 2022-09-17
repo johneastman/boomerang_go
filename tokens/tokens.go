@@ -20,9 +20,10 @@ const (
 	OPEN_PAREN    = "OPEN_PAREN"
 	CLOSED_PAREN  = "CLOSED_PAREN"
 	ASSIGN        = "ASSIGN"
+	COMMA         = "COMMA"
 
 	// Keywords
-	LET = "LET"
+	PRINT = "PRINT"
 
 	// Data Types
 	NUMBER = "NUMBER"
@@ -33,7 +34,7 @@ const (
 )
 
 var keywords = map[string]string{
-	"let": LET,
+	"print": PRINT,
 }
 
 var symbols = map[byte]string{
@@ -45,6 +46,7 @@ var symbols = map[byte]string{
 	'(': OPEN_PAREN,
 	')': CLOSED_PAREN,
 	'=': ASSIGN,
+	',': COMMA,
 }
 
 func getSymbolType(literal byte) string {

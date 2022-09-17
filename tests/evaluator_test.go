@@ -25,9 +25,9 @@ func TestEvaluatorNegativeNumber(t *testing.T) {
 	ast := []node.Node{
 		{
 			Type: node.UNARY_EXPR,
-			Params: map[string]node.Node{
-				node.EXPR:     {Type: node.NUMBER, Value: "66"},
-				node.OPERATOR: {Type: tokens.MINUS, Value: "-"},
+			Params: []node.Node{
+				{Type: tokens.MINUS, Value: "-"},
+				{Type: node.NUMBER, Value: "66"},
 			},
 		},
 	}
@@ -45,10 +45,10 @@ func TestEvaluatorBinaryExpression(t *testing.T) {
 	ast := []node.Node{
 		{
 			Type: node.BIN_EXPR,
-			Params: map[string]node.Node{
-				node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "1"},
-				node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "1"},
-				node.OPERATOR:       {Type: tokens.PLUS, Value: "+"},
+			Params: []node.Node{
+				{Type: node.NUMBER, Value: "1"},
+				{Type: tokens.PLUS, Value: "+"},
+				{Type: node.NUMBER, Value: "1"},
 			},
 		},
 	}
@@ -66,14 +66,14 @@ func TestVariable(t *testing.T) {
 	ast := []node.Node{
 		{
 			Type: node.ASSIGN_STMT,
-			Params: map[string]node.Node{
-				node.ASSIGN_STMT_IDENTIFIER: {Type: tokens.IDENTIFIER, Value: "variable"},
-				node.EXPR: {
+			Params: []node.Node{
+				{Type: tokens.IDENTIFIER, Value: "variable"},
+				{
 					Type: node.BIN_EXPR,
-					Params: map[string]node.Node{
-						node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "8"},
-						node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "2"},
-						node.OPERATOR:       {Type: tokens.FORWARD_SLASH, Value: "/"},
+					Params: []node.Node{
+						{Type: node.NUMBER, Value: "8"},
+						{Type: tokens.FORWARD_SLASH, Value: "/"},
+						{Type: node.NUMBER, Value: "2"},
 					},
 				},
 			},
@@ -92,4 +92,34 @@ func TestVariable(t *testing.T) {
 		},
 	}
 	AssertNodesEqual(t, actualResults, expectedResults)
+}
+
+func TestEvaluatorPrintStatement(t *testing.T) {
+	ast := []node.Node{
+		{
+			Type: node.PRINT_STMT,
+			Params: []node.Node{
+				{
+					Type: node.NUMBER, Value: "1",
+				},
+				{
+					Type: node.NUMBER, Value: "2",
+				},
+				{
+					Type: node.NUMBER, Value: "3",
+				},
+			},
+		},
+	}
+
+	evaluatorObj := evaluator.New(ast)
+
+	actualResults := []node.Node{}
+	expectedResults := []node.Node{}
+
+	AssertExpectedOutput(t, "1 2 3\n", func() {
+		actualResults = evaluatorObj.Evaluate()
+	})
+
+	AssertNodesEqual(t, expectedResults, actualResults)
 }

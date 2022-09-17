@@ -22,25 +22,43 @@ func New(ast []node.Node) evaluator {
 func (e *evaluator) Evaluate() []node.Node {
 	results := []node.Node{}
 	for _, stmt := range e.ast {
-
-		if stmt.Type == node.ASSIGN_STMT {
-			variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
-			value := e.evaluate(stmt.GetParam(node.EXPR))
-			e.env[variable.Value] = value
-		} else {
-			result := e.evaluate(stmt)
-			results = append(results, result)
+		if result, isExpr := e.evaluateStatement(stmt); isExpr {
+			results = append(results, *result)
 		}
 	}
 	return results
 }
 
-func (e *evaluator) evaluate(expr node.Node) node.Node {
+func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool) {
+	if stmt.Type == node.ASSIGN_STMT {
+		variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
+		value := e.evaluateExpression(stmt.GetParam(node.EXPR))
+		e.env[variable.Value] = value
+		return nil, false
+
+	} else if stmt.Type == node.PRINT_STMT {
+		for i, node := range stmt.Params {
+			evaluatedParam := e.evaluateExpression(node)
+
+			if i < len(stmt.Params)-1 {
+				fmt.Printf("%s ", evaluatedParam.Value)
+			} else {
+				fmt.Println(evaluatedParam.Value)
+			}
+		}
+		return nil, false
+	}
+
+	statementExpression := e.evaluateExpression(stmt)
+	return &statementExpression, true
+}
+
+func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 
 	switch expr.Type {
 
 	case node.UNARY_EXPR:
-		expression := e.evaluate(expr.GetParam(node.EXPR))
+		expression := e.evaluateExpression(expr.GetParam(node.EXPR))
 		operator := expr.GetParam(node.OPERATOR)
 		if operator.Type == tokens.MINUS {
 			expressionValue := -e.toInt(expression.Value)
@@ -49,8 +67,8 @@ func (e *evaluator) evaluate(expr node.Node) node.Node {
 		panic(fmt.Sprintf("Invalid unary operator: %s", expr.Type))
 
 	case node.BIN_EXPR:
-		left := e.evaluate(expr.GetParam(node.BIN_EXPR_LEFT))
-		right := e.evaluate(expr.GetParam(node.BIN_EXPR_RIGHT))
+		left := e.evaluateExpression(expr.GetParam(node.BIN_EXPR_LEFT))
+		right := e.evaluateExpression(expr.GetParam(node.BIN_EXPR_RIGHT))
 		op := expr.GetParam(node.OPERATOR)
 
 		switch op.Type {

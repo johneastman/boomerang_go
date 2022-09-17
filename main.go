@@ -4,7 +4,6 @@ import (
 	"boomerang/evaluator"
 	"boomerang/parser"
 	"boomerang/tokens"
-	"fmt"
 	"io/ioutil"
 	"log"
 )
@@ -25,8 +24,5 @@ func main() {
 	statements := parser.Parse()
 
 	eval := evaluator.New(statements)
-	results := eval.Evaluate()
-	for _, result := range results {
-		fmt.Println(result.Value)
-	}
+	eval.Evaluate()
 }

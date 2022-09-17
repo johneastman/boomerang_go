@@ -30,9 +30,9 @@ func TestParserNegativeNumber(t *testing.T) {
 	expectedAST := []node.Node{
 		{
 			Type: node.UNARY_EXPR,
-			Params: map[string]node.Node{
-				node.EXPR:     {Type: node.NUMBER, Value: "66"},
-				node.OPERATOR: {Type: tokens.MINUS, Value: "-"},
+			Params: []node.Node{
+				{Type: tokens.MINUS, Value: "-"},
+				{Type: node.NUMBER, Value: "66"},
 			},
 		},
 	}
@@ -48,10 +48,10 @@ func TestParserBinaryExpression(t *testing.T) {
 	expectedAST := []node.Node{
 		{
 			Type: node.BIN_EXPR,
-			Params: map[string]node.Node{
-				node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "7"},
-				node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "3"},
-				node.OPERATOR:       {Type: tokens.PLUS, Value: "+"},
+			Params: []node.Node{
+				{Type: node.NUMBER, Value: "7"},
+				{Type: tokens.PLUS, Value: "+"},
+				{Type: node.NUMBER, Value: "3"},
 			},
 		},
 	}
@@ -67,10 +67,10 @@ func TestParserParentheses(t *testing.T) {
 	expectedAST := []node.Node{
 		{
 			Type: node.BIN_EXPR,
-			Params: map[string]node.Node{
-				node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "7"},
-				node.OPERATOR:       {Type: tokens.PLUS, Value: "+"},
-				node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "3"},
+			Params: []node.Node{
+				{Type: node.NUMBER, Value: "7"},
+				{Type: tokens.PLUS, Value: "+"},
+				{Type: node.NUMBER, Value: "3"},
 			},
 		},
 	}
@@ -85,13 +85,13 @@ func TestParserParenthesesBinaryExpression(t *testing.T) {
 	expectedAST := []node.Node{
 		{
 			Type: node.BIN_EXPR,
-			Params: map[string]node.Node{
-				node.BIN_EXPR_LEFT: {Type: node.NUMBER, Value: "7"},
-				node.OPERATOR:      {Type: tokens.PLUS, Value: "+"},
-				node.BIN_EXPR_RIGHT: {Type: node.BIN_EXPR, Params: map[string]node.Node{
-					node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "5"},
-					node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "2"},
-					node.OPERATOR:       {Type: tokens.MINUS, Value: "-"},
+			Params: []node.Node{
+				{Type: node.NUMBER, Value: "7"},
+				{Type: tokens.PLUS, Value: "+"},
+				{Type: node.BIN_EXPR, Params: []node.Node{
+					{Type: node.NUMBER, Value: "5"},
+					{Type: tokens.MINUS, Value: "-"},
+					{Type: node.NUMBER, Value: "2"},
 				}},
 			},
 		},
@@ -107,14 +107,14 @@ func TestParserVariableAssignment(t *testing.T) {
 	expectedAST := []node.Node{
 		{
 			Type: node.ASSIGN_STMT,
-			Params: map[string]node.Node{
-				node.ASSIGN_STMT_IDENTIFIER: {Type: tokens.IDENTIFIER, Value: "variable"},
-				node.EXPR: {
+			Params: []node.Node{
+				{Type: tokens.IDENTIFIER, Value: "variable"},
+				{
 					Type: node.BIN_EXPR,
-					Params: map[string]node.Node{
-						node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "8"},
-						node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "2"},
-						node.OPERATOR:       {Type: tokens.FORWARD_SLASH, Value: "/"},
+					Params: []node.Node{
+						{Type: node.NUMBER, Value: "8"},
+						{Type: tokens.FORWARD_SLASH, Value: "/"},
+						{Type: node.NUMBER, Value: "2"},
 					},
 				},
 			},
@@ -134,5 +134,29 @@ func TestParserIdentifier(t *testing.T) {
 		},
 	}
 
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
+func TestPrintStatement(t *testing.T) {
+	tokenizer := tokens.New("print(1, 2, variable);")
+	parserObj := parser.New(tokenizer)
+
+	actualAST := parserObj.Parse()
+	expectedAST := []node.Node{
+		{
+			Type: node.PRINT_STMT,
+			Params: []node.Node{
+				{
+					Type: node.NUMBER, Value: "1",
+				},
+				{
+					Type: node.NUMBER, Value: "2",
+				},
+				{
+					Type: node.IDENTIFIER, Value: "variable",
+				},
+			},
+		},
+	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
