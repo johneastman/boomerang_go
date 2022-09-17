@@ -26,15 +26,23 @@ func (t *Tokenizer) skipWhitespace() {
 	}
 }
 
-func (t *Tokenizer) isIdentifier() bool {
+func (t *Tokenizer) isIdentifier(allowDigits bool) bool {
+	/* Identifiers (e.g., variables) can include digits in the name but can't start with digits. When 'allowDigits' is false,
+	 * only letters and underscores are allowed. When 'allowDigits' is true, digits are allowed.
+	 */
 	char := t.current()
-	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_'
+
+	isIdentifierWithoutDigits := 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_'
+	if allowDigits {
+		return isIdentifierWithoutDigits || '0' <= char && char <= '9'
+	}
+	return isIdentifierWithoutDigits
 }
 
 func (t *Tokenizer) readIdentifier() string {
 	startPos := t.currentPos
 	endPos := startPos
-	for t.isIdentifier() {
+	for t.isIdentifier(true) {
 		endPos += 1
 		t.advance()
 	}
@@ -63,7 +71,7 @@ func (t *Tokenizer) Next() Token {
 		return Token{Literal: "", Type: EOF}
 	}
 
-	if t.isIdentifier() {
+	if t.isIdentifier(false) {
 		literal := t.readIdentifier()
 		tokenType := getTokenType(literal)
 		return Token{Literal: literal, Type: tokenType}

@@ -47,8 +47,18 @@ func TestNumbers(t *testing.T) {
 }
 
 func TestIdenifiers(t *testing.T) {
-	tokenizer := tokens.New("variable")
-	token := tokenizer.Next()
 
-	AssertTokenEqual(t, tokens.Token{Type: tokens.IDENTIFIER, Literal: "variable"}, token)
+	variables := []string{
+		"variable",
+		"varaible1",
+		"variable_23",
+		"_variable_",
+	}
+
+	for _, variable := range variables {
+		tokenizer := tokens.New(variable)
+		token := tokenizer.Next()
+
+		AssertTokenEqual(t, tokens.Token{Type: tokens.IDENTIFIER, Literal: variable}, token)
+	}
 }
