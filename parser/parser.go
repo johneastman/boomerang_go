@@ -6,6 +6,19 @@ import (
 	"my_lang/tokens"
 )
 
+const (
+	LOWEST  = 1
+	SUM     = 2
+	PRODUCT = 3
+)
+
+var precedenceLevels = map[string]int{
+	tokens.PLUS:          SUM,
+	tokens.MINUS:         SUM,
+	tokens.ASTERISK:      PRODUCT,
+	tokens.FORWARD_SLASH: PRODUCT,
+}
+
 type Expression interface {
 	expressionNode()
 	String() string
@@ -67,7 +80,7 @@ func (p parser) Parse() []Statement {
 }
 
 func (p *parser) parseStatement() Statement {
-	expr := p.parseExpression()
+	expr := p.parseExpression(LOWEST)
 
 	if p.current.Type != tokens.SEMICOLON {
 		p.expectedToken(tokens.SEMICOLON)
@@ -77,59 +90,46 @@ func (p *parser) parseStatement() Statement {
 	return Statement{Expr: expr}
 }
 
-func (p *parser) parseExpression() Expression {
-	left := p.parseTerm()
-	for {
-		if p.current.Type == tokens.EOF {
-			return left
-		} else if p.current.Type == tokens.PLUS || p.current.Type == tokens.MINUS {
-			op := p.current
-			p.advance()
-			right := p.parseTerm()
-			left = &BinaryOperation{Left: left, OP: op, Right: right}
-		} else {
-			break
-		}
+func (p *parser) parseExpression(precedenceLevel int) Expression {
+	left := p.parsePrefix()
+
+	for precedenceLevel < p.getPrecedenceLevel(p.current) {
+		left = p.parseInfix(left)
 	}
+
 	return left
 }
 
-func (p *parser) parseTerm() Expression {
-	left := p.parseFactor()
-	for {
-		if p.current.Type == tokens.EOF {
-			return left
-		} else if p.current.Type == tokens.ASTERISK || p.current.Type == tokens.FORWARD_SLASH {
-			op := p.current
-			p.advance()
-			right := p.parseFactor()
-			left = &BinaryOperation{Left: left, OP: op, Right: right}
-		} else {
-			break
-		}
-	}
-	return left
-
-}
-
-func (p *parser) parseFactor() Expression {
-
-	switch p.current.Type {
-	case tokens.NUMBER:
+func (p *parser) parsePrefix() Expression {
+	if p.current.Type == tokens.NUMBER {
 		val := p.current.Literal
 		p.advance()
 		return &Number{Value: val}
-	case tokens.OPEN_PAREN:
+	} else if p.current.Type == tokens.OPEN_PAREN {
 		p.advance()
-		expr := p.parseExpression()
+		expression := p.parseExpression(LOWEST)
 		if p.current.Type == tokens.CLOSED_PAREN {
 			p.advance()
-			return expr
+			return expression
 		}
 		p.expectedToken(tokens.CLOSED_PAREN)
 	}
-	log.Fatalf("Unexpected factor %s", p.current.Type)
-	return nil
+	panic(fmt.Sprintf("Invalid prefix: %s", p.current.Type))
+}
+
+func (p *parser) parseInfix(left Expression) Expression {
+	op := p.current
+	p.advance()
+	right := p.parseExpression(p.getPrecedenceLevel(op))
+	return &BinaryOperation{Left: left, OP: op, Right: right}
+}
+
+func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
+	level, ok := precedenceLevels[operator.Type]
+	if !ok {
+		return LOWEST
+	}
+	return level
 }
 
 func (p *parser) expectedToken(expectedType string) {
