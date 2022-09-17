@@ -21,9 +21,7 @@ func main() {
 	source := getSource("source.txt")
 	tokenizer := tokens.New(source)
 
-	tokens := tokenizer.Tokenize()
-
-	parser := parser.New(tokens)
+	parser := parser.New(tokenizer)
 	statements := parser.Parse()
 
 	eval := evaluator.New(statements)

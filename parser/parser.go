@@ -44,30 +44,23 @@ func (n Number) String() string {
 }
 
 type parser struct {
-	tokens     []tokens.Token
-	currentPos int
+	tokenizer tokens.Tokenizer
+	current   tokens.Token
 }
 
-func New(tokens []tokens.Token) parser {
-	return parser{tokens: tokens, currentPos: 0}
-}
-
-func (p *parser) current() tokens.Token {
-	return p.tokens[p.currentPos]
+func New(tokenizer tokens.Tokenizer) parser {
+	currentToken := tokenizer.Next()
+	return parser{tokenizer: tokenizer, current: currentToken}
 }
 
 func (p *parser) advance() {
-	p.currentPos += 1
+	p.current = p.tokenizer.Next()
 }
 
-func (p *parser) Parse() []Statement {
+func (p parser) Parse() []Statement {
 	statements := []Statement{}
-	for p.current().Type != tokens.EOF {
+	for p.current.Type != tokens.EOF {
 		stmt := p.parseStatement()
-		if p.current().Type != tokens.SEMICOLON {
-			p.expectedToken(tokens.SEMICOLON)
-		}
-		p.advance()
 		statements = append(statements, stmt)
 	}
 	return statements
@@ -75,17 +68,22 @@ func (p *parser) Parse() []Statement {
 
 func (p *parser) parseStatement() Statement {
 	expr := p.parseExpression()
+
+	if p.current.Type != tokens.SEMICOLON {
+		p.expectedToken(tokens.SEMICOLON)
+	}
+	p.advance()
+
 	return Statement{Expr: expr}
 }
 
 func (p *parser) parseExpression() Expression {
 	left := p.parseTerm()
 	for {
-		current := p.current()
-		if current.Type == tokens.EOF {
+		if p.current.Type == tokens.EOF {
 			return left
-		} else if current.Type == tokens.PLUS || current.Type == tokens.MINUS {
-			op := current
+		} else if p.current.Type == tokens.PLUS || p.current.Type == tokens.MINUS {
+			op := p.current
 			p.advance()
 			right := p.parseTerm()
 			left = &BinaryOperation{Left: left, OP: op, Right: right}
@@ -99,11 +97,10 @@ func (p *parser) parseExpression() Expression {
 func (p *parser) parseTerm() Expression {
 	left := p.parseFactor()
 	for {
-		current := p.current()
-		if current.Type == tokens.EOF {
+		if p.current.Type == tokens.EOF {
 			return left
-		} else if current.Type == tokens.ASTERISK || current.Type == tokens.FORWARD_SLASH {
-			op := current
+		} else if p.current.Type == tokens.ASTERISK || p.current.Type == tokens.FORWARD_SLASH {
+			op := p.current
 			p.advance()
 			right := p.parseFactor()
 			left = &BinaryOperation{Left: left, OP: op, Right: right}
@@ -117,24 +114,24 @@ func (p *parser) parseTerm() Expression {
 
 func (p *parser) parseFactor() Expression {
 
-	switch p.current().Type {
+	switch p.current.Type {
 	case tokens.NUMBER:
-		val := p.current().Literal
+		val := p.current.Literal
 		p.advance()
 		return &Number{Value: val}
 	case tokens.OPEN_PAREN:
 		p.advance()
 		expr := p.parseExpression()
-		if p.current().Type == tokens.CLOSED_PAREN {
+		if p.current.Type == tokens.CLOSED_PAREN {
 			p.advance()
 			return expr
 		}
 		p.expectedToken(tokens.CLOSED_PAREN)
 	}
-	log.Fatalf("Unexpected factor %s", p.current().Type)
+	log.Fatalf("Unexpected factor %s", p.current.Type)
 	return nil
 }
 
 func (p *parser) expectedToken(expectedType string) {
-	log.Fatalf("Expected token type %s", expectedType)
+	log.Fatalf("Expected token type %s, got %s", expectedType, p.current.Type)
 }
