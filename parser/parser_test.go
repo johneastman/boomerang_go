@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"my_lang/tokens"
+	"boomerang/tokens"
 	"testing"
 )
 

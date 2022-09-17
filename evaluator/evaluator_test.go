@@ -1,7 +1,7 @@
 package evaluator
 
 import (
-	"my_lang/parser"
+	"boomerang/parser"
 	"testing"
 )
 

@@ -1,3 +1,3 @@
-module my_lang
+module boomerang
 
 go 1.18

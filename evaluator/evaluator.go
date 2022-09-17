@@ -1,9 +1,9 @@
 package evaluator
 
 import (
+	"boomerang/parser"
+	"boomerang/tokens"
 	"fmt"
-	"my_lang/parser"
-	"my_lang/tokens"
 	"strconv"
 )
 

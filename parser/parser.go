@@ -1,8 +1,8 @@
 package parser
 
 import (
+	"boomerang/tokens"
 	"fmt"
-	"my_lang/tokens"
 )
 
 const (

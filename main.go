@@ -1,12 +1,12 @@
 package main
 
 import (
+	"boomerang/evaluator"
+	"boomerang/parser"
+	"boomerang/tokens"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"my_lang/evaluator"
-	"my_lang/parser"
-	"my_lang/tokens"
 )
 
 func getSource(path string) string {
