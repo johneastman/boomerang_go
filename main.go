@@ -18,7 +18,7 @@ func getSource(path string) string {
 }
 
 func main() {
-	source := getSource("source.txt")
+	source := getSource("source.bmg")
 	tokenizer := tokens.New(source)
 
 	parser := parser.New(tokenizer)
