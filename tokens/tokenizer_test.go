@@ -26,3 +26,31 @@ func TestSymbols(t *testing.T) {
 		}
 	}
 }
+
+func TestNumbers(t *testing.T) {
+	numbers := []string{
+		"1",
+		"2",
+		"3",
+		"10",
+		"100",
+		"500",
+		"10000",
+		"9999999999",
+		"1234567890",
+		"9876543210",
+	}
+
+	for i, source := range numbers {
+		tokenizer := New(source)
+		token := tokenizer.Next()
+
+		if token.Literal != source {
+			t.Fatalf("[Test #%d] Expected Literal: %s, Actual Literal: %s", i, source, token.Literal)
+		}
+
+		if token.Type != NUMBER {
+			t.Fatalf("[Test #%d] Expected Type: %s, Actual Type: %s", i, NUMBER, token.Type)
+		}
+	}
+}
