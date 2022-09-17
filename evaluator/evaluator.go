@@ -1,22 +1,22 @@
 package evaluator
 
 import (
-	"boomerang/parser"
+	"boomerang/node"
 	"boomerang/tokens"
 	"fmt"
 	"strconv"
 )
 
 type evaluator struct {
-	ast []parser.Node
+	ast []node.Node
 }
 
-func New(ast []parser.Node) evaluator {
+func New(ast []node.Node) evaluator {
 	return evaluator{ast: ast}
 }
 
-func (e *evaluator) Evaluate() []parser.Node {
-	results := []parser.Node{}
+func (e *evaluator) Evaluate() []node.Node {
+	results := []node.Node{}
 	for _, stmt := range e.ast {
 		result := e.evaluate(stmt)
 		results = append(results, result)
@@ -24,7 +24,7 @@ func (e *evaluator) Evaluate() []parser.Node {
 	return results
 }
 
-func (e *evaluator) evaluate(expr parser.Node) parser.Node {
+func (e *evaluator) evaluate(expr node.Node) node.Node {
 
 	switch expr.Type {
 
@@ -68,6 +68,6 @@ func (e *evaluator) toInt(s string) int {
 	return intVal
 }
 
-func (e *evaluator) createNumberNode(value int) parser.Node {
-	return parser.Node{Type: "Number", Value: fmt.Sprint(value)}
+func (e *evaluator) createNumberNode(value int) node.Node {
+	return node.Node{Type: "Number", Value: fmt.Sprint(value)}
 }

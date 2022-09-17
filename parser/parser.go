@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"boomerang/node"
 	"boomerang/tokens"
 	"fmt"
 )
@@ -18,24 +19,6 @@ var precedenceLevels = map[string]int{
 	tokens.FORWARD_SLASH: PRODUCT,
 }
 
-type Node struct {
-	Type   string
-	Value  string
-	Params map[string]Node
-}
-
-func (n *Node) GetParam(key string) Node {
-	node, ok := n.Params[key]
-	if !ok {
-		panic(fmt.Sprintf("Key not in node params: %s", key))
-	}
-	return node
-}
-
-func (n *Node) String() string {
-	return fmt.Sprintf("Node(Type: %s, Value: %s)", n.Type, n.Value)
-}
-
 type parser struct {
 	tokenizer tokens.Tokenizer
 	current   tokens.Token
@@ -50,8 +33,8 @@ func (p *parser) advance() {
 	p.current = p.tokenizer.Next()
 }
 
-func (p parser) Parse() []Node {
-	statements := []Node{}
+func (p parser) Parse() []node.Node {
+	statements := []node.Node{}
 	for p.current.Type != tokens.EOF {
 		stmt := p.parseStatement()
 		statements = append(statements, stmt)
@@ -59,9 +42,9 @@ func (p parser) Parse() []Node {
 	return statements
 }
 
-func (p *parser) parseStatement() Node {
+func (p *parser) parseStatement() node.Node {
 
-	expression := Node{}
+	expression := node.Node{}
 	expression = p.parseExpression(LOWEST)
 
 	if p.current.Type != tokens.SEMICOLON {
@@ -72,7 +55,7 @@ func (p *parser) parseStatement() Node {
 	return expression
 }
 
-func (p *parser) parseExpression(precedenceLevel int) Node {
+func (p *parser) parseExpression(precedenceLevel int) node.Node {
 	left := p.parsePrefix()
 
 	for precedenceLevel < p.getPrecedenceLevel(p.current) {
@@ -82,11 +65,11 @@ func (p *parser) parseExpression(precedenceLevel int) Node {
 	return left
 }
 
-func (p *parser) parsePrefix() Node {
+func (p *parser) parsePrefix() node.Node {
 	if p.current.Type == tokens.NUMBER {
 		val := p.current.Literal
 		p.advance()
-		return Node{Type: "Number", Value: val}
+		return node.Node{Type: "Number", Value: val}
 	} else if p.current.Type == tokens.OPEN_PAREN {
 		p.advance()
 		expression := p.parseExpression(LOWEST)
@@ -99,13 +82,13 @@ func (p *parser) parsePrefix() Node {
 	panic(fmt.Sprintf("Invalid prefix: %s", p.current.Type))
 }
 
-func (p *parser) parseInfix(left Node) Node {
+func (p *parser) parseInfix(left node.Node) node.Node {
 	op := p.current
 	p.advance()
 	right := p.parseExpression(p.getPrecedenceLevel(op))
-	return Node{
+	return node.Node{
 		Type: "BinaryExpression",
-		Params: map[string]Node{
+		Params: map[string]node.Node{
 			"left":     left,
 			"operator": {Type: op.Type, Value: op.Literal},
 			"right":    right,
