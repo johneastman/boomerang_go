@@ -22,6 +22,24 @@ func TestNumber(t *testing.T) {
 	testing_utils.AssertNodesEqual(expectedAST, actualAST)
 }
 
+func TestNegativeNumber(t *testing.T) {
+	tokenizer := tokens.New("-66;")
+	parser := New(tokenizer)
+
+	actualAST := parser.Parse()
+	expectedAST := []node.Node{
+		{
+			Type: node.UNARY_EXPR,
+			Params: map[string]node.Node{
+				node.UNARY_EXPR_EXPR: {Type: node.NUMBER, Value: "66"},
+				node.UNARY_EXPR_OP:   {Type: tokens.MINUS, Value: "-"},
+			},
+		},
+	}
+
+	testing_utils.AssertNodesEqual(expectedAST, actualAST)
+}
+
 func TestBinaryExpression(t *testing.T) {
 	tokenizer := tokens.New("7 + 3;")
 	parser := New(tokenizer)

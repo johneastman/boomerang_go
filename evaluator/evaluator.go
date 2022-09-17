@@ -28,6 +28,15 @@ func (e *evaluator) evaluate(expr node.Node) node.Node {
 
 	switch expr.Type {
 
+	case node.UNARY_EXPR:
+		expression := e.evaluate(expr.GetParam(node.UNARY_EXPR_EXPR))
+		operator := expr.GetParam(node.UNARY_EXPR_OP)
+		if operator.Type == tokens.MINUS {
+			expressionValue := -e.toInt(expression.Value)
+			return e.createNumberNode(expressionValue)
+		}
+		panic(fmt.Sprintf("Invalid unary operator: %s", expr.Type))
+
 	case node.BIN_EXPR:
 		left := e.evaluate(expr.GetParam(node.BIN_EXPR_LEFT))
 		right := e.evaluate(expr.GetParam(node.BIN_EXPR_RIGHT))
@@ -57,7 +66,7 @@ func (e *evaluator) evaluate(expr node.Node) node.Node {
 		return expr
 	}
 
-	panic(fmt.Sprintf("Invalid type %T", expr.Type))
+	panic(fmt.Sprintf("Invalid type %s", expr.Type))
 }
 
 func (e *evaluator) toInt(s string) int {

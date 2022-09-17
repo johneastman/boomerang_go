@@ -70,6 +70,19 @@ func (p *parser) parsePrefix() node.Node {
 		val := p.current.Literal
 		p.advance()
 		return node.Node{Type: node.NUMBER, Value: val}
+
+	} else if p.current.Type == tokens.MINUS {
+		op := p.current
+		p.advance()
+		expression := p.parsePrefix()
+		return node.Node{
+			Type: node.UNARY_EXPR,
+			Params: map[string]node.Node{
+				node.UNARY_EXPR_EXPR: expression,
+				node.UNARY_EXPR_OP:   {Type: op.Type, Value: op.Literal},
+			},
+		}
+
 	} else if p.current.Type == tokens.OPEN_PAREN {
 		p.advance()
 		expression := p.parseExpression(LOWEST)

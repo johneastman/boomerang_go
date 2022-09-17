@@ -3,11 +3,14 @@ package node
 import "fmt"
 
 const (
-	NUMBER         = "Number"
-	BIN_EXPR       = "BinaryExpression"
-	BIN_EXPR_LEFT  = "Left"
-	BIN_EXPR_RIGHT = "Right"
-	BIN_EXPR_OP    = "Operator"
+	NUMBER          = "Number"
+	BIN_EXPR        = "BinaryExpression"
+	BIN_EXPR_LEFT   = "Left"
+	BIN_EXPR_RIGHT  = "Right"
+	BIN_EXPR_OP     = "Operator"
+	UNARY_EXPR      = "UnaryExpression"
+	UNARY_EXPR_EXPR = "Expression"
+	UNARY_EXPR_OP   = "Operator"
 )
 
 type Node struct {
