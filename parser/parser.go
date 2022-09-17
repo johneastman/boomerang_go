@@ -19,41 +19,22 @@ var precedenceLevels = map[string]int{
 	tokens.FORWARD_SLASH: PRODUCT,
 }
 
-type Expression interface {
-	expressionNode()
-	String() string
+type Node struct {
+	Type   string
+	Value  string
+	Params map[string]Node
 }
 
-type Statement struct {
-	Expr Expression
+func (n *Node) GetParam(key string) Node {
+	node, ok := n.Params[key]
+	if !ok {
+		panic(fmt.Sprintf("Key not in node params: %s", key))
+	}
+	return node
 }
 
-func (s *Statement) expressionNode() {}
-
-func (s Statement) String() string {
-	return s.Expr.String()
-}
-
-type BinaryOperation struct {
-	Left  Expression
-	OP    tokens.Token
-	Right Expression
-}
-
-func (bo *BinaryOperation) expressionNode() {}
-
-func (bo BinaryOperation) String() string {
-	return fmt.Sprintf("BinaryOperation(left=%s, op=%s, right=%s)", bo.Left.String(), bo.OP.Type, bo.Right.String())
-}
-
-type Number struct {
-	Value string
-}
-
-func (n *Number) expressionNode() {}
-
-func (n Number) String() string {
-	return n.Value
+func (n *Node) String() string {
+	return fmt.Sprintf("Node(Type: %s, Value: %s)", n.Type, n.Value)
 }
 
 type parser struct {
@@ -70,8 +51,8 @@ func (p *parser) advance() {
 	p.current = p.tokenizer.Next()
 }
 
-func (p parser) Parse() []Statement {
-	statements := []Statement{}
+func (p parser) Parse() []Node {
+	statements := []Node{}
 	for p.current.Type != tokens.EOF {
 		stmt := p.parseStatement()
 		statements = append(statements, stmt)
@@ -79,18 +60,23 @@ func (p parser) Parse() []Statement {
 	return statements
 }
 
-func (p *parser) parseStatement() Statement {
-	expr := p.parseExpression(LOWEST)
+func (p *parser) parseStatement() Node {
+	expression := p.parseExpression(LOWEST)
 
 	if p.current.Type != tokens.SEMICOLON {
 		p.expectedToken(tokens.SEMICOLON)
 	}
 	p.advance()
 
-	return Statement{Expr: expr}
+	return Node{
+		Type: "Statement",
+		Params: map[string]Node{
+			"Expression": expression,
+		},
+	}
 }
 
-func (p *parser) parseExpression(precedenceLevel int) Expression {
+func (p *parser) parseExpression(precedenceLevel int) Node {
 	left := p.parsePrefix()
 
 	for precedenceLevel < p.getPrecedenceLevel(p.current) {
@@ -100,11 +86,11 @@ func (p *parser) parseExpression(precedenceLevel int) Expression {
 	return left
 }
 
-func (p *parser) parsePrefix() Expression {
+func (p *parser) parsePrefix() Node {
 	if p.current.Type == tokens.NUMBER {
 		val := p.current.Literal
 		p.advance()
-		return &Number{Value: val}
+		return Node{Type: "Number", Value: val}
 	} else if p.current.Type == tokens.OPEN_PAREN {
 		p.advance()
 		expression := p.parseExpression(LOWEST)
@@ -117,11 +103,18 @@ func (p *parser) parsePrefix() Expression {
 	panic(fmt.Sprintf("Invalid prefix: %s", p.current.Type))
 }
 
-func (p *parser) parseInfix(left Expression) Expression {
+func (p *parser) parseInfix(left Node) Node {
 	op := p.current
 	p.advance()
 	right := p.parseExpression(p.getPrecedenceLevel(op))
-	return &BinaryOperation{Left: left, OP: op, Right: right}
+	return Node{
+		Type: "BinaryExpression",
+		Params: map[string]Node{
+			"left":     left,
+			"operator": {Type: op.Type, Value: op.Literal},
+			"right":    right,
+		},
+	}
 }
 
 func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
