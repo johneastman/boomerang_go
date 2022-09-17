@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"log"
 	"my_lang/tokens"
 )
 
@@ -61,19 +60,16 @@ func (p parser) Parse() []Node {
 }
 
 func (p *parser) parseStatement() Node {
-	expression := p.parseExpression(LOWEST)
+
+	expression := Node{}
+	expression = p.parseExpression(LOWEST)
 
 	if p.current.Type != tokens.SEMICOLON {
 		p.expectedToken(tokens.SEMICOLON)
 	}
 	p.advance()
 
-	return Node{
-		Type: "Statement",
-		Params: map[string]Node{
-			"Expression": expression,
-		},
-	}
+	return expression
 }
 
 func (p *parser) parseExpression(precedenceLevel int) Node {
@@ -126,5 +122,5 @@ func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
 }
 
 func (p *parser) expectedToken(expectedType string) {
-	log.Fatalf("Expected token type %s, got %s", expectedType, p.current.Type)
+	panic(fmt.Sprintf("Expected token type %s, got %s", expectedType, p.current.Type))
 }

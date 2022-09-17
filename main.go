@@ -26,5 +26,7 @@ func main() {
 
 	eval := evaluator.New(statements)
 	results := eval.Evaluate()
-	fmt.Println(results)
+	for _, result := range results {
+		fmt.Println(result.Value)
+	}
 }

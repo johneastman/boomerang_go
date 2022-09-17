@@ -15,22 +15,18 @@ func New(ast []parser.Node) evaluator {
 	return evaluator{ast: ast}
 }
 
-func (e *evaluator) Evaluate() []int {
-	results := []int{}
+func (e *evaluator) Evaluate() []parser.Node {
+	results := []parser.Node{}
 	for _, stmt := range e.ast {
-		result := e.evaluate(stmt.GetParam("Expression"))
+		result := e.evaluate(stmt)
 		results = append(results, result)
 	}
 	return results
 }
 
-func (e *evaluator) evaluate(expr parser.Node) int {
+func (e *evaluator) evaluate(expr parser.Node) parser.Node {
 
 	switch expr.Type {
-
-	case "Statement":
-		statementExpression := expr.GetParam("Expression")
-		return e.evaluate(statementExpression)
 
 	case "BinaryExpression":
 		left := e.evaluate(expr.GetParam("left"))
@@ -39,21 +35,39 @@ func (e *evaluator) evaluate(expr parser.Node) int {
 
 		switch op.Type {
 		case tokens.PLUS:
-			return left + right
+			result := e.toInt(left.Value) + e.toInt(right.Value)
+			return e.createNumberNode(result)
 		case tokens.MINUS:
-			return left - right
+			result := e.toInt(left.Value) - e.toInt(right.Value)
+			return e.createNumberNode(result)
 		case tokens.ASTERISK:
-			return left * right
+			result := e.toInt(left.Value) * e.toInt(right.Value)
+			return e.createNumberNode(result)
 		case tokens.FORWARD_SLASH:
-			return int(left / right)
+			if right.Value == "0" {
+				panic("Cannot divide by zero.")
+			}
+			result := e.toInt(left.Value) / e.toInt(right.Value)
+			return e.createNumberNode(result)
 		default:
 			panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
 		}
 
 	case "Number":
-		value, _ := strconv.Atoi(expr.Value)
-		return value
+		return expr
 	}
 
 	panic(fmt.Sprintf("Invalid type %T", expr.Type))
+}
+
+func (e *evaluator) toInt(s string) int {
+	intVal, err := strconv.Atoi(s)
+	if err != nil {
+		panic(fmt.Sprintf("Cannot convert string to int: %s", s))
+	}
+	return intVal
+}
+
+func (e *evaluator) createNumberNode(value int) parser.Node {
+	return parser.Node{Type: "Number", Value: fmt.Sprint(value)}
 }

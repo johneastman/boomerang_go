@@ -9,26 +9,112 @@ func TestNumber(t *testing.T) {
 	tokenizer := tokens.New("10;")
 	parser := New(tokenizer)
 
-	ast := parser.Parse()
+	actualAst := parser.Parse()
 	expectedAST := []Node{
 		{
-			Type: "Statement",
-			Params: map[string]Node{
-				"Expression": {
-					Type:  "Number",
-					Value: "10",
-				},
-			},
+			Type:  "Number",
+			Value: "10",
 		},
 	}
 
-	if len(ast) != len(expectedAST) {
-		t.Fatalf("Expected number of statements: %d, Actual number of statements: %d", len(expectedAST), len(ast))
+	if len(actualAst) != len(expectedAST) {
+		t.Fatalf("Expected number of statements: %d, Actual number of statements: %d", len(expectedAST), len(actualAst))
 	}
 
-	for i, _ := range expectedAST {
+	for i := range expectedAST {
 		expected := expectedAST[i]
-		actual := ast[i]
+		actual := actualAst[i]
+
+		if !assertNodeEqual(t, expected, actual) {
+			t.Fatalf("Expected Node does not equal Actual node")
+		}
+	}
+}
+
+func TestBinaryExpression(t *testing.T) {
+	tokenizer := tokens.New("7 + 3;")
+	parser := New(tokenizer)
+
+	actualAST := parser.Parse()
+	expectedAST := []Node{
+		{
+			Type: "BinaryExpression",
+			Params: map[string]Node{
+				"left":     {Type: "Number", Value: "7"},
+				"right":    {Type: "Number", Value: "3"},
+				"operator": {Type: "PLUS", Value: "+"},
+			},
+		},
+	}
+	if len(actualAST) != len(expectedAST) {
+		t.Fatalf("Expected number of statements: %d, Actual number of statements: %d", len(expectedAST), len(actualAST))
+	}
+
+	for i := range expectedAST {
+		expected := expectedAST[i]
+		actual := actualAST[i]
+
+		if !assertNodeEqual(t, expected, actual) {
+			t.Fatalf("Expected Node does not equal Actual node")
+		}
+	}
+}
+
+func TestParentheses(t *testing.T) {
+	tokenizer := tokens.New("7 + (3);")
+	parser := New(tokenizer)
+
+	actualAST := parser.Parse()
+	expectedAST := []Node{
+		{
+			Type: "BinaryExpression",
+			Params: map[string]Node{
+				"left":     {Type: "Number", Value: "7"},
+				"operator": {Type: "PLUS", Value: "+"},
+				"right":    {Type: "Number", Value: "3"},
+			},
+		},
+	}
+	if len(actualAST) != len(expectedAST) {
+		t.Fatalf("Expected number of statements: %d, Actual number of statements: %d", len(expectedAST), len(actualAST))
+	}
+
+	for i := range expectedAST {
+		expected := expectedAST[i]
+		actual := actualAST[i]
+
+		if !assertNodeEqual(t, expected, actual) {
+			t.Fatalf("Expected Node does not equal Actual node")
+		}
+	}
+}
+
+func TestParenthesesBinaryExpression(t *testing.T) {
+	tokenizer := tokens.New("7 + (5 - 2);")
+	parser := New(tokenizer)
+
+	actualAST := parser.Parse()
+	expectedAST := []Node{
+		{
+			Type: "BinaryExpression",
+			Params: map[string]Node{
+				"left":     {Type: "Number", Value: "7"},
+				"operator": {Type: "PLUS", Value: "+"},
+				"right": {Type: "BinaryExpression", Params: map[string]Node{
+					"left":     {Type: "Number", Value: "5"},
+					"right":    {Type: "Number", Value: "3"},
+					"operator": {Type: "MINUS", Value: "-"},
+				}},
+			},
+		},
+	}
+	if len(actualAST) != len(expectedAST) {
+		t.Fatalf("Expected number of statements: %d, Actual number of statements: %d", len(expectedAST), len(actualAST))
+	}
+
+	for i := range expectedAST {
+		expected := expectedAST[i]
+		actual := actualAST[i]
 
 		if !assertNodeEqual(t, expected, actual) {
 			t.Fatalf("Expected Node does not equal Actual node")
