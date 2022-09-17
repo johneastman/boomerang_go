@@ -1,9 +1,13 @@
 package tokens
 
 import (
-	"boomerang/node"
 	"fmt"
 )
+
+type Token struct {
+	Literal string
+	Type    string
+}
 
 // Token types
 const (
@@ -15,12 +19,13 @@ const (
 	SEMICOLON     = "SEMICOLON"
 	OPEN_PAREN    = "OPEN_PAREN"
 	CLOSED_PAREN  = "CLOSED_PAREN"
+	ASSIGN        = "ASSIGN"
 
 	// Keywords
 	LET = "LET"
 
 	// Data Types
-	NUMBER = node.NUMBER
+	NUMBER = "NUMBER"
 
 	// Misc
 	IDENTIFIER = "IDENTIFIER"
@@ -39,6 +44,7 @@ var symbols = map[byte]string{
 	';': SEMICOLON,
 	'(': OPEN_PAREN,
 	')': CLOSED_PAREN,
+	'=': ASSIGN,
 }
 
 func getSymbolType(literal byte) string {

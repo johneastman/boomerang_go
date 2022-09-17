@@ -5,11 +5,6 @@ type Tokenizer struct {
 	currentPos int
 }
 
-type Token struct {
-	Literal string
-	Type    string
-}
-
 func New(source string) Tokenizer {
 	return Tokenizer{source: source, currentPos: 0}
 }

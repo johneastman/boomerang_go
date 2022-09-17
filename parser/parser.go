@@ -22,15 +22,18 @@ var precedenceLevels = map[string]int{
 type parser struct {
 	tokenizer tokens.Tokenizer
 	current   tokens.Token
+	peek      tokens.Token
 }
 
 func New(tokenizer tokens.Tokenizer) parser {
 	currentToken := tokenizer.Next()
-	return parser{tokenizer: tokenizer, current: currentToken}
+	peekToken := tokenizer.Next()
+	return parser{tokenizer: tokenizer, current: currentToken, peek: peekToken}
 }
 
 func (p *parser) advance() {
-	p.current = p.tokenizer.Next()
+	p.current = p.peek
+	p.peek = p.tokenizer.Next()
 }
 
 func (p parser) Parse() []node.Node {
@@ -45,7 +48,22 @@ func (p parser) Parse() []node.Node {
 func (p *parser) parseStatement() node.Node {
 
 	expression := node.Node{}
-	expression = p.parseExpression(LOWEST)
+
+	if p.current.Type == tokens.IDENTIFIER && p.peek.Type == tokens.ASSIGN {
+		variableName := p.current
+		p.advance()
+		p.advance()
+		variableExpression := p.parseExpression(LOWEST)
+		expression = node.Node{
+			Type: node.ASSIGN_STMT,
+			Params: map[string]node.Node{
+				node.ASSIGN_STMT_IDENTIFIER: {Type: variableName.Type, Value: variableName.Literal},
+				node.EXPR:                   variableExpression,
+			},
+		}
+	} else {
+		expression = p.parseExpression(LOWEST)
+	}
 
 	if p.current.Type != tokens.SEMICOLON {
 		p.expectedToken(tokens.SEMICOLON)
@@ -78,8 +96,8 @@ func (p *parser) parsePrefix() node.Node {
 		return node.Node{
 			Type: node.UNARY_EXPR,
 			Params: map[string]node.Node{
-				node.UNARY_EXPR_EXPR: expression,
-				node.UNARY_EXPR_OP:   {Type: op.Type, Value: op.Literal},
+				node.EXPR:     expression,
+				node.OPERATOR: {Type: op.Type, Value: op.Literal},
 			},
 		}
 
@@ -91,7 +109,13 @@ func (p *parser) parsePrefix() node.Node {
 			return expression
 		}
 		p.expectedToken(tokens.CLOSED_PAREN)
+
+	} else if p.current.Type == tokens.IDENTIFIER {
+		identifier := p.current
+		p.advance()
+		return node.Node{Type: node.IDENTIFIER, Value: identifier.Literal}
 	}
+
 	panic(fmt.Sprintf("Invalid prefix: %s", p.current.Type))
 }
 
@@ -103,7 +127,7 @@ func (p *parser) parseInfix(left node.Node) node.Node {
 		Type: node.BIN_EXPR,
 		Params: map[string]node.Node{
 			node.BIN_EXPR_LEFT:  left,
-			node.BIN_EXPR_OP:    {Type: op.Type, Value: op.Literal},
+			node.OPERATOR:       {Type: op.Type, Value: op.Literal},
 			node.BIN_EXPR_RIGHT: right,
 		},
 	}
