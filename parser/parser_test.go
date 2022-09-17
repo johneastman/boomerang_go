@@ -14,7 +14,7 @@ func TestNumber(t *testing.T) {
 	actualAST := parser.Parse()
 	expectedAST := []node.Node{
 		{
-			Type:  "Number",
+			Type:  node.NUMBER,
 			Value: "10",
 		},
 	}
@@ -29,11 +29,11 @@ func TestBinaryExpression(t *testing.T) {
 	actualAST := parser.Parse()
 	expectedAST := []node.Node{
 		{
-			Type: "BinaryExpression",
+			Type: node.BIN_EXPR,
 			Params: map[string]node.Node{
-				"left":     {Type: "Number", Value: "7"},
-				"right":    {Type: "Number", Value: "3"},
-				"operator": {Type: "PLUS", Value: "+"},
+				node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "7"},
+				node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "3"},
+				node.BIN_EXPR_OP:    {Type: tokens.PLUS, Value: "+"},
 			},
 		},
 	}
@@ -48,11 +48,11 @@ func TestParentheses(t *testing.T) {
 	actualAST := parser.Parse()
 	expectedAST := []node.Node{
 		{
-			Type: "BinaryExpression",
+			Type: node.BIN_EXPR,
 			Params: map[string]node.Node{
-				"left":     {Type: "Number", Value: "7"},
-				"operator": {Type: "PLUS", Value: "+"},
-				"right":    {Type: "Number", Value: "3"},
+				node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "7"},
+				node.BIN_EXPR_OP:    {Type: tokens.PLUS, Value: "+"},
+				node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "3"},
 			},
 		},
 	}
@@ -66,14 +66,14 @@ func TestParenthesesBinaryExpression(t *testing.T) {
 	actualAST := parser.Parse()
 	expectedAST := []node.Node{
 		{
-			Type: "BinaryExpression",
+			Type: node.BIN_EXPR,
 			Params: map[string]node.Node{
-				"left":     {Type: "Number", Value: "7"},
-				"operator": {Type: "PLUS", Value: "+"},
-				"right": {Type: "BinaryExpression", Params: map[string]node.Node{
-					"left":     {Type: "Number", Value: "5"},
-					"right":    {Type: "Number", Value: "3"},
-					"operator": {Type: "MINUS", Value: "-"},
+				node.BIN_EXPR_LEFT: {Type: node.NUMBER, Value: "7"},
+				node.BIN_EXPR_OP:   {Type: tokens.PLUS, Value: "+"},
+				node.BIN_EXPR_RIGHT: {Type: node.BIN_EXPR, Params: map[string]node.Node{
+					node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "5"},
+					node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "3"},
+					node.BIN_EXPR_OP:    {Type: tokens.MINUS, Value: "-"},
 				}},
 			},
 		},

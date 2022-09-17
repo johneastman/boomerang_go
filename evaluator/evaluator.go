@@ -28,10 +28,10 @@ func (e *evaluator) evaluate(expr node.Node) node.Node {
 
 	switch expr.Type {
 
-	case "BinaryExpression":
-		left := e.evaluate(expr.GetParam("left"))
-		right := e.evaluate(expr.GetParam("right"))
-		op := expr.GetParam("operator")
+	case node.BIN_EXPR:
+		left := e.evaluate(expr.GetParam(node.BIN_EXPR_LEFT))
+		right := e.evaluate(expr.GetParam(node.BIN_EXPR_RIGHT))
+		op := expr.GetParam(node.BIN_EXPR_OP)
 
 		switch op.Type {
 		case tokens.PLUS:
@@ -53,7 +53,7 @@ func (e *evaluator) evaluate(expr node.Node) node.Node {
 			panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
 		}
 
-	case "Number":
+	case node.NUMBER:
 		return expr
 	}
 
@@ -69,5 +69,5 @@ func (e *evaluator) toInt(s string) int {
 }
 
 func (e *evaluator) createNumberNode(value int) node.Node {
-	return node.Node{Type: "Number", Value: fmt.Sprint(value)}
+	return node.Node{Type: node.NUMBER, Value: fmt.Sprint(value)}
 }

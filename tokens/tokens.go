@@ -1,7 +1,8 @@
 package tokens
 
 import (
-	"log"
+	"boomerang/node"
+	"fmt"
 )
 
 // Token types
@@ -19,7 +20,7 @@ const (
 	LET = "LET"
 
 	// Data Types
-	NUMBER = "NUMBER"
+	NUMBER = node.NUMBER
 
 	// Misc
 	IDENTIFIER = "IDENTIFIER"
@@ -44,8 +45,7 @@ func getSymbolType(literal byte) string {
 	if tokenType, ok := symbols[literal]; ok {
 		return tokenType
 	}
-	log.Fatalf("Invalid symbol: %c", literal)
-	return ""
+	panic(fmt.Sprintf("Invalid symbol: %c", literal))
 }
 
 func getTokenType(literal string) string {

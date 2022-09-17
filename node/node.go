@@ -2,6 +2,14 @@ package node
 
 import "fmt"
 
+const (
+	NUMBER         = "Number"
+	BIN_EXPR       = "BinaryExpression"
+	BIN_EXPR_LEFT  = "Left"
+	BIN_EXPR_RIGHT = "Right"
+	BIN_EXPR_OP    = "Operator"
+)
+
 type Node struct {
 	Type   string
 	Value  string

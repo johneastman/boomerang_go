@@ -69,7 +69,7 @@ func (p *parser) parsePrefix() node.Node {
 	if p.current.Type == tokens.NUMBER {
 		val := p.current.Literal
 		p.advance()
-		return node.Node{Type: "Number", Value: val}
+		return node.Node{Type: node.NUMBER, Value: val}
 	} else if p.current.Type == tokens.OPEN_PAREN {
 		p.advance()
 		expression := p.parseExpression(LOWEST)
@@ -87,11 +87,11 @@ func (p *parser) parseInfix(left node.Node) node.Node {
 	p.advance()
 	right := p.parseExpression(p.getPrecedenceLevel(op))
 	return node.Node{
-		Type: "BinaryExpression",
+		Type: node.BIN_EXPR,
 		Params: map[string]node.Node{
-			"left":     left,
-			"operator": {Type: op.Type, Value: op.Literal},
-			"right":    right,
+			node.BIN_EXPR_LEFT:  left,
+			node.BIN_EXPR_OP:    {Type: op.Type, Value: op.Literal},
+			node.BIN_EXPR_RIGHT: right,
 		},
 	}
 }

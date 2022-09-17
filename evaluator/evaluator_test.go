@@ -3,18 +3,19 @@ package evaluator
 import (
 	"boomerang/node"
 	"boomerang/testing_utils"
+	"boomerang/tokens"
 	"testing"
 )
 
 func TestNumber(t *testing.T) {
 	ast := []node.Node{
-		{Type: "Number", Value: "5"},
+		{Type: node.NUMBER, Value: "5"},
 	}
 	evaluator := New(ast)
 
 	actualResults := evaluator.Evaluate()
 	expectedResults := []node.Node{
-		{Type: "Number", Value: "5"},
+		{Type: node.NUMBER, Value: "5"},
 	}
 
 	testing_utils.AssertNodesEqual(expectedResults, actualResults)
@@ -23,11 +24,11 @@ func TestNumber(t *testing.T) {
 func TestBinaryExpression(t *testing.T) {
 	ast := []node.Node{
 		{
-			Type: "BinaryExpression",
+			Type: node.BIN_EXPR,
 			Params: map[string]node.Node{
-				"left":     {Type: "Number", Value: "1"},
-				"right":    {Type: "Number", Value: "1"},
-				"operator": {Type: "PLUS", Value: "+"},
+				node.BIN_EXPR_LEFT:  {Type: node.NUMBER, Value: "1"},
+				node.BIN_EXPR_RIGHT: {Type: node.NUMBER, Value: "1"},
+				node.BIN_EXPR_OP:    {Type: tokens.PLUS, Value: "+"},
 			},
 		},
 	}
@@ -35,7 +36,7 @@ func TestBinaryExpression(t *testing.T) {
 
 	actualResults := evaluator.Evaluate()
 	expectedResults := []node.Node{
-		{Type: "Number", Value: "2"},
+		{Type: node.NUMBER, Value: "2"},
 	}
 	testing_utils.AssertNodesEqual(actualResults, expectedResults)
 }
