@@ -15,7 +15,10 @@ func New(source string) tokenizer {
 }
 
 func (t *tokenizer) current() byte {
-	return t.source[t.currentPos]
+	if t.currentPos < len(t.source) {
+		return t.source[t.currentPos]
+	}
+	return 0
 }
 
 func (t *tokenizer) advance() {
@@ -60,26 +63,35 @@ func (t *tokenizer) readNumber() string {
 
 func (t *tokenizer) Tokenize() []Token {
 	tokens := []Token{}
-
-	for t.currentPos < len(t.source) {
-
-		t.skipWhitespace()
-
-		if t.isIdentifier() {
-			literal := t.readIdentifier()
-			tokenType := getTokenType(literal)
-			tokens = append(tokens, Token{Literal: literal, Type: tokenType})
-		} else if t.isNumber() {
-			literal := t.readNumber()
-			tokens = append(tokens, Token{Literal: literal, Type: NUMBER})
-		} else {
-			literal := t.current()
-			tokenType := getSymbolType(literal)
-			tokens = append(tokens, Token{Literal: string(literal), Type: tokenType})
-			t.advance()
-		}
+	token := t.Next()
+	for token.Type != EOF {
+		tokens = append(tokens, token)
+		token = t.Next()
 	}
 
-	tokens = append(tokens, Token{Literal: "", Type: EOF})
+	tokens = append(tokens, token)
 	return tokens
+
+}
+
+func (t *tokenizer) Next() Token {
+	t.skipWhitespace()
+
+	if t.current() == 0 {
+		return Token{Literal: "", Type: EOF}
+	}
+
+	if t.isIdentifier() {
+		literal := t.readIdentifier()
+		tokenType := getTokenType(literal)
+		return Token{Literal: literal, Type: tokenType}
+	} else if t.isNumber() {
+		literal := t.readNumber()
+		return Token{Literal: literal, Type: NUMBER}
+	}
+
+	literal := t.current()
+	tokenType := getSymbolType(literal)
+	t.advance()
+	return Token{Literal: string(literal), Type: tokenType}
 }

@@ -1,7 +1,6 @@
 package tokens
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -45,7 +44,7 @@ func getSymbolType(literal byte) string {
 	if tokenType, ok := symbols[literal]; ok {
 		return tokenType
 	}
-	log.Fatal(fmt.Sprintf("Invalid symbol: %c", literal))
+	log.Fatalf("Invalid symbol: %c", literal)
 	return ""
 }
 

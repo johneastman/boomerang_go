@@ -20,6 +20,7 @@ func getSource(path string) string {
 func main() {
 	source := getSource("source.txt")
 	tokenizer := tokens.New(source)
+
 	tokens := tokenizer.Tokenize()
 
 	parser := parser.New(tokens)
