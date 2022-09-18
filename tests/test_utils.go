@@ -3,7 +3,7 @@ package tests
 import (
 	"boomerang/node"
 	"boomerang/tokens"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 )
@@ -77,7 +77,7 @@ func AssertExpectedOutput(t *testing.T, expectedOutput string, f func()) {
 	f()
 
 	w.Close()
-	actualOutput, _ := ioutil.ReadAll(r)
+	actualOutput, _ := io.ReadAll(r)
 
 	if expectedOutput != string(actualOutput) {
 		t.Fatalf("Expected %#v, got %#v", "1 2 3\n", actualOutput)
