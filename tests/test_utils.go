@@ -83,3 +83,31 @@ func AssertExpectedOutput(t *testing.T, expectedOutput string, f func()) {
 		t.Fatalf("Expected %#v, got %#v", "1 2 3\n", actualOutput)
 	}
 }
+
+func CreateFunction(params []string, statements []node.Node) node.Node {
+
+	// Create parameter nodes from the array of strings
+	parameterNodes := []node.Node{}
+	for _, value := range params {
+		paramNode := node.Node{Type: node.IDENTIFIER, Value: value}
+		parameterNodes = append(parameterNodes, paramNode)
+	}
+
+	return node.Node{
+		Type: node.FUNCTION,
+		Params: []node.Node{
+			{Type: node.PARAMETER, Params: parameterNodes},
+			{Type: node.STMTS, Params: statements},
+		},
+	}
+}
+
+func CreateFunctionCall(function node.Node, callParams []node.Node) node.Node {
+	return node.Node{
+		Type: node.FUNCTION_CALL,
+		Params: []node.Node{
+			{Type: node.CALL_PARAMS, Params: callParams},
+			function,
+		},
+	}
+}

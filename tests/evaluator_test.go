@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestEvaluatorNumbers(t *testing.T) {
+func TestEvaluator_Numbers(t *testing.T) {
 
 	numbers := []string{
 		"5",
@@ -30,7 +30,7 @@ func TestEvaluatorNumbers(t *testing.T) {
 	}
 }
 
-func TestEvaluatorNegativeNumber(t *testing.T) {
+func TestEvaluator_NegativeNumber(t *testing.T) {
 	ast := []node.Node{
 		{
 			Type: node.UNARY_EXPR,
@@ -50,7 +50,7 @@ func TestEvaluatorNegativeNumber(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
-func TestEvaluatorBinaryExpression(t *testing.T) {
+func TestEvaluator_BinaryExpression(t *testing.T) {
 	ast := []node.Node{
 		{
 			Type: node.BIN_EXPR,
@@ -70,7 +70,7 @@ func TestEvaluatorBinaryExpression(t *testing.T) {
 	AssertNodesEqual(t, actualResults, expectedResults)
 }
 
-func TestVariable(t *testing.T) {
+func TestEvaluator_Variable(t *testing.T) {
 	// Source: variable = 8 / 2; variable;
 	ast := []node.Node{
 		{
@@ -103,7 +103,7 @@ func TestVariable(t *testing.T) {
 	AssertNodesEqual(t, actualResults, expectedResults)
 }
 
-func TestEvaluatorPrintStatement(t *testing.T) {
+func TestEvaluator_PrintStatement(t *testing.T) {
 	ast := []node.Node{
 		{
 			Type: node.PRINT_STMT,
@@ -133,33 +133,21 @@ func TestEvaluatorPrintStatement(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
-func TestEvaluatorFunction(t *testing.T) {
+func TestEvaluator_Function(t *testing.T) {
 	ast := []node.Node{
-		{
-			Type: node.FUNCTION,
-			Params: []node.Node{
+		CreateFunction(
+			[]string{"a", "b"},
+			[]node.Node{
 				{
-					Type: node.PARAMETER,
+					Type: node.BIN_EXPR,
 					Params: []node.Node{
 						{Type: node.IDENTIFIER, Value: "a"},
+						{Type: tokens.PLUS, Value: "+"},
 						{Type: node.IDENTIFIER, Value: "b"},
 					},
 				},
-				{
-					Type: node.STMTS,
-					Params: []node.Node{
-						{
-							Type: node.BIN_EXPR,
-							Params: []node.Node{
-								{Type: node.IDENTIFIER, Value: "a"},
-								{Type: tokens.PLUS, Value: "+"},
-								{Type: node.IDENTIFIER, Value: "b"},
-							},
-						},
-					},
-				},
 			},
-		},
+		),
 	}
 	evaluatorObj := evaluator.New(ast)
 
@@ -167,46 +155,26 @@ func TestEvaluatorFunction(t *testing.T) {
 	AssertNodesEqual(t, ast, actualResults)
 }
 
-func TestFunctionCallOnFunctionLiteral(t *testing.T) {
-	functionNode := node.Node{
-		Type: node.FUNCTION,
-		Params: []node.Node{
+func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
+	functionNode := CreateFunction(
+		[]string{"c", "d"},
+		[]node.Node{
 			{
-				Type: node.PARAMETER,
+				Type: node.BIN_EXPR,
 				Params: []node.Node{
 					{Type: node.IDENTIFIER, Value: "c"},
+					{Type: tokens.MINUS, Value: "-"},
 					{Type: node.IDENTIFIER, Value: "d"},
 				},
 			},
-			{
-				Type: node.STMTS,
-				Params: []node.Node{
-					{
-						Type: node.BIN_EXPR,
-						Params: []node.Node{
-							{Type: node.IDENTIFIER, Value: "c"},
-							{Type: tokens.MINUS, Value: "-"},
-							{Type: node.IDENTIFIER, Value: "d"},
-						},
-					},
-				},
-			},
 		},
-	}
+	)
 
 	ast := []node.Node{
-		{
-			Type: node.FUNCTION_CALL,
-			Params: []node.Node{
-				{
-					Type: node.CALL_PARAMS, Params: []node.Node{
-						{Type: node.NUMBER, Value: "10"},
-						{Type: node.NUMBER, Value: "2"},
-					},
-				},
-				functionNode,
-			},
-		},
+		CreateFunctionCall(functionNode, []node.Node{
+			{Type: node.NUMBER, Value: "10"},
+			{Type: node.NUMBER, Value: "2"},
+		}),
 	}
 
 	evaluatorObj := evaluator.New(ast)
@@ -214,6 +182,40 @@ func TestFunctionCallOnFunctionLiteral(t *testing.T) {
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
 		{Type: node.NUMBER, Value: "8"},
+	}
+	AssertNodesEqual(t, expectedResults, actualResults)
+}
+
+func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
+
+	ast := []node.Node{
+		node.CreateAssignmentStatement(
+			tokens.Token{Type: tokens.IDENTIFIER, Literal: "divide"},
+			CreateFunction(
+				[]string{"a", "b"},
+				[]node.Node{
+					node.CreateBinaryExpression(
+						node.Node{Type: node.IDENTIFIER, Value: "a"},
+						tokens.Token{Type: tokens.FORWARD_SLASH, Literal: "/"},
+						node.Node{Type: node.IDENTIFIER, Value: "b"},
+					),
+				},
+			),
+		),
+		CreateFunctionCall(
+			node.CreateIdentifier("divide"),
+			[]node.Node{
+				{Type: node.NUMBER, Value: "10"},
+				{Type: node.NUMBER, Value: "2"},
+			},
+		),
+	}
+
+	evaluatorObj := evaluator.New(ast)
+
+	actualResults := evaluatorObj.Evaluate()
+	expectedResults := []node.Node{
+		{Type: node.NUMBER, Value: "5"},
 	}
 	AssertNodesEqual(t, expectedResults, actualResults)
 }

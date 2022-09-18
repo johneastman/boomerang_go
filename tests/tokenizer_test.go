@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestSymbols(t *testing.T) {
+func TestTokenizer_Symbols(t *testing.T) {
 	tokenizer := tokens.New("+-*/()=,{};")
 	expectedTokens := []tokens.Token{
 		{Literal: "+", Type: tokens.PLUS},
@@ -27,7 +27,7 @@ func TestSymbols(t *testing.T) {
 	}
 }
 
-func TestTokenizerKeywords(t *testing.T) {
+func TestTokenizer_Keywords(t *testing.T) {
 
 	keywordTokens := []tokens.Token{
 		{Type: tokens.PRINT, Literal: "print"},
@@ -41,7 +41,7 @@ func TestTokenizerKeywords(t *testing.T) {
 	}
 }
 
-func TestNumbers(t *testing.T) {
+func TestTokenizer_Numbers(t *testing.T) {
 	numbers := []string{
 		"1",
 		"2",
@@ -66,7 +66,7 @@ func TestNumbers(t *testing.T) {
 	}
 }
 
-func TestIdenifiers(t *testing.T) {
+func TestTokenizer_Idenifiers(t *testing.T) {
 
 	variables := []string{
 		"variable",

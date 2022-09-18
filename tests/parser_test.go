@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestParserNumbers(t *testing.T) {
+func TestParser_Numbers(t *testing.T) {
 	numbers := []string{
 		"10",
 		"1001",
@@ -32,7 +32,7 @@ func TestParserNumbers(t *testing.T) {
 	}
 }
 
-func TestParserNegativeNumber(t *testing.T) {
+func TestParser_NegativeNumber(t *testing.T) {
 	tokenizer := tokens.New("-66;")
 	parserObj := parser.New(tokenizer)
 
@@ -50,7 +50,7 @@ func TestParserNegativeNumber(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
-func TestParserBinaryExpression(t *testing.T) {
+func TestParser_BinaryExpression(t *testing.T) {
 	tokenizer := tokens.New("7 + 3;")
 	parserObj := parser.New(tokenizer)
 
@@ -69,7 +69,7 @@ func TestParserBinaryExpression(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
-func TestParserParentheses(t *testing.T) {
+func TestParser_Parentheses(t *testing.T) {
 	tokenizer := tokens.New("7 + (3);")
 	parserObj := parser.New(tokenizer)
 
@@ -87,7 +87,7 @@ func TestParserParentheses(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
-func TestParserParenthesesBinaryExpression(t *testing.T) {
+func TestParser_ParenthesesBinaryExpression(t *testing.T) {
 	tokenizer := tokens.New("7 + (5 - 2);")
 	parserObj := parser.New(tokenizer)
 
@@ -109,7 +109,7 @@ func TestParserParenthesesBinaryExpression(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
-func TestParserVariableAssignment(t *testing.T) {
+func TestParser_VariableAssignment(t *testing.T) {
 	tokenizer := tokens.New("variable = 8 / 2;")
 	parserObj := parser.New(tokenizer)
 
@@ -133,7 +133,7 @@ func TestParserVariableAssignment(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
-func TestParserIdentifier(t *testing.T) {
+func TestParser_Identifier(t *testing.T) {
 	tokenizer := tokens.New("variable;")
 	parserObj := parser.New(tokenizer)
 
@@ -147,7 +147,7 @@ func TestParserIdentifier(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
-func TestPrintStatement(t *testing.T) {
+func TestParser_PrintStatement(t *testing.T) {
 	tokenizer := tokens.New("print(1, 2, variable);")
 	parserObj := parser.New(tokenizer)
 
@@ -171,7 +171,7 @@ func TestPrintStatement(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
-func TestParserFunction(t *testing.T) {
+func TestParser_Function(t *testing.T) {
 	tokenizer := tokens.New("func(a, b) { a + b; };")
 	parserObj := parser.New(tokenizer)
 
@@ -206,51 +206,48 @@ func TestParserFunction(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
-func TestParserFunctionCall(t *testing.T) {
+func TestParser_FunctionCallWithFunctionLiteral(t *testing.T) {
 	tokenizer := tokens.New("func(c, d) { d - c; }(10, 2);")
 	parserObj := parser.New(tokenizer)
 
 	actualAST := parserObj.Parse()
 
-	functionNode := node.Node{
-		Type: node.FUNCTION,
-		Params: []node.Node{
+	functionNode := CreateFunction(
+		[]string{"c", "d"},
+		[]node.Node{
 			{
-				Type: node.PARAMETER,
+				Type: node.BIN_EXPR,
 				Params: []node.Node{
-					{Type: node.IDENTIFIER, Value: "c"},
 					{Type: node.IDENTIFIER, Value: "d"},
-				},
-			},
-			{
-				Type: node.STMTS,
-				Params: []node.Node{
-					{
-						Type: node.BIN_EXPR,
-						Params: []node.Node{
-							{Type: node.IDENTIFIER, Value: "d"},
-							{Type: tokens.MINUS, Value: "-"},
-							{Type: node.IDENTIFIER, Value: "c"},
-						},
-					},
+					{Type: tokens.MINUS, Value: "-"},
+					{Type: node.IDENTIFIER, Value: "c"},
 				},
 			},
 		},
-	}
+	)
 
 	expectedAST := []node.Node{
-		{
-			Type: node.FUNCTION_CALL,
-			Params: []node.Node{
-				{
-					Type: node.CALL_PARAMS, Params: []node.Node{
-						{Type: node.NUMBER, Value: "10"},
-						{Type: node.NUMBER, Value: "2"},
-					},
-				},
-				functionNode,
+		CreateFunctionCall(functionNode, []node.Node{
+			{Type: node.NUMBER, Value: "10"},
+			{Type: node.NUMBER, Value: "2"},
+		}),
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
+func TestParser_FunctionCallWithIdentifier(t *testing.T) {
+	tokenizer := tokens.New("multiply(10, 3);")
+	parserObj := parser.New(tokenizer)
+
+	actualAST := parserObj.Parse()
+	expectedAST := []node.Node{
+		CreateFunctionCall(
+			node.Node{Type: node.IDENTIFIER, Value: "multiply"},
+			[]node.Node{
+				{Type: node.NUMBER, Value: "10"},
+				{Type: node.NUMBER, Value: "3"},
 			},
-		},
+		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
