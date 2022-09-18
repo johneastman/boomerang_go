@@ -46,7 +46,6 @@ func (p parser) Parse() []node.Node {
 }
 
 func (p *parser) parseStatement() node.Node {
-
 	expression := node.Node{}
 
 	if p.current.Type == tokens.IDENTIFIER && p.peek.Type == tokens.ASSIGN {
@@ -58,11 +57,8 @@ func (p *parser) parseStatement() node.Node {
 
 	} else if p.current.Type == tokens.PRINT {
 		p.advance()
-		if p.current.Type != tokens.OPEN_PAREN {
-			p.expectedToken(tokens.OPEN_PAREN)
-		}
+		p.expectedToken(tokens.OPEN_PAREN)
 
-		p.advance()
 		parameters := p.parseParameters()
 		expression = node.CreatePrintStatement(parameters)
 
@@ -70,11 +66,7 @@ func (p *parser) parseStatement() node.Node {
 		expression = p.parseExpression(LOWEST)
 	}
 
-	// Check that each statements ends with a semicolon
-	if p.current.Type != tokens.SEMICOLON {
-		p.expectedToken(tokens.SEMICOLON)
-	}
-	p.advance()
+	p.expectedToken(tokens.SEMICOLON)
 
 	return expression
 }
@@ -154,5 +146,10 @@ func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
 }
 
 func (p *parser) expectedToken(expectedType string) {
-	panic(fmt.Sprintf("Expected token type %s, got %s", expectedType, p.current.Type))
+	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
+	// the next token.
+	if p.current.Type != expectedType {
+		panic(fmt.Sprintf("Expected token type %s, got %s", expectedType, p.current.Type))
+	}
+	p.advance()
 }
