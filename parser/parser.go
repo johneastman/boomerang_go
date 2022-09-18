@@ -46,29 +46,24 @@ func (p parser) Parse() []node.Node {
 }
 
 func (p *parser) parseStatement() node.Node {
-	expression := node.Node{}
+	defer p.expectedToken(tokens.SEMICOLON)
 
 	if p.current.Type == tokens.IDENTIFIER && p.peek.Type == tokens.ASSIGN {
 		variableName := p.current
 		p.advance()
 		p.advance()
 		variableExpression := p.parseExpression(LOWEST)
-		expression = node.CreateAssignmentStatement(variableName, variableExpression)
+		return node.CreateAssignmentStatement(variableName, variableExpression)
 
 	} else if p.current.Type == tokens.PRINT {
 		p.advance()
 		p.expectedToken(tokens.OPEN_PAREN)
 
 		parameters := p.parseParameters()
-		expression = node.CreatePrintStatement(parameters)
+		return node.CreatePrintStatement(parameters)
 
-	} else {
-		expression = p.parseExpression(LOWEST)
 	}
-
-	p.expectedToken(tokens.SEMICOLON)
-
-	return expression
+	return p.parseExpression(LOWEST)
 }
 
 func (p *parser) parseExpression(precedenceLevel int) node.Node {
