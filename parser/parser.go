@@ -97,6 +97,28 @@ func (p *parser) parsePrefix() node.Node {
 		}
 		p.expectedToken(tokens.CLOSED_PAREN)
 
+	} else if p.current.Type == tokens.FUNCTION {
+		p.advance()
+		p.expectedToken(tokens.OPEN_PAREN)
+
+		parameters := p.parseParameters()
+		p.expectedToken(tokens.OPEN_CURLY_BRACKET)
+
+		statements := []node.Node{}
+		for p.current.Type != tokens.CLOSED_CURLY_BRACKET {
+			statement := p.parseStatement()
+			statements = append(statements, statement)
+		}
+
+		p.expectedToken(tokens.CLOSED_CURLY_BRACKET)
+
+		// if current token == open_paren
+		//    parse parameters
+		//    return function call(function, call_params)
+		// else
+
+		return node.CreateFunction(parameters, statements)
+
 	} else if p.current.Type == tokens.IDENTIFIER {
 		identifier := p.current
 		p.advance()

@@ -12,18 +12,21 @@ type Token struct {
 // Token types
 const (
 	// Symbols
-	PLUS          = "PLUS"
-	MINUS         = "MINUS"
-	ASTERISK      = "ASTERISK"
-	FORWARD_SLASH = "FORWARD_SLASH"
-	SEMICOLON     = "SEMICOLON"
-	OPEN_PAREN    = "OPEN_PAREN"
-	CLOSED_PAREN  = "CLOSED_PAREN"
-	ASSIGN        = "ASSIGN"
-	COMMA         = "COMMA"
+	PLUS                 = "PLUS"
+	MINUS                = "MINUS"
+	ASTERISK             = "ASTERISK"
+	FORWARD_SLASH        = "FORWARD_SLASH"
+	SEMICOLON            = "SEMICOLON"
+	OPEN_PAREN           = "OPEN_PAREN"
+	CLOSED_PAREN         = "CLOSED_PAREN"
+	ASSIGN               = "ASSIGN"
+	COMMA                = "COMMA"
+	OPEN_CURLY_BRACKET   = "OPEN_CURLY_BRACKET"
+	CLOSED_CURLY_BRACKET = "CLOSED_CURLY_BRACKET"
 
 	// Keywords
-	PRINT = "PRINT"
+	PRINT    = "PRINT"
+	FUNCTION = "FUNCTION"
 
 	// Data Types
 	NUMBER = "NUMBER"
@@ -35,6 +38,7 @@ const (
 
 var keywords = map[string]string{
 	"print": PRINT,
+	"func":  FUNCTION,
 }
 
 var symbols = map[byte]string{
@@ -47,6 +51,8 @@ var symbols = map[byte]string{
 	')': CLOSED_PAREN,
 	'=': ASSIGN,
 	',': COMMA,
+	'{': OPEN_CURLY_BRACKET,
+	'}': CLOSED_CURLY_BRACKET,
 }
 
 func getSymbolType(literal byte) string {

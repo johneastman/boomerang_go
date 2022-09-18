@@ -8,10 +8,12 @@ import (
 const (
 	NUMBER                 = "Number"
 	BIN_EXPR               = "BinaryExpression"
+	STMTS                  = "Statements"
 	EXPR                   = "Expression"
 	IDENTIFIER             = "Identifier"
 	OPERATOR               = "Operator"
 	PARAMETER              = "Parameter"
+	FUNCTION               = "Function"
 	BIN_EXPR_LEFT          = "Left"
 	BIN_EXPR_RIGHT         = "Right"
 	UNARY_EXPR             = "UnaryExpression"
@@ -98,6 +100,16 @@ func CreateBinaryExpression(left Node, op tokens.Token, right Node) Node {
 			left,                               // Left Expression
 			{Type: op.Type, Value: op.Literal}, // Operator
 			right,                              // Right Expression
+		},
+	}
+}
+
+func CreateFunction(parameters []Node, statements []Node) Node {
+	return Node{
+		Type: FUNCTION,
+		Params: []Node{
+			{Type: PARAMETER, Params: parameters},
+			{Type: STMTS, Params: statements},
 		},
 	}
 }

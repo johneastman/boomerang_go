@@ -94,6 +94,9 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 	case node.NUMBER:
 		return expr
 
+	case node.FUNCTION:
+		return expr
+
 	case node.IDENTIFIER:
 		variableName := expr.Value
 		if value, ok := e.env[variableName]; ok {
@@ -102,7 +105,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 		panic(fmt.Sprintf("Undefined variable: %s", variableName))
 	}
 
-	panic(fmt.Sprintf("Invalid type %s", expr.Type))
+	panic(fmt.Sprintf("Invalid type %#v", expr.Type))
 }
 
 func (e *evaluator) toFloat(s string) float64 {

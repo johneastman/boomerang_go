@@ -170,3 +170,38 @@ func TestPrintStatement(t *testing.T) {
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
+
+func TestParserFunction(t *testing.T) {
+	tokenizer := tokens.New("func(a, b) { a + b; };")
+	parserObj := parser.New(tokenizer)
+
+	actualAST := parserObj.Parse()
+	expectedAST := []node.Node{
+		{
+			Type: node.FUNCTION,
+			Params: []node.Node{
+				{
+					Type: node.PARAMETER,
+					Params: []node.Node{
+						{Type: node.IDENTIFIER, Value: "a"},
+						{Type: node.IDENTIFIER, Value: "b"},
+					},
+				},
+				{
+					Type: node.STMTS,
+					Params: []node.Node{
+						{
+							Type: node.BIN_EXPR,
+							Params: []node.Node{
+								{Type: node.IDENTIFIER, Value: "a"},
+								{Type: tokens.PLUS, Value: "+"},
+								{Type: node.IDENTIFIER, Value: "b"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}

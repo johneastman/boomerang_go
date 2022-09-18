@@ -6,7 +6,7 @@ import (
 )
 
 func TestSymbols(t *testing.T) {
-	tokenizer := tokens.New("+-*/()=,;")
+	tokenizer := tokens.New("+-*/()=,{};")
 	expectedTokens := []tokens.Token{
 		{Literal: "+", Type: tokens.PLUS},
 		{Literal: "-", Type: tokens.MINUS},
@@ -16,6 +16,8 @@ func TestSymbols(t *testing.T) {
 		{Literal: ")", Type: tokens.CLOSED_PAREN},
 		{Literal: "=", Type: tokens.ASSIGN},
 		{Literal: ",", Type: tokens.COMMA},
+		{Literal: "{", Type: tokens.OPEN_CURLY_BRACKET},
+		{Literal: "}", Type: tokens.CLOSED_CURLY_BRACKET},
 		{Literal: ";", Type: tokens.SEMICOLON},
 	}
 
@@ -29,6 +31,7 @@ func TestTokenizerKeywords(t *testing.T) {
 
 	keywordTokens := []tokens.Token{
 		{Type: tokens.PRINT, Literal: "print"},
+		{Type: tokens.FUNCTION, Literal: "func"},
 	}
 
 	for _, expectedToken := range keywordTokens {

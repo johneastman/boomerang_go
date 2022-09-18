@@ -132,3 +132,37 @@ func TestEvaluatorPrintStatement(t *testing.T) {
 
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
+
+func TestEvaluatorFunction(t *testing.T) {
+	ast := []node.Node{
+		{
+			Type: node.FUNCTION,
+			Params: []node.Node{
+				{
+					Type: node.PARAMETER,
+					Params: []node.Node{
+						{Type: node.IDENTIFIER, Value: "a"},
+						{Type: node.IDENTIFIER, Value: "b"},
+					},
+				},
+				{
+					Type: node.STMTS,
+					Params: []node.Node{
+						{
+							Type: node.BIN_EXPR,
+							Params: []node.Node{
+								{Type: node.IDENTIFIER, Value: "a"},
+								{Type: tokens.PLUS, Value: "+"},
+								{Type: node.IDENTIFIER, Value: "b"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	evaluatorObj := evaluator.New(ast)
+
+	actualResults := evaluatorObj.Evaluate()
+	AssertNodesEqual(t, ast, actualResults)
+}
