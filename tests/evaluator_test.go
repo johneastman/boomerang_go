@@ -7,18 +7,27 @@ import (
 	"testing"
 )
 
-func TestEvaluatorNumber(t *testing.T) {
-	ast := []node.Node{
-		{Type: node.NUMBER, Value: "5"},
-	}
-	evaluatorObj := evaluator.New(ast)
+func TestEvaluatorNumbers(t *testing.T) {
 
-	actualResults := evaluatorObj.Evaluate()
-	expectedResults := []node.Node{
-		{Type: node.NUMBER, Value: "5"},
+	numbers := []string{
+		"5",
+		"3.1415928",
+		"44.357",
 	}
 
-	AssertNodesEqual(t, expectedResults, actualResults)
+	for _, number := range numbers {
+		ast := []node.Node{
+			{Type: node.NUMBER, Value: number},
+		}
+		evaluatorObj := evaluator.New(ast)
+
+		actualResults := evaluatorObj.Evaluate()
+		expectedResults := []node.Node{
+			{Type: node.NUMBER, Value: number},
+		}
+
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
 }
 
 func TestEvaluatorNegativeNumber(t *testing.T) {

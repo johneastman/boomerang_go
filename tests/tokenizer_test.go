@@ -50,6 +50,9 @@ func TestNumbers(t *testing.T) {
 		"9999999999",
 		"1234567890",
 		"9876543210",
+		"1.1",
+		".1",
+		"1234567890.0987654321",
 	}
 
 	for _, source := range numbers {

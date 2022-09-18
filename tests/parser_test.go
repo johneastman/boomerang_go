@@ -4,22 +4,32 @@ import (
 	"boomerang/node"
 	"boomerang/parser"
 	"boomerang/tokens"
+	"fmt"
 	"testing"
 )
 
-func TestParserNumber(t *testing.T) {
-	tokenizer := tokens.New("10;")
-	parserObj := parser.New(tokenizer)
-
-	actualAST := parserObj.Parse()
-	expectedAST := []node.Node{
-		{
-			Type:  node.NUMBER,
-			Value: "10",
-		},
+func TestParserNumbers(t *testing.T) {
+	numbers := []string{
+		"10",
+		"1001",
+		"5.5",
+		"3.14159",
 	}
 
-	AssertNodesEqual(t, expectedAST, actualAST)
+	for _, number := range numbers {
+		tokenizer := tokens.New(fmt.Sprintf("%s;", number))
+		parserObj := parser.New(tokenizer)
+
+		actualAST := parserObj.Parse()
+		expectedAST := []node.Node{
+			{
+				Type:  node.NUMBER,
+				Value: number,
+			},
+		}
+
+		AssertNodesEqual(t, expectedAST, actualAST)
+	}
 }
 
 func TestParserNegativeNumber(t *testing.T) {

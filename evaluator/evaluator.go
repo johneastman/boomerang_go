@@ -61,7 +61,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 		expression := e.evaluateExpression(expr.GetParam(node.EXPR))
 		operator := expr.GetParam(node.OPERATOR)
 		if operator.Type == tokens.MINUS {
-			expressionValue := -e.toInt(expression.Value)
+			expressionValue := -e.toFloat(expression.Value)
 			return e.createNumberNode(expressionValue)
 		}
 		panic(fmt.Sprintf("Invalid unary operator: %s", expr.Type))
@@ -73,19 +73,19 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 
 		switch op.Type {
 		case tokens.PLUS:
-			result := e.toInt(left.Value) + e.toInt(right.Value)
+			result := e.toFloat(left.Value) + e.toFloat(right.Value)
 			return e.createNumberNode(result)
 		case tokens.MINUS:
-			result := e.toInt(left.Value) - e.toInt(right.Value)
+			result := e.toFloat(left.Value) - e.toFloat(right.Value)
 			return e.createNumberNode(result)
 		case tokens.ASTERISK:
-			result := e.toInt(left.Value) * e.toInt(right.Value)
+			result := e.toFloat(left.Value) * e.toFloat(right.Value)
 			return e.createNumberNode(result)
 		case tokens.FORWARD_SLASH:
 			if right.Value == "0" {
 				panic("Cannot divide by zero.")
 			}
-			result := e.toInt(left.Value) / e.toInt(right.Value)
+			result := e.toFloat(left.Value) / e.toFloat(right.Value)
 			return e.createNumberNode(result)
 		default:
 			panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
@@ -105,14 +105,14 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 	panic(fmt.Sprintf("Invalid type %s", expr.Type))
 }
 
-func (e *evaluator) toInt(s string) int {
-	intVal, err := strconv.Atoi(s)
+func (e *evaluator) toFloat(s string) float64 {
+	intVal, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		panic(fmt.Sprintf("Cannot convert string to int: %s", s))
+		panic(fmt.Sprintf("Cannot convert string to number: %s", s))
 	}
 	return intVal
 }
 
-func (e *evaluator) createNumberNode(value int) node.Node {
-	return node.Node{Type: node.NUMBER, Value: fmt.Sprint(value)}
+func (e *evaluator) createNumberNode(value float64) node.Node {
+	return node.CreateNumber(fmt.Sprint(value))
 }

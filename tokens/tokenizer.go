@@ -1,5 +1,10 @@
 package tokens
 
+import (
+	"fmt"
+	"regexp"
+)
+
 type Tokenizer struct {
 	source     string
 	currentPos int
@@ -51,7 +56,7 @@ func (t *Tokenizer) readIdentifier() string {
 
 func (t *Tokenizer) isNumber() bool {
 	char := t.current()
-	return '0' <= char && char <= '9'
+	return '0' <= char && char <= '9' || char == '.'
 }
 
 func (t *Tokenizer) readNumber() string {
@@ -77,6 +82,12 @@ func (t *Tokenizer) Next() Token {
 		return Token{Literal: literal, Type: tokenType}
 	} else if t.isNumber() {
 		literal := t.readNumber()
+
+		r, _ := regexp.Compile("^([0-9]*[.])?[0-9]+$")
+		if !r.MatchString(literal) {
+			panic(fmt.Sprintf("Invalid number literal: %s", literal))
+		}
+
 		return Token{Literal: literal, Type: NUMBER}
 	}
 
