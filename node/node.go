@@ -1,6 +1,9 @@
 package node
 
-import "fmt"
+import (
+	"boomerang/tokens"
+	"fmt"
+)
 
 const (
 	NUMBER                 = "Number"
@@ -51,4 +54,50 @@ func (n *Node) GetParam(key string) Node {
 
 func (n *Node) String() string {
 	return fmt.Sprintf("Node(Type: %s, Value: %s)", n.Type, n.Value)
+}
+
+func CreateAssignmentStatement(name tokens.Token, value Node) Node {
+	return Node{
+		Type: ASSIGN_STMT,
+		Params: []Node{
+			{Type: name.Type, Value: name.Literal},
+			value,
+		},
+	}
+}
+
+func CreatePrintStatement(params []Node) Node {
+	return Node{
+		Type:   PRINT_STMT,
+		Params: params,
+	}
+}
+
+func CreateUnaryExpression(operator tokens.Token, expression Node) Node {
+	return Node{
+		Type: UNARY_EXPR,
+		Params: []Node{
+			{Type: operator.Type, Value: operator.Literal}, // Operator
+			expression, // Expression
+		},
+	}
+}
+
+func CreateIdentifier(name string) Node {
+	return Node{Type: IDENTIFIER, Value: name}
+}
+
+func CreateNumber(value string) Node {
+	return Node{Type: NUMBER, Value: value}
+}
+
+func CreateBinaryExpression(left Node, op tokens.Token, right Node) Node {
+	return Node{
+		Type: BIN_EXPR,
+		Params: []Node{
+			left,                               // Left Expression
+			{Type: op.Type, Value: op.Literal}, // Operator
+			right,                              // Right Expression
+		},
+	}
 }

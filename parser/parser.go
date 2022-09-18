@@ -54,13 +54,8 @@ func (p *parser) parseStatement() node.Node {
 		p.advance()
 		p.advance()
 		variableExpression := p.parseExpression(LOWEST)
-		expression = node.Node{
-			Type: node.ASSIGN_STMT,
-			Params: []node.Node{
-				{Type: variableName.Type, Value: variableName.Literal}, // Variable Name
-				variableExpression, // Variable Expression
-			},
-		}
+		expression = node.CreateAssignmentStatement(variableName, variableExpression)
+
 	} else if p.current.Type == tokens.PRINT {
 		p.advance()
 		if p.current.Type != tokens.OPEN_PAREN {
@@ -68,16 +63,14 @@ func (p *parser) parseStatement() node.Node {
 		}
 
 		p.advance()
-
-		expression = node.Node{
-			Type:   node.PRINT_STMT,
-			Params: p.parseParameters(),
-		}
+		parameters := p.parseParameters()
+		expression = node.CreatePrintStatement(parameters)
 
 	} else {
 		expression = p.parseExpression(LOWEST)
 	}
 
+	// Check that each statements ends with a semicolon
 	if p.current.Type != tokens.SEMICOLON {
 		p.expectedToken(tokens.SEMICOLON)
 	}
@@ -98,21 +91,15 @@ func (p *parser) parseExpression(precedenceLevel int) node.Node {
 
 func (p *parser) parsePrefix() node.Node {
 	if p.current.Type == tokens.NUMBER {
-		val := p.current.Literal
+		value := p.current.Literal
 		p.advance()
-		return node.Node{Type: node.NUMBER, Value: val}
+		return node.CreateNumber(value)
 
 	} else if p.current.Type == tokens.MINUS {
 		op := p.current
 		p.advance()
 		expression := p.parsePrefix()
-		return node.Node{
-			Type: node.UNARY_EXPR,
-			Params: []node.Node{
-				{Type: op.Type, Value: op.Literal}, // Operator
-				expression,                         // Expression
-			},
-		}
+		return node.CreateUnaryExpression(op, expression)
 
 	} else if p.current.Type == tokens.OPEN_PAREN {
 		p.advance()
@@ -126,7 +113,7 @@ func (p *parser) parsePrefix() node.Node {
 	} else if p.current.Type == tokens.IDENTIFIER {
 		identifier := p.current
 		p.advance()
-		return node.Node{Type: node.IDENTIFIER, Value: identifier.Literal}
+		return node.CreateIdentifier(identifier.Literal)
 	}
 
 	panic(fmt.Sprintf("Invalid prefix: %s", p.current.Type))
@@ -136,14 +123,7 @@ func (p *parser) parseInfix(left node.Node) node.Node {
 	op := p.current
 	p.advance()
 	right := p.parseExpression(p.getPrecedenceLevel(op))
-	return node.Node{
-		Type: node.BIN_EXPR,
-		Params: []node.Node{
-			left,                               // Left Expression
-			{Type: op.Type, Value: op.Literal}, // Operator
-			right,                              // Right Expression
-		},
-	}
+	return node.CreateBinaryExpression(left, op, right)
 }
 
 func (p *parser) parseParameters() []node.Node {
