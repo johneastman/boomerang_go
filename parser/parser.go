@@ -111,18 +111,16 @@ func (p *parser) parsePrefix() node.Node {
 		}
 
 		p.expectedToken(tokens.CLOSED_CURLY_BRACKET)
+		functionNode := node.CreateFunction(parameters, statements)
 
-		// if current token == open_paren
-		//    parse parameters
-		//    return function call(function, call_params)
-		// else
-
-		return node.CreateFunction(parameters, statements)
+		return p.parseFunctionCall(functionNode)
 
 	} else if p.current.Type == tokens.IDENTIFIER {
 		identifier := p.current
 		p.advance()
-		return node.CreateIdentifier(identifier.Literal)
+
+		identifierNode := node.CreateIdentifier(identifier.Literal)
+		return p.parseFunctionCall(identifierNode)
 	}
 
 	panic(fmt.Sprintf("Invalid prefix: %s", p.current.Type))
@@ -169,4 +167,21 @@ func (p *parser) expectedToken(expectedType string) {
 		panic(fmt.Sprintf("Expected token type %s, got %s", expectedType, p.current.Type))
 	}
 	p.advance()
+}
+
+func (p *parser) parseFunctionCall(functionNode node.Node) node.Node {
+	// If the current token is an open parenthesis, assume the expression is a function call. Otherwise, just return
+	// the passed-in node object, which could be an identifier node or a function node.
+	if p.current.Type == tokens.OPEN_PAREN {
+		p.advance()
+		parameters := p.parseParameters()
+		return node.Node{
+			Type: node.FUNCTION_CALL,
+			Params: []node.Node{
+				{Type: node.CALL_PARAMS, Params: parameters},
+				functionNode,
+			},
+		}
+	}
+	return functionNode
 }

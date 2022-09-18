@@ -166,3 +166,54 @@ func TestEvaluatorFunction(t *testing.T) {
 	actualResults := evaluatorObj.Evaluate()
 	AssertNodesEqual(t, ast, actualResults)
 }
+
+func TestFunctionCallOnFunctionLiteral(t *testing.T) {
+	functionNode := node.Node{
+		Type: node.FUNCTION,
+		Params: []node.Node{
+			{
+				Type: node.PARAMETER,
+				Params: []node.Node{
+					{Type: node.IDENTIFIER, Value: "c"},
+					{Type: node.IDENTIFIER, Value: "d"},
+				},
+			},
+			{
+				Type: node.STMTS,
+				Params: []node.Node{
+					{
+						Type: node.BIN_EXPR,
+						Params: []node.Node{
+							{Type: node.IDENTIFIER, Value: "c"},
+							{Type: tokens.MINUS, Value: "-"},
+							{Type: node.IDENTIFIER, Value: "d"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	ast := []node.Node{
+		{
+			Type: node.FUNCTION_CALL,
+			Params: []node.Node{
+				{
+					Type: node.CALL_PARAMS, Params: []node.Node{
+						{Type: node.NUMBER, Value: "10"},
+						{Type: node.NUMBER, Value: "2"},
+					},
+				},
+				functionNode,
+			},
+		},
+	}
+
+	evaluatorObj := evaluator.New(ast)
+
+	actualResults := evaluatorObj.Evaluate()
+	expectedResults := []node.Node{
+		{Type: node.NUMBER, Value: "8"},
+	}
+	AssertNodesEqual(t, expectedResults, actualResults)
+}

@@ -20,8 +20,12 @@ func New(ast []node.Node) evaluator {
 }
 
 func (e *evaluator) Evaluate() []node.Node {
+	return e.evaluateStatements(e.ast)
+}
+
+func (e *evaluator) evaluateStatements(stmts []node.Node) []node.Node {
 	results := []node.Node{}
-	for _, stmt := range e.ast {
+	for _, stmt := range stmts {
 		if result, isExpr := e.evaluateStatement(stmt); isExpr {
 			results = append(results, *result)
 		}
@@ -97,12 +101,47 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 	case node.FUNCTION:
 		return expr
 
-	case node.IDENTIFIER:
-		variableName := expr.Value
-		if value, ok := e.env[variableName]; ok {
-			return value
+	case node.FUNCTION_CALL:
+		callParams := expr.GetParam(node.CALL_PARAMS) // Parameters pass to function
+		function := expr.GetParamByIndex(1)
+
+		if function.Type == node.IDENTIFIER {
+			// If the function object is an identifier, retireve the actual function object from the environment
+			function = e.getVariable(function.Value)
 		}
-		panic(fmt.Sprintf("Undefined variable: %s", variableName))
+
+		// Assert that the function object is, in fact, a callable function
+		if function.Type != node.FUNCTION {
+			panic(fmt.Sprintf("Cannot make function call on type %s", function.Type))
+		}
+
+		// Check that the number of arguments passed to the function matches the number of arguments in the function definition
+		functionParams := function.GetParam(node.PARAMETER) // Parameters included in function definition
+		if len(callParams.Params) != len(functionParams.Params) {
+			panic(fmt.Sprintf("Expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params)))
+		}
+
+		tmpEnv := e.env
+		e.env = map[string]node.Node{}
+
+		// Set parameters to environment
+		for i := range callParams.Params {
+			functionParam := functionParams.Params[i]
+			callParam := callParams.Params[i]
+
+			e.env[functionParam.Value] = e.evaluateExpression(callParam)
+		}
+
+		functionResults := e.evaluateStatements(function.GetParam(node.STMTS).Params)
+		if len(functionResults) == 0 {
+			panic("Function returns nothing")
+		}
+
+		e.env = tmpEnv
+		return functionResults[len(functionResults)-1] // Return the results of the last statement in the function
+
+	case node.IDENTIFIER:
+		return e.getVariable(expr.Value)
 	}
 
 	panic(fmt.Sprintf("Invalid type %#v", expr.Type))
@@ -118,4 +157,11 @@ func (e *evaluator) toFloat(s string) float64 {
 
 func (e *evaluator) createNumberNode(value float64) node.Node {
 	return node.CreateNumber(fmt.Sprint(value))
+}
+
+func (e *evaluator) getVariable(name string) node.Node {
+	if value, ok := e.env[name]; ok {
+		return value
+	}
+	panic(fmt.Sprintf("Undefined variable: %s", name))
 }

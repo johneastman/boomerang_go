@@ -13,7 +13,9 @@ const (
 	IDENTIFIER             = "Identifier"
 	OPERATOR               = "Operator"
 	PARAMETER              = "Parameter"
+	CALL_PARAMS            = "FunctionCallParameters"
 	FUNCTION               = "Function"
+	FUNCTION_CALL          = "FunctionCall"
 	BIN_EXPR_LEFT          = "Left"
 	BIN_EXPR_RIGHT         = "Right"
 	UNARY_EXPR             = "UnaryExpression"
@@ -36,6 +38,14 @@ var indexMap = map[string]map[string]int{
 		OPERATOR: 0,
 		EXPR:     1,
 	},
+	FUNCTION: {
+		PARAMETER: 0,
+		STMTS:     1,
+	},
+	FUNCTION_CALL: {
+		CALL_PARAMS: 0,
+		FUNCTION:    1,
+	},
 }
 
 type Node struct {
@@ -52,6 +62,10 @@ func (n *Node) GetParam(key string) Node {
 		panic(fmt.Sprintf("Invalid parameter: %s", key))
 	}
 	panic(fmt.Sprintf("Invalid statement type: %s", n.Type))
+}
+
+func (n *Node) GetParamByIndex(index int) Node {
+	return n.Params[index]
 }
 
 func (n *Node) String() string {
