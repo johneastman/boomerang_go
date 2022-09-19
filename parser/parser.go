@@ -98,22 +98,7 @@ func (p *parser) parsePrefix() node.Node {
 		p.expectedToken(tokens.CLOSED_PAREN)
 
 	} else if p.current.Type == tokens.FUNCTION {
-		p.advance()
-		p.expectedToken(tokens.OPEN_PAREN)
-
-		parameters := p.parseParameters()
-		p.expectedToken(tokens.OPEN_CURLY_BRACKET)
-
-		statements := []node.Node{}
-		for p.current.Type != tokens.CLOSED_CURLY_BRACKET {
-			statement := p.parseStatement()
-			statements = append(statements, statement)
-		}
-
-		p.expectedToken(tokens.CLOSED_CURLY_BRACKET)
-		functionNode := node.CreateFunction(parameters, statements)
-
-		return p.parseFunctionCall(functionNode)
+		return p.parseFunction()
 
 	} else if p.current.Type == tokens.IDENTIFIER {
 		identifier := p.current
@@ -135,7 +120,12 @@ func (p *parser) parseInfix(left node.Node) node.Node {
 
 func (p *parser) parseParameters() []node.Node {
 	params := []node.Node{}
-	for p.current.Type != tokens.CLOSED_PAREN {
+	for {
+		if p.current.Type == tokens.CLOSED_PAREN {
+			p.advance()
+			break
+		}
+
 		expression := p.parseExpression(LOWEST)
 		params = append(params, expression)
 
@@ -143,13 +133,26 @@ func (p *parser) parseParameters() []node.Node {
 			p.advance()
 			continue
 		}
-
-		if p.current.Type == tokens.CLOSED_PAREN {
-			p.advance()
-			break
-		}
 	}
 	return params
+}
+
+func (p *parser) parseFunction() node.Node {
+	p.advance()
+	p.expectedToken(tokens.OPEN_PAREN)
+
+	parameters := p.parseParameters()
+	p.expectedToken(tokens.OPEN_CURLY_BRACKET)
+
+	statements := []node.Node{}
+	for p.current.Type != tokens.CLOSED_CURLY_BRACKET {
+		statement := p.parseStatement()
+		statements = append(statements, statement)
+	}
+
+	p.expectedToken(tokens.CLOSED_CURLY_BRACKET)
+	functionNode := node.CreateFunction(parameters, statements)
+	return p.parseFunctionCall(functionNode)
 }
 
 func (p *parser) getPrecedenceLevel(operator tokens.Token) int {

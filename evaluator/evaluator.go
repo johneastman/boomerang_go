@@ -103,7 +103,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 
 	case node.FUNCTION_CALL:
 		callParams := expr.GetParam(node.CALL_PARAMS) // Parameters pass to function
-		function := expr.GetParamByIndex(1)
+		function := expr.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
 
 		if function.Type == node.IDENTIFIER {
 			// If the function object is an identifier, retireve the actual function object from the environment

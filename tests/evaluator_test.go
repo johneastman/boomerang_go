@@ -133,6 +133,26 @@ func TestEvaluator_PrintStatement(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
+func TestEvaluator_PrintStatementNoArguments(t *testing.T) {
+	ast := []node.Node{
+		{
+			Type:   node.PRINT_STMT,
+			Params: []node.Node{},
+		},
+	}
+
+	evaluatorObj := evaluator.New(ast)
+
+	actualResults := []node.Node{}
+	expectedResults := []node.Node{}
+
+	AssertExpectedOutput(t, "", func() {
+		actualResults = evaluatorObj.Evaluate()
+	})
+
+	AssertNodesEqual(t, expectedResults, actualResults)
+}
+
 func TestEvaluator_Function(t *testing.T) {
 	ast := []node.Node{
 		CreateFunction(
@@ -216,6 +236,34 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
 		{Type: node.NUMBER, Value: "5"},
+	}
+	AssertNodesEqual(t, expectedResults, actualResults)
+}
+
+func TestEvaluator_FunctionCallWithNoParameters(t *testing.T) {
+	function := CreateFunction(
+		[]string{},
+		[]node.Node{
+			{
+				Type: node.BIN_EXPR,
+				Params: []node.Node{
+					{Type: node.NUMBER, Value: "3"},
+					{Type: tokens.PLUS, Value: "+"},
+					{Type: node.NUMBER, Value: "4"},
+				},
+			},
+		},
+	)
+
+	ast := []node.Node{
+		CreateFunctionCall(function, []node.Node{}),
+	}
+
+	evaluatorObj := evaluator.New(ast)
+
+	actualResults := evaluatorObj.Evaluate()
+	expectedResults := []node.Node{
+		{Type: node.NUMBER, Value: "7"},
 	}
 	AssertNodesEqual(t, expectedResults, actualResults)
 }

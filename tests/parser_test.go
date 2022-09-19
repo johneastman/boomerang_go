@@ -171,37 +171,76 @@ func TestParser_PrintStatement(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
+func TestParser_PrintStatementNoArguments(t *testing.T) {
+	tokenizer := tokens.New("print();")
+	parserObj := parser.New(tokenizer)
+
+	actualAST := parserObj.Parse()
+	expectedAST := []node.Node{
+		{
+			Type:   node.PRINT_STMT,
+			Params: []node.Node{},
+		},
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
 func TestParser_Function(t *testing.T) {
 	tokenizer := tokens.New("func(a, b) { a + b; };")
 	parserObj := parser.New(tokenizer)
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type: node.FUNCTION,
-			Params: []node.Node{
+		CreateFunction(
+			[]string{"a", "b"},
+			[]node.Node{
 				{
-					Type: node.PARAMETER,
+					Type: node.BIN_EXPR,
 					Params: []node.Node{
 						{Type: node.IDENTIFIER, Value: "a"},
+						{Type: tokens.PLUS, Value: "+"},
 						{Type: node.IDENTIFIER, Value: "b"},
 					},
 				},
+			},
+		),
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
+func TestParser_FunctionNoParameters(t *testing.T) {
+	tokenizer := tokens.New("func() { 3 + 4; };")
+	parserObj := parser.New(tokenizer)
+
+	actualAST := parserObj.Parse()
+	expectedAST := []node.Node{
+		CreateFunction(
+			[]string{},
+			[]node.Node{
 				{
-					Type: node.STMTS,
+					Type: node.BIN_EXPR,
 					Params: []node.Node{
-						{
-							Type: node.BIN_EXPR,
-							Params: []node.Node{
-								{Type: node.IDENTIFIER, Value: "a"},
-								{Type: tokens.PLUS, Value: "+"},
-								{Type: node.IDENTIFIER, Value: "b"},
-							},
-						},
+						{Type: node.NUMBER, Value: "3"},
+						{Type: tokens.PLUS, Value: "+"},
+						{Type: node.NUMBER, Value: "4"},
 					},
 				},
 			},
-		},
+		),
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
+func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
+	tokenizer := tokens.New("func() {};")
+	parserObj := parser.New(tokenizer)
+
+	actualAST := parserObj.Parse()
+	expectedAST := []node.Node{
+		CreateFunction(
+			[]string{},
+			[]node.Node{},
+		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
