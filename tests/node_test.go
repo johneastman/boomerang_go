@@ -224,3 +224,53 @@ func TestNode_CreateParameters(t *testing.T) {
 
 	AssertNodeEqual(t, expectedNode, actualNode)
 }
+
+func TestNode_String(t *testing.T) {
+
+	type StringTest struct {
+		Node   node.Node
+		String string
+	}
+
+	tests := []StringTest{
+		{
+			Node:   node.CreateNumber("1"),
+			String: "1",
+		},
+		{
+			Node:   node.CreateNumber("2"),
+			String: "2",
+		},
+		{
+			Node: node.CreateParameters([]node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+				node.CreateNumber("3"),
+			}),
+			String: "(1, 2, 3)",
+		},
+		{
+			Node: node.CreateParameters([]node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+				node.CreateNumber("3"),
+				node.CreateParameters([]node.Node{
+					node.CreateNumber("5"),
+					node.CreateNumber("7"),
+					node.CreateNumber("6"),
+				}),
+				node.CreateNumber("4"),
+			}),
+			String: "(1, 2, 3, (5, 7, 6), 4)",
+		},
+	}
+
+	for _, test := range tests {
+		actualNodeString := test.Node.String()
+		expectedNodeString := test.String
+
+		if expectedNodeString != actualNodeString {
+			t.Fatalf("Expected string: %#v, Actual string: %#v", expectedNodeString, actualNodeString)
+		}
+	}
+}

@@ -108,7 +108,18 @@ func (n *Node) getParam(key string) (*Node, error) {
 }
 
 func (n *Node) String() string {
-	return fmt.Sprintf("Node(Type: %s, Value: %s)", n.Type, n.Value)
+	if n.Type == PARAMETER {
+		var s string
+		for i, param := range n.Params {
+			if i < len(n.Params)-1 {
+				s += fmt.Sprintf("%s, ", param.String())
+			} else {
+				s += param.String()
+			}
+		}
+		return fmt.Sprintf("(%s)", s)
+	}
+	return n.Value
 }
 
 func CreateTokenNode(token tokens.Token) Node {

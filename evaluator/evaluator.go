@@ -45,9 +45,9 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool) {
 			evaluatedParam := e.evaluateExpression(node)
 
 			if i < len(stmt.Params)-1 {
-				fmt.Printf("%s ", evaluatedParam.Value)
+				fmt.Printf("%s ", evaluatedParam.String())
 			} else {
-				fmt.Println(evaluatedParam.Value)
+				fmt.Println(evaluatedParam.String())
 			}
 		}
 		return nil, false
