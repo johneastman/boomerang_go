@@ -266,10 +266,14 @@ func TestParser_FunctionCallWithFunctionLiteral(t *testing.T) {
 	)
 
 	expectedAST := []node.Node{
-		CreateFunctionCall(functionNode, []node.Node{
-			{Type: node.NUMBER, Value: "10"},
-			{Type: node.NUMBER, Value: "2"},
-		}),
+		node.CreateBinaryExpression(
+			functionNode,
+			tokens.Token{Type: tokens.OPEN_PAREN, Literal: "("},
+			node.Node{Type: node.PARAMETER, Params: []node.Node{
+				{Type: node.NUMBER, Value: "10"},
+				{Type: node.NUMBER, Value: "2"},
+			}},
+		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
@@ -280,12 +284,13 @@ func TestParser_FunctionCallWithIdentifier(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		CreateFunctionCall(
+		node.CreateBinaryExpression(
 			node.Node{Type: node.IDENTIFIER, Value: "multiply"},
-			[]node.Node{
+			tokens.Token{Type: tokens.OPEN_PAREN, Literal: "("},
+			node.Node{Type: node.PARAMETER, Params: []node.Node{
 				{Type: node.NUMBER, Value: "10"},
 				{Type: node.NUMBER, Value: "3"},
-			},
+			}},
 		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)

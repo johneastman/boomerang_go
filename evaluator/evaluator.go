@@ -61,6 +61,18 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 
 	switch expr.Type {
 
+	case node.NUMBER:
+		return expr
+
+	case node.FUNCTION:
+		return expr
+
+	case node.PARAMETER:
+		return expr
+
+	case node.IDENTIFIER:
+		return e.getVariable(expr.Value)
+
 	case node.UNARY_EXPR:
 		expression := e.evaluateExpression(expr.GetParam(node.EXPR))
 		operator := expr.GetParam(node.OPERATOR)
@@ -91,15 +103,19 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 			}
 			result := e.toFloat(left.Value) / e.toFloat(right.Value)
 			return e.createNumberNode(result)
+		case tokens.OPEN_PAREN:
+			functionCall := node.Node{
+				Type: node.FUNCTION_CALL,
+				Params: []node.Node{
+					{Type: node.CALL_PARAMS, Params: right.Params},
+					left,
+				},
+			}
+			return e.evaluateExpression(functionCall)
+
 		default:
 			panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
 		}
-
-	case node.NUMBER:
-		return expr
-
-	case node.FUNCTION:
-		return expr
 
 	case node.FUNCTION_CALL:
 		callParams := expr.GetParam(node.CALL_PARAMS) // Parameters pass to function
@@ -139,9 +155,6 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 
 		e.env = tmpEnv
 		return functionResults[len(functionResults)-1] // Return the results of the last statement in the function
-
-	case node.IDENTIFIER:
-		return e.getVariable(expr.Value)
 	}
 
 	panic(fmt.Sprintf("Invalid type %#v", expr.Type))

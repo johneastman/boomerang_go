@@ -7,12 +7,14 @@ import (
 )
 
 const (
-	LOWEST  = 1
-	SUM     = 2
-	PRODUCT = 3
+	LOWEST    = 1
+	FUNC_CALL = 2
+	SUM       = 3
+	PRODUCT   = 4
 )
 
 var precedenceLevels = map[string]int{
+	tokens.OPEN_PAREN:    FUNC_CALL,
 	tokens.PLUS:          SUM,
 	tokens.MINUS:         SUM,
 	tokens.ASTERISK:      PRODUCT,
@@ -60,7 +62,7 @@ func (p *parser) parseStatement() node.Node {
 		p.expectedToken(tokens.OPEN_PAREN)
 
 		parameters := p.parseParameters()
-		return node.CreatePrintStatement(parameters)
+		return node.CreatePrintStatement(parameters.Params)
 
 	}
 	return p.parseExpression(LOWEST)
@@ -104,21 +106,27 @@ func (p *parser) parsePrefix() node.Node {
 		identifier := p.current
 		p.advance()
 
-		identifierNode := node.CreateIdentifier(identifier.Literal)
-		return p.parseFunctionCall(identifierNode)
+		return node.CreateIdentifier(identifier.Literal)
 	}
 
 	panic(fmt.Sprintf("Invalid prefix: %s", p.current.Type))
 }
 
 func (p *parser) parseInfix(left node.Node) node.Node {
+	var right node.Node
+
 	op := p.current
 	p.advance()
-	right := p.parseExpression(p.getPrecedenceLevel(op))
+	if op.Type == tokens.OPEN_PAREN {
+		// If the operator is an open parenthesis, then the operation is a function call
+		right = p.parseParameters()
+	} else {
+		right = p.parseExpression(p.getPrecedenceLevel(op))
+	}
 	return node.CreateBinaryExpression(left, op, right)
 }
 
-func (p *parser) parseParameters() []node.Node {
+func (p *parser) parseParameters() node.Node {
 	params := []node.Node{}
 	for {
 		if p.current.Type == tokens.CLOSED_PAREN {
@@ -134,7 +142,7 @@ func (p *parser) parseParameters() []node.Node {
 			continue
 		}
 	}
-	return params
+	return node.Node{Type: node.PARAMETER, Params: params}
 }
 
 func (p *parser) parseFunction() node.Node {
@@ -151,8 +159,7 @@ func (p *parser) parseFunction() node.Node {
 	}
 
 	p.expectedToken(tokens.CLOSED_CURLY_BRACKET)
-	functionNode := node.CreateFunction(parameters, statements)
-	return p.parseFunctionCall(functionNode)
+	return node.CreateFunction(parameters.Params, statements)
 }
 
 func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
@@ -170,21 +177,4 @@ func (p *parser) expectedToken(expectedType string) {
 		panic(fmt.Sprintf("Expected token type %s, got %s", expectedType, p.current.Type))
 	}
 	p.advance()
-}
-
-func (p *parser) parseFunctionCall(functionNode node.Node) node.Node {
-	// If the current token is an open parenthesis, assume the expression is a function call. Otherwise, just return
-	// the passed-in node object, which could be an identifier node or a function node.
-	if p.current.Type == tokens.OPEN_PAREN {
-		p.advance()
-		parameters := p.parseParameters()
-		return node.Node{
-			Type: node.FUNCTION_CALL,
-			Params: []node.Node{
-				{Type: node.CALL_PARAMS, Params: parameters},
-				functionNode,
-			},
-		}
-	}
-	return functionNode
 }
