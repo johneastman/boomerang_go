@@ -21,6 +21,8 @@ EXPRESSION:
 - SUBTRACT('-')
 - MULTIPLY('*')
 - DIVIDE('/')
+- LEFT_POINTER('<-')
+- RIGHT_POINTER('->')
 - FACTOR
 FACTOR:
 - NUMBER('float64')
