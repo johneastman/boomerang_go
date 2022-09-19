@@ -14,7 +14,7 @@ const (
 )
 
 var precedenceLevels = map[string]int{
-	tokens.OPEN_PAREN_TOKEN.Type:    FUNC_CALL,
+	tokens.POINTER_TOKEN.Type:       FUNC_CALL,
 	tokens.PLUS_TOKEN.Type:          SUM,
 	tokens.MINUS_TOKEN.Type:         SUM,
 	tokens.ASTERISK_TOKEN.Type:      PRODUCT,
@@ -101,7 +101,16 @@ func (p *parser) parsePrefix() node.Node {
 		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
 			p.advance()
 			return expression
+
+		} else if tokens.TokenTypesEqual(p.current, tokens.COMMA_TOKEN) {
+			p.advance()
+			stmts := []node.Node{expression}
+
+			additionalParams := p.parseParameters()
+			stmts = append(stmts, additionalParams.Params...)
+			return node.CreateParameters(stmts)
 		}
+
 		p.expectedToken(tokens.CLOSED_PAREN_TOKEN)
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.FUNCTION_TOKEN) {
@@ -118,16 +127,9 @@ func (p *parser) parsePrefix() node.Node {
 }
 
 func (p *parser) parseInfix(left node.Node) node.Node {
-	var right node.Node
-
 	op := p.current
 	p.advance()
-	if op.Type == tokens.OPEN_PAREN {
-		// If the operator is an open parenthesis, then the operation is a function call
-		right = p.parseParameters()
-	} else {
-		right = p.parseExpression(p.getPrecedenceLevel(op))
-	}
+	right := p.parseExpression(p.getPrecedenceLevel(op))
 	return node.CreateBinaryExpression(left, op, right)
 }
 

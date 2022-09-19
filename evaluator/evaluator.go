@@ -103,7 +103,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 			}
 			result := e.toFloat(left.Value) / e.toFloat(right.Value)
 			return e.createNumberNode(result)
-		case tokens.OPEN_PAREN:
+		case tokens.POINTER:
 			functionCall := node.CreateFunctionCall(left, right.Params)
 			return e.evaluateExpression(functionCall)
 

@@ -27,10 +27,12 @@ const (
 	NUMBER               = "NUMBER"
 	IDENTIFIER           = "IDENTIFIER"
 	EOF                  = "EOF"
+	POINTER              = "POINTER"
 )
 
 // Tokens
 var (
+	// Symbols
 	PLUS_TOKEN                 = getToken(PLUS)
 	MINUS_TOKEN                = getToken(MINUS)
 	ASTERISK_TOKEN             = getToken(ASTERISK)
@@ -42,6 +44,7 @@ var (
 	COMMA_TOKEN                = getToken(COMMA)
 	OPEN_CURLY_BRACKET_TOKEN   = getToken(OPEN_CURLY_BRACKET)
 	CLOSED_CURLY_BRACKET_TOKEN = getToken(CLOSED_CURLY_BRACKET)
+	POINTER_TOKEN              = getToken(POINTER)
 
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
@@ -72,6 +75,7 @@ var tokenData = map[string]Token{
 	FUNCTION:             {Type: "FUNCTION", Literal: "func"},
 	NUMBER:               {Type: "NUMBER", Literal: ""},
 	IDENTIFIER:           {Type: "IDENTIFIER", Literal: ""},
+	POINTER:              {Type: "POINTER", Literal: "<-"},
 }
 
 func getToken(name string) Token {

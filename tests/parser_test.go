@@ -210,7 +210,7 @@ func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
 }
 
 func TestParser_FunctionCallWithFunctionLiteral(t *testing.T) {
-	tokenizer := tokens.New("func(c, d) { d - c; }(10, 2);")
+	tokenizer := tokens.New("func(c, d) { d - c; } <- (10, 2);")
 	parserObj := parser.New(tokenizer)
 
 	actualAST := parserObj.Parse()
@@ -232,7 +232,7 @@ func TestParser_FunctionCallWithFunctionLiteral(t *testing.T) {
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			functionNode,
-			tokens.Token{Type: tokens.OPEN_PAREN, Literal: "("},
+			tokens.POINTER_TOKEN,
 			node.CreateParameters([]node.Node{
 				node.CreateNumber("10"),
 				node.CreateNumber("2"),
@@ -243,14 +243,14 @@ func TestParser_FunctionCallWithFunctionLiteral(t *testing.T) {
 }
 
 func TestParser_FunctionCallWithIdentifier(t *testing.T) {
-	tokenizer := tokens.New("multiply(10, 3);")
+	tokenizer := tokens.New("multiply <- (10, 3);")
 	parserObj := parser.New(tokenizer)
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			node.CreateIdentifier("multiply"),
-			tokens.OPEN_PAREN_TOKEN,
+			tokens.POINTER_TOKEN,
 			node.CreateParameters([]node.Node{
 				node.CreateNumber("10"),
 				node.CreateNumber("3"),
