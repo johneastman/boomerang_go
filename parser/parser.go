@@ -40,7 +40,7 @@ func (p *parser) advance() {
 
 func (p parser) Parse() []node.Node {
 	statements := []node.Node{}
-	for p.current != tokens.EOF_TOKEN {
+	for !tokens.TokenTypesEqual(p.current, tokens.EOF_TOKEN) {
 		stmt := p.parseStatement()
 		statements = append(statements, stmt)
 	}
@@ -51,14 +51,14 @@ func (p *parser) parseStatement() node.Node {
 
 	var statement node.Node
 
-	if p.current.Type == tokens.IDENTIFIER_TOKEN.Type && p.peek.Type == tokens.ASSIGN_TOKEN.Type {
+	if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER_TOKEN) && tokens.TokenTypesEqual(p.peek, tokens.ASSIGN_TOKEN) {
 		variableName := p.current.Literal
 		p.advance()
 		p.advance()
 		variableExpression := p.parseExpression(LOWEST)
 		statement = node.CreateAssignmentStatement(variableName, variableExpression)
 
-	} else if p.current.Type == tokens.PRINT_TOKEN.Type {
+	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT_TOKEN) {
 		p.advance()
 		p.expectedToken(tokens.OPEN_PAREN_TOKEN)
 
@@ -84,30 +84,30 @@ func (p *parser) parseExpression(precedenceLevel int) node.Node {
 }
 
 func (p *parser) parsePrefix() node.Node {
-	if p.current.Type == tokens.NUMBER_TOKEN.Type {
+	if tokens.TokenTypesEqual(p.current, tokens.NUMBER_TOKEN) {
 		value := p.current.Literal
 		p.advance()
 		return node.CreateNumber(value)
 
-	} else if p.current.Type == tokens.MINUS_TOKEN.Type {
+	} else if tokens.TokenTypesEqual(p.current, tokens.MINUS_TOKEN) {
 		op := p.current
 		p.advance()
 		expression := p.parsePrefix()
 		return node.CreateUnaryExpression(op, expression)
 
-	} else if p.current.Type == tokens.OPEN_PAREN_TOKEN.Type {
+	} else if tokens.TokenTypesEqual(p.current, tokens.OPEN_PAREN_TOKEN) {
 		p.advance()
 		expression := p.parseExpression(LOWEST)
-		if p.current.Type == tokens.CLOSED_PAREN_TOKEN.Type {
+		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
 			p.advance()
 			return expression
 		}
 		p.expectedToken(tokens.CLOSED_PAREN_TOKEN)
 
-	} else if p.current.Type == tokens.FUNCTION_TOKEN.Type {
+	} else if tokens.TokenTypesEqual(p.current, tokens.FUNCTION_TOKEN) {
 		return p.parseFunction()
 
-	} else if p.current.Type == tokens.IDENTIFIER_TOKEN.Type {
+	} else if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER_TOKEN) {
 		identifier := p.current
 		p.advance()
 
@@ -134,7 +134,7 @@ func (p *parser) parseInfix(left node.Node) node.Node {
 func (p *parser) parseParameters() node.Node {
 	params := []node.Node{}
 	for {
-		if p.current.Type == tokens.CLOSED_PAREN_TOKEN.Type {
+		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
 			p.advance()
 			break
 		}
@@ -142,7 +142,7 @@ func (p *parser) parseParameters() node.Node {
 		expression := p.parseExpression(LOWEST)
 		params = append(params, expression)
 
-		if p.current.Type == tokens.COMMA_TOKEN.Type {
+		if tokens.TokenTypesEqual(p.current, tokens.COMMA_TOKEN) {
 			p.advance()
 			continue
 		}

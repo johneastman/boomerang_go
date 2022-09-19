@@ -121,3 +121,7 @@ func getSymbolType(literal byte) Token {
 	}
 	panic(fmt.Sprintf("Invalid symbol: %c", literal))
 }
+
+func TokenTypesEqual(first Token, second Token) bool {
+	return first.Type == second.Type
+}
