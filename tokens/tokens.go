@@ -27,7 +27,8 @@ const (
 	NUMBER               = "NUMBER"
 	IDENTIFIER           = "IDENTIFIER"
 	EOF                  = "EOF"
-	POINTER              = "POINTER"
+	LEFT_PTR             = "LEFT_POINTER"
+	RIGHT_PTR            = "RIGHT_POINTER"
 )
 
 // Tokens
@@ -44,7 +45,8 @@ var (
 	COMMA_TOKEN                = getToken(COMMA)
 	OPEN_CURLY_BRACKET_TOKEN   = getToken(OPEN_CURLY_BRACKET)
 	CLOSED_CURLY_BRACKET_TOKEN = getToken(CLOSED_CURLY_BRACKET)
-	POINTER_TOKEN              = getToken(POINTER)
+	LEFT_PTR_TOKEN             = getToken(LEFT_PTR)
+	RIGHT_PTR_TOKEN            = getToken(RIGHT_PTR)
 
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
@@ -73,9 +75,10 @@ var tokenData = map[string]Token{
 	EOF:                  {Type: "EOF", Literal: ""},
 	PRINT:                {Type: "PRINT", Literal: "print"},
 	FUNCTION:             {Type: "FUNCTION", Literal: "func"},
+	LEFT_PTR:             {Type: "LEFT_POINTER", Literal: "<-"},
+	RIGHT_PTR:            {Type: "RIGHT_POINTER", Literal: "->"},
 	NUMBER:               {Type: "NUMBER", Literal: ""},
 	IDENTIFIER:           {Type: "IDENTIFIER", Literal: ""},
-	POINTER:              {Type: "POINTER", Literal: "<-"},
 }
 
 func getToken(name string) Token {

@@ -14,7 +14,8 @@ const (
 )
 
 var precedenceLevels = map[string]int{
-	tokens.POINTER_TOKEN.Type:       FUNC_CALL,
+	tokens.LEFT_PTR_TOKEN.Type:      FUNC_CALL,
+	tokens.RIGHT_PTR_TOKEN.Type:     FUNC_CALL,
 	tokens.PLUS_TOKEN.Type:          SUM,
 	tokens.MINUS_TOKEN.Type:         SUM,
 	tokens.ASTERISK_TOKEN.Type:      PRODUCT,
@@ -111,7 +112,13 @@ func (p *parser) parsePrefix() node.Node {
 			return node.CreateParameters(stmts)
 		}
 
-		p.expectedToken(tokens.CLOSED_PAREN_TOKEN)
+		// The expected tokens are either a closed parenthesis or a comma
+		p.expectTokens(
+			[]tokens.Token{
+				tokens.CLOSED_PAREN_TOKEN,
+				tokens.COMMA_TOKEN,
+			},
+		)
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.FUNCTION_TOKEN) {
 		return p.parseFunction()
@@ -180,8 +187,34 @@ func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
 func (p *parser) expectedToken(token tokens.Token) {
 	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
 	// the next token.
-	if p.current.Type != token.Type {
+	if !(tokens.TokenTypesEqual(p.current, token)) {
 		panic(fmt.Sprintf("Expected token type %s (%#v), got %s (%#v)", token.Type, token.Literal, p.current.Type, p.current.Literal))
 	}
 	p.advance()
+}
+
+func (p *parser) expectTokens(expectedTokens []tokens.Token) {
+	var tokensStr string
+	isUnexpectedToken := false
+	for i, token := range expectedTokens {
+
+		/*
+			Check if the expected tokens matches the current token. If it does not, set 'isUnexpectedToken' to true
+			and never perform this check again.
+		*/
+		if !(tokens.TokenTypesEqual(p.current, token)) && !isUnexpectedToken {
+			isUnexpectedToken = true
+		}
+
+		tokensStr += fmt.Sprintf("%s (%s)", token.Type, token.Literal)
+		if i < len(expectedTokens)-1 {
+			tokensStr += ", "
+		}
+	}
+
+	// If any of the given tokens were unexpected, raise an error.
+	if isUnexpectedToken {
+		message := fmt.Sprintf("Expected types: %s, got %s (%s)", tokensStr, p.current.Type, p.current.Literal)
+		panic(message)
+	}
 }

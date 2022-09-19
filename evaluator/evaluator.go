@@ -83,28 +83,39 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 		panic(fmt.Sprintf("Invalid unary operator: %s", expr.Type))
 
 	case node.BIN_EXPR:
-		left := e.evaluateExpression(expr.GetParam(node.BIN_EXPR_LEFT))
-		right := e.evaluateExpression(expr.GetParam(node.BIN_EXPR_RIGHT))
+		left := e.evaluateExpression(expr.GetParam(node.LEFT))
+		right := e.evaluateExpression(expr.GetParam(node.RIGHT))
 		op := expr.GetParam(node.OPERATOR)
 
+		checkOperatorCompatible(left, op, right)
+
 		switch op.Type {
+
 		case tokens.PLUS:
 			result := e.toFloat(left.Value) + e.toFloat(right.Value)
 			return e.createNumberNode(result)
+
 		case tokens.MINUS:
 			result := e.toFloat(left.Value) - e.toFloat(right.Value)
 			return e.createNumberNode(result)
+
 		case tokens.ASTERISK:
 			result := e.toFloat(left.Value) * e.toFloat(right.Value)
 			return e.createNumberNode(result)
+
 		case tokens.FORWARD_SLASH:
 			if right.Value == "0" {
 				panic("Cannot divide by zero.")
 			}
 			result := e.toFloat(left.Value) / e.toFloat(right.Value)
 			return e.createNumberNode(result)
-		case tokens.POINTER:
+
+		case tokens.LEFT_PTR:
 			functionCall := node.CreateFunctionCall(left, right.Params)
+			return e.evaluateExpression(functionCall)
+
+		case tokens.RIGHT_PTR:
+			functionCall := node.CreateFunctionCall(right, left.Params)
 			return e.evaluateExpression(functionCall)
 
 		default:
@@ -171,4 +182,78 @@ func (e *evaluator) getVariable(name string) node.Node {
 		return value
 	}
 	panic(fmt.Sprintf("Undefined variable: %s", name))
+}
+
+func checkOperatorCompatible(left node.Node, op node.Node, right node.Node) {
+
+	operatorCompatibilityTable := map[string]map[string][]string{
+		tokens.LEFT_PTR_TOKEN.Type: {
+			node.LEFT: {
+				node.FUNCTION,
+			},
+			node.RIGHT: {
+				node.PARAMETER,
+			},
+		},
+		tokens.RIGHT_PTR_TOKEN.Type: {
+			node.LEFT: {
+				node.PARAMETER,
+			},
+			node.RIGHT: {
+				node.FUNCTION,
+			},
+		},
+		tokens.PLUS_TOKEN.Type: {
+			node.LEFT: {
+				node.NUMBER,
+			},
+			node.RIGHT: {
+				node.NUMBER,
+			},
+		},
+		tokens.MINUS_TOKEN.Type: {
+			node.LEFT: {
+				node.NUMBER,
+			},
+			node.RIGHT: {
+				node.NUMBER,
+			},
+		},
+		tokens.ASTERISK_TOKEN.Type: {
+			node.LEFT: {
+				node.NUMBER,
+			},
+			node.RIGHT: {
+				node.NUMBER,
+			},
+		},
+		tokens.FORWARD_SLASH_TOKEN.Type: {
+			node.LEFT: {
+				node.NUMBER,
+			},
+			node.RIGHT: {
+				node.NUMBER,
+			},
+		},
+	}
+
+	if compatibleTypes, ok := operatorCompatibilityTable[op.Type]; ok {
+		leftTypes := compatibleTypes[node.LEFT]
+		rightTypes := compatibleTypes[node.RIGHT]
+
+		if !(contains(left.Type, leftTypes) || contains(right.Type, rightTypes)) {
+			panic(fmt.Sprintf("invalid operator %s for %s and %s", op.Type, left.Type, right.Type))
+		}
+	} else {
+		panic(fmt.Sprintf("Unsupported type for compatibility check: %s", op.Type))
+	}
+}
+
+func contains(s string, stringList []string) bool {
+	for _, stringElement := range stringList {
+		if s == stringElement {
+			return true
+		}
+	}
+	return false
 }

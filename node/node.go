@@ -23,8 +23,8 @@ const (
 	CALL_PARAMS            = "FunctionCallParameters"
 	FUNCTION               = "Function"
 	FUNCTION_CALL          = "FunctionCall"
-	BIN_EXPR_LEFT          = "Left"
-	BIN_EXPR_RIGHT         = "Right"
+	LEFT                   = "Left"
+	RIGHT                  = "Right"
 	UNARY_EXPR             = "UnaryExpression"
 	PRINT_STMT             = "PrintStatement"
 	ASSIGN_STMT            = "Assign"
@@ -54,9 +54,9 @@ var indexMap = map[string]map[string]int{
 		EXPR:       1,
 	},
 	BIN_EXPR: {
-		BIN_EXPR_LEFT:  0,
-		OPERATOR:       1,
-		BIN_EXPR_RIGHT: 2,
+		LEFT:     0,
+		OPERATOR: 1,
+		RIGHT:    2,
 	},
 	UNARY_EXPR: {
 		OPERATOR: 0,
