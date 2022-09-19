@@ -8,17 +8,17 @@ import (
 func TestTokenizer_Symbols(t *testing.T) {
 	tokenizer := tokens.New("+-*/()=,{};")
 	expectedTokens := []tokens.Token{
-		{Literal: "+", Type: tokens.PLUS},
-		{Literal: "-", Type: tokens.MINUS},
-		{Literal: "*", Type: tokens.ASTERISK},
-		{Literal: "/", Type: tokens.FORWARD_SLASH},
-		{Literal: "(", Type: tokens.OPEN_PAREN},
-		{Literal: ")", Type: tokens.CLOSED_PAREN},
-		{Literal: "=", Type: tokens.ASSIGN},
-		{Literal: ",", Type: tokens.COMMA},
-		{Literal: "{", Type: tokens.OPEN_CURLY_BRACKET},
-		{Literal: "}", Type: tokens.CLOSED_CURLY_BRACKET},
-		{Literal: ";", Type: tokens.SEMICOLON},
+		tokens.PLUS_TOKEN,
+		tokens.MINUS_TOKEN,
+		tokens.ASTERISK_TOKEN,
+		tokens.FORWARD_SLASH_TOKEN,
+		tokens.OPEN_PAREN_TOKEN,
+		tokens.CLOSED_PAREN_TOKEN,
+		tokens.ASSIGN_TOKEN,
+		tokens.COMMA_TOKEN,
+		tokens.OPEN_CURLY_BRACKET_TOKEN,
+		tokens.CLOSED_CURLY_BRACKET_TOKEN,
+		tokens.SEMICOLON_TOKEN,
 	}
 
 	for _, expectedToken := range expectedTokens {
@@ -30,8 +30,8 @@ func TestTokenizer_Symbols(t *testing.T) {
 func TestTokenizer_Keywords(t *testing.T) {
 
 	keywordTokens := []tokens.Token{
-		{Type: tokens.PRINT, Literal: "print"},
-		{Type: tokens.FUNCTION, Literal: "func"},
+		tokens.PRINT_TOKEN,
+		tokens.FUNCTION_TOKEN,
 	}
 
 	for _, expectedToken := range keywordTokens {
@@ -62,7 +62,7 @@ func TestTokenizer_Numbers(t *testing.T) {
 		tokenizer := tokens.New(source)
 		token := tokenizer.Next()
 
-		AssertTokenEqual(t, tokens.Token{Type: tokens.NUMBER, Literal: source}, token)
+		AssertTokenEqual(t, tokens.Token{Type: tokens.NUMBER_TOKEN.Type, Literal: source}, token)
 	}
 }
 
@@ -79,6 +79,6 @@ func TestTokenizer_Idenifiers(t *testing.T) {
 		tokenizer := tokens.New(variable)
 		token := tokenizer.Next()
 
-		AssertTokenEqual(t, tokens.Token{Type: tokens.IDENTIFIER, Literal: variable}, token)
+		AssertTokenEqual(t, tokens.Token{Type: tokens.IDENTIFIER_TOKEN.Type, Literal: variable}, token)
 	}
 }

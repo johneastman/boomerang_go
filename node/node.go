@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+type Node struct {
+	Type   string
+	Value  string
+	Params []Node
+}
+
 const (
 	NUMBER                 = "Number"
 	BIN_EXPR               = "BinaryExpression"
@@ -66,12 +72,6 @@ var indexMap = map[string]map[string]int{
 	},
 }
 
-type Node struct {
-	Type   string
-	Value  string
-	Params []Node
-}
-
 func (n *Node) GetParam(key string) Node {
 	node, err := n.getParam(key)
 	if err != nil {
@@ -111,14 +111,16 @@ func (n *Node) String() string {
 	return fmt.Sprintf("Node(Type: %s, Value: %s)", n.Type, n.Value)
 }
 
-func CreateAssignmentStatement(name tokens.Token, value Node) Node {
-	return Node{
-		Type: ASSIGN_STMT,
-		Params: []Node{
-			{Type: name.Type, Value: name.Literal},
-			value,
-		},
-	}
+func CreateTokenNode(token tokens.Token) Node {
+	return Node{Type: token.Type, Value: token.Literal}
+}
+
+func CreateNumber(value string) Node {
+	return Node{Type: NUMBER, Value: value}
+}
+
+func CreateIdentifier(name string) Node {
+	return Node{Type: IDENTIFIER, Value: name}
 }
 
 func CreatePrintStatement(params []Node) Node {
@@ -138,14 +140,6 @@ func CreateUnaryExpression(operator tokens.Token, expression Node) Node {
 	}
 }
 
-func CreateIdentifier(name string) Node {
-	return Node{Type: IDENTIFIER, Value: name}
-}
-
-func CreateNumber(value string) Node {
-	return Node{Type: NUMBER, Value: value}
-}
-
 func CreateBinaryExpression(left Node, op tokens.Token, right Node) Node {
 	return Node{
 		Type: BIN_EXPR,
@@ -153,6 +147,16 @@ func CreateBinaryExpression(left Node, op tokens.Token, right Node) Node {
 			left,                               // Left Expression
 			{Type: op.Type, Value: op.Literal}, // Operator
 			right,                              // Right Expression
+		},
+	}
+}
+
+func CreateAssignmentStatement(variableName string, value Node) Node {
+	return Node{
+		Type: ASSIGN_STMT,
+		Params: []Node{
+			{Type: IDENTIFIER, Value: variableName},
+			value,
 		},
 	}
 }
@@ -165,4 +169,18 @@ func CreateFunction(parameters []Node, statements []Node) Node {
 			{Type: STMTS, Params: statements},
 		},
 	}
+}
+
+func CreateFunctionCall(function Node, callParams []Node) Node {
+	return Node{
+		Type: FUNCTION_CALL,
+		Params: []Node{
+			{Type: CALL_PARAMS, Params: callParams},
+			function,
+		},
+	}
+}
+
+func CreateParameters(parameters []Node) Node {
+	return Node{Type: PARAMETER, Params: parameters}
 }
