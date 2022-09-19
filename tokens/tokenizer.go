@@ -73,13 +73,13 @@ func (t *Tokenizer) Next() Token {
 	t.skipWhitespace()
 
 	if t.current() == 0 {
-		return Token{Literal: "", Type: EOF}
+		return EOF_TOKEN
 	}
 
 	if t.isIdentifier(false) {
 		literal := t.readIdentifier()
-		tokenType := getTokenType(literal)
-		return Token{Literal: literal, Type: tokenType}
+		return GetKeywordToken(literal)
+
 	} else if t.isNumber() {
 		literal := t.readNumber()
 
@@ -87,12 +87,10 @@ func (t *Tokenizer) Next() Token {
 		if !r.MatchString(literal) {
 			panic(fmt.Sprintf("Invalid number literal: %s", literal))
 		}
-
 		return Token{Literal: literal, Type: NUMBER}
 	}
 
 	literal := t.current()
-	tokenType := getSymbolType(literal)
 	t.advance()
-	return Token{Literal: string(literal), Type: tokenType}
+	return getSymbolType(literal)
 }
