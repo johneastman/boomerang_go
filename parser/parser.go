@@ -98,6 +98,12 @@ func (p *parser) parsePrefix() node.Node {
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.OPEN_PAREN_TOKEN) {
 		p.advance()
+
+		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
+			p.advance()
+			return node.CreateParameters([]node.Node{})
+		}
+
 		expression := p.parseExpression(LOWEST)
 		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
 			p.advance()

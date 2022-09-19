@@ -28,12 +28,14 @@ FACTOR:
 - OPEN_PAREN('(')
 - FUNCTION('func')
 - IDENTIFIER  # variable
+- PARAMETER
 ```
 
 ### Data Types
 |Name|Examples|
 |----|--------|
-|NUMBER|1, 2, 3.14159, 100, 1234567890, 0.987654321|
+|NUMBER|`1`, `2`, `3.14159`, `100`, `1234567890`, `0.987654321`|
+|PARAMETER|`(1, 2)`, `(1, 2, 3)`, `(1, 2, 3 (6, 7, 8), 4, 5)`|
 
 ### Math Operators
 
@@ -44,6 +46,8 @@ FACTOR:
 |minus|-|NUMBER|
 |multiply|*|NUMBER|
 |divide|/|NUMBER|
+|left pointer|<-|left expression: FUNCTION, right expression: PARAMETER|
+|right pointer|->|right expression: PARAMETER, left expression: FUNCTION|
 
 #### Prefix Operators
 |Name|Literal|Valid Types|
@@ -85,14 +89,15 @@ Examples:
 add = func(a, b) {
   a + b;
 };
-add(1, 2);
+add <- (1, 2);
+(3, 4) -> add;
 
 sum = func(c, d) {
   c + d;
-}(1, 2);
+} <- (1, 2);
 
-value = func() {
+value = () -> func() {
   number = 1 + 1;
   (number + 2) * 6;
-}();
+};
 ```

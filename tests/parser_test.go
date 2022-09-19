@@ -29,6 +29,65 @@ func TestParser_Numbers(t *testing.T) {
 	}
 }
 
+func TestParser_TestParameters(t *testing.T) {
+
+	tests := []struct {
+		Source string
+		Params []node.Node
+	}{
+		{
+			Source: "()",
+			Params: []node.Node{},
+		},
+		{
+			Source: "(1,)",
+			Params: []node.Node{
+				node.CreateNumber("1"),
+			},
+		},
+		{
+			Source: "(1,2,)",
+			Params: []node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+			},
+		},
+		{
+			Source: "(1,2,3)",
+			Params: []node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+				node.CreateNumber("3"),
+			},
+		},
+		{
+			Source: "(1,2,(4, 5, 6),3)",
+			Params: []node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+				node.CreateParameters([]node.Node{
+					node.CreateNumber("4"),
+					node.CreateNumber("5"),
+					node.CreateNumber("6"),
+				}),
+				node.CreateNumber("3"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		tokenizer := tokens.New(fmt.Sprintf("%s;", test.Source))
+		parserObj := parser.New(tokenizer)
+
+		actualAST := parserObj.Parse()
+		expectedAST := []node.Node{
+			node.CreateParameters(test.Params),
+		}
+
+		AssertNodesEqual(t, expectedAST, actualAST)
+	}
+}
+
 func TestParser_NegativeNumber(t *testing.T) {
 	tokenizer := tokens.New("-66;")
 	parserObj := parser.New(tokenizer)
@@ -204,6 +263,21 @@ func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
 		node.CreateFunction(
 			[]node.Node{},
 			[]node.Node{},
+		),
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
+func TestParser_FunctionCallWithNoParameters(t *testing.T) {
+	tokenizer := tokens.New("divide <- ();")
+	parserObj := parser.New(tokenizer)
+
+	actualAST := parserObj.Parse()
+	expectedAST := []node.Node{
+		node.CreateBinaryExpression(
+			node.CreateIdentifier("divide"),
+			tokens.LEFT_PTR_TOKEN,
+			node.CreateParameters([]node.Node{}),
 		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)

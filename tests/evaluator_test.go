@@ -50,6 +50,37 @@ func TestEvaluator_NegativeNumber(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
+func TestEvaluator_Parameters(t *testing.T) {
+
+	parameters := [][]node.Node{
+		{},
+		{node.CreateNumber("55")},
+		{node.CreateNumber("67"), node.CreateNumber("33")},
+		{node.CreateNumber("66"), node.CreateNumber("4"), node.CreateNumber("30")},
+		{
+			node.CreateNumber("5"),
+			node.CreateParameters([]node.Node{
+				node.CreateNumber("78"),
+			}),
+			node.CreateNumber("60"),
+		},
+	}
+
+	for _, param := range parameters {
+		ast := []node.Node{
+			node.CreateParameters(param),
+		}
+		evaluatorObj := evaluator.New(ast)
+
+		actualResults := evaluatorObj.Evaluate()
+		expectedResults := []node.Node{
+			node.CreateParameters(param),
+		}
+
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
+}
+
 func TestEvaluator_BinaryExpression(t *testing.T) {
 	ast := []node.Node{
 		node.CreateBinaryExpression(
