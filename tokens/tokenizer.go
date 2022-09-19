@@ -100,10 +100,14 @@ func (t *Tokenizer) Next() Token {
 }
 
 func (t *Tokenizer) getMatchingTokens() (*Token, error) {
-	// Get list of tokens where the token literal start with current character
+	/*
+		Get list of tokens where the token literal start with current character. The check for
+		literal values having a length of greater-than 0 ensures tokens without an initial value
+		are not matched (like NUMBER and IDENTIFIER).
+	*/
 	var matchingTokens []Token
 	for _, token := range tokenData {
-		if strings.HasPrefix(token.Literal, string(t.current())) {
+		if strings.HasPrefix(token.Literal, string(t.current())) && len(token.Literal) > 0 {
 			matchingTokens = append(matchingTokens, token)
 		}
 	}
