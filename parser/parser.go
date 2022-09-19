@@ -52,7 +52,7 @@ func (p *parser) parseStatement() node.Node {
 	var statement node.Node
 
 	if p.current.Type == tokens.IDENTIFIER_TOKEN.Type && p.peek.Type == tokens.ASSIGN_TOKEN.Type {
-		variableName := p.current
+		variableName := p.current.Literal
 		p.advance()
 		p.advance()
 		variableExpression := p.parseExpression(LOWEST)

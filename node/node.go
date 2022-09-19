@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+type Node struct {
+	Type   string
+	Value  string
+	Params []Node
+}
+
 const (
 	NUMBER                 = "Number"
 	BIN_EXPR               = "BinaryExpression"
@@ -66,12 +72,6 @@ var indexMap = map[string]map[string]int{
 	},
 }
 
-type Node struct {
-	Type   string
-	Value  string
-	Params []Node
-}
-
 func (n *Node) GetParam(key string) Node {
 	node, err := n.getParam(key)
 	if err != nil {
@@ -111,14 +111,18 @@ func (n *Node) String() string {
 	return fmt.Sprintf("Node(Type: %s, Value: %s)", n.Type, n.Value)
 }
 
-func CreateAssignmentStatement(name tokens.Token, value Node) Node {
+func CreateAssignmentStatement(variableName string, value Node) Node {
 	return Node{
 		Type: ASSIGN_STMT,
 		Params: []Node{
-			{Type: name.Type, Value: name.Literal},
+			{Type: IDENTIFIER, Value: variableName},
 			value,
 		},
 	}
+}
+
+func CreateTokenNode(token tokens.Token) Node {
+	return Node{Type: token.Type, Value: token.Literal}
 }
 
 func CreatePrintStatement(params []Node) Node {

@@ -41,7 +41,7 @@ func TestParser_NegativeNumber(t *testing.T) {
 		{
 			Type: node.UNARY_EXPR,
 			Params: []node.Node{
-				{Type: tokens.MINUS, Value: "-"},
+				node.CreateTokenNode(tokens.MINUS_TOKEN),
 				{Type: node.NUMBER, Value: "66"},
 			},
 		},
@@ -60,7 +60,7 @@ func TestParser_BinaryExpression(t *testing.T) {
 			Type: node.BIN_EXPR,
 			Params: []node.Node{
 				{Type: node.NUMBER, Value: "7"},
-				{Type: tokens.PLUS, Value: "+"},
+				node.CreateTokenNode(tokens.PLUS_TOKEN),
 				{Type: node.NUMBER, Value: "3"},
 			},
 		},
@@ -79,7 +79,7 @@ func TestParser_Parentheses(t *testing.T) {
 			Type: node.BIN_EXPR,
 			Params: []node.Node{
 				{Type: node.NUMBER, Value: "7"},
-				{Type: tokens.PLUS, Value: "+"},
+				node.CreateTokenNode(tokens.PLUS_TOKEN),
 				{Type: node.NUMBER, Value: "3"},
 			},
 		},
@@ -97,10 +97,10 @@ func TestParser_ParenthesesBinaryExpression(t *testing.T) {
 			Type: node.BIN_EXPR,
 			Params: []node.Node{
 				{Type: node.NUMBER, Value: "7"},
-				{Type: tokens.PLUS, Value: "+"},
+				node.CreateTokenNode(tokens.PLUS_TOKEN),
 				{Type: node.BIN_EXPR, Params: []node.Node{
 					{Type: node.NUMBER, Value: "5"},
-					{Type: tokens.MINUS, Value: "-"},
+					node.CreateTokenNode(tokens.MINUS_TOKEN),
 					{Type: node.NUMBER, Value: "2"},
 				}},
 			},
@@ -118,13 +118,13 @@ func TestParser_VariableAssignment(t *testing.T) {
 		{
 			Type: node.ASSIGN_STMT,
 			Params: []node.Node{
-				{Type: tokens.IDENTIFIER, Value: "variable"},
+				{Type: node.IDENTIFIER, Value: "variable"},
 				{
 					Type: node.BIN_EXPR,
 					Params: []node.Node{
-						{Type: node.NUMBER, Value: "8"},
-						{Type: tokens.FORWARD_SLASH, Value: "/"},
-						{Type: node.NUMBER, Value: "2"},
+						node.CreateNumber("8"),
+						node.CreateTokenNode(tokens.FORWARD_SLASH_TOKEN),
+						node.CreateNumber("2"),
 					},
 				},
 			},
@@ -198,7 +198,7 @@ func TestParser_Function(t *testing.T) {
 					Type: node.BIN_EXPR,
 					Params: []node.Node{
 						{Type: node.IDENTIFIER, Value: "a"},
-						{Type: tokens.PLUS, Value: "+"},
+						node.CreateTokenNode(tokens.PLUS_TOKEN),
 						{Type: node.IDENTIFIER, Value: "b"},
 					},
 				},
@@ -221,7 +221,7 @@ func TestParser_FunctionNoParameters(t *testing.T) {
 					Type: node.BIN_EXPR,
 					Params: []node.Node{
 						{Type: node.NUMBER, Value: "3"},
-						{Type: tokens.PLUS, Value: "+"},
+						node.CreateTokenNode(tokens.PLUS_TOKEN),
 						{Type: node.NUMBER, Value: "4"},
 					},
 				},
@@ -258,7 +258,7 @@ func TestParser_FunctionCallWithFunctionLiteral(t *testing.T) {
 				Type: node.BIN_EXPR,
 				Params: []node.Node{
 					{Type: node.IDENTIFIER, Value: "d"},
-					{Type: tokens.MINUS, Value: "-"},
+					node.CreateTokenNode(tokens.MINUS_TOKEN),
 					{Type: node.IDENTIFIER, Value: "c"},
 				},
 			},

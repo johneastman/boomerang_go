@@ -35,7 +35,7 @@ func TestEvaluator_NegativeNumber(t *testing.T) {
 		{
 			Type: node.UNARY_EXPR,
 			Params: []node.Node{
-				{Type: tokens.MINUS, Value: "-"},
+				node.CreateTokenNode(tokens.MINUS_TOKEN),
 				{Type: node.NUMBER, Value: "66"},
 			},
 		},
@@ -56,7 +56,7 @@ func TestEvaluator_BinaryExpression(t *testing.T) {
 			Type: node.BIN_EXPR,
 			Params: []node.Node{
 				{Type: node.NUMBER, Value: "1"},
-				{Type: tokens.PLUS, Value: "+"},
+				node.CreateTokenNode(tokens.PLUS_TOKEN),
 				{Type: node.NUMBER, Value: "1"},
 			},
 		},
@@ -81,7 +81,7 @@ func TestEvaluator_Variable(t *testing.T) {
 					Type: node.BIN_EXPR,
 					Params: []node.Node{
 						{Type: node.NUMBER, Value: "8"},
-						{Type: tokens.FORWARD_SLASH, Value: "/"},
+						node.CreateTokenNode(tokens.FORWARD_SLASH_TOKEN),
 						{Type: node.NUMBER, Value: "2"},
 					},
 				},
@@ -162,7 +162,7 @@ func TestEvaluator_Function(t *testing.T) {
 					Type: node.BIN_EXPR,
 					Params: []node.Node{
 						{Type: node.IDENTIFIER, Value: "a"},
-						{Type: tokens.PLUS, Value: "+"},
+						node.CreateTokenNode(tokens.PLUS_TOKEN),
 						{Type: node.IDENTIFIER, Value: "b"},
 					},
 				},
@@ -183,7 +183,7 @@ func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
 				Type: node.BIN_EXPR,
 				Params: []node.Node{
 					{Type: node.IDENTIFIER, Value: "c"},
-					{Type: tokens.MINUS, Value: "-"},
+					node.CreateTokenNode(tokens.MINUS_TOKEN),
 					{Type: node.IDENTIFIER, Value: "d"},
 				},
 			},
@@ -210,13 +210,13 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 
 	ast := []node.Node{
 		node.CreateAssignmentStatement(
-			tokens.Token{Type: tokens.IDENTIFIER, Literal: "divide"},
+			"divide",
 			CreateFunction(
 				[]string{"a", "b"},
 				[]node.Node{
 					node.CreateBinaryExpression(
 						node.Node{Type: node.IDENTIFIER, Value: "a"},
-						tokens.Token{Type: tokens.FORWARD_SLASH, Literal: "/"},
+						tokens.FORWARD_SLASH_TOKEN,
 						node.Node{Type: node.IDENTIFIER, Value: "b"},
 					),
 				},
@@ -248,7 +248,7 @@ func TestEvaluator_FunctionCallWithNoParameters(t *testing.T) {
 				Type: node.BIN_EXPR,
 				Params: []node.Node{
 					{Type: node.NUMBER, Value: "3"},
-					{Type: tokens.PLUS, Value: "+"},
+					node.CreateTokenNode(tokens.PLUS_TOKEN),
 					{Type: node.NUMBER, Value: "4"},
 				},
 			},
