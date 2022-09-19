@@ -22,10 +22,7 @@ func TestParser_Numbers(t *testing.T) {
 
 		actualAST := parserObj.Parse()
 		expectedAST := []node.Node{
-			{
-				Type:  node.NUMBER,
-				Value: number,
-			},
+			node.CreateNumber(number),
 		}
 
 		AssertNodesEqual(t, expectedAST, actualAST)
@@ -38,13 +35,10 @@ func TestParser_NegativeNumber(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type: node.UNARY_EXPR,
-			Params: []node.Node{
-				node.CreateTokenNode(tokens.MINUS_TOKEN),
-				{Type: node.NUMBER, Value: "66"},
-			},
-		},
+		node.CreateUnaryExpression(
+			tokens.MINUS_TOKEN,
+			node.CreateNumber("66"),
+		),
 	}
 
 	AssertNodesEqual(t, expectedAST, actualAST)
@@ -56,14 +50,11 @@ func TestParser_BinaryExpression(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type: node.BIN_EXPR,
-			Params: []node.Node{
-				{Type: node.NUMBER, Value: "7"},
-				node.CreateTokenNode(tokens.PLUS_TOKEN),
-				{Type: node.NUMBER, Value: "3"},
-			},
-		},
+		node.CreateBinaryExpression(
+			node.CreateNumber("7"),
+			tokens.PLUS_TOKEN,
+			node.CreateNumber("3"),
+		),
 	}
 
 	AssertNodesEqual(t, expectedAST, actualAST)
@@ -75,14 +66,11 @@ func TestParser_Parentheses(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type: node.BIN_EXPR,
-			Params: []node.Node{
-				{Type: node.NUMBER, Value: "7"},
-				node.CreateTokenNode(tokens.PLUS_TOKEN),
-				{Type: node.NUMBER, Value: "3"},
-			},
-		},
+		node.CreateBinaryExpression(
+			node.CreateNumber("7"),
+			tokens.PLUS_TOKEN,
+			node.CreateNumber("3"),
+		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
@@ -93,18 +81,15 @@ func TestParser_ParenthesesBinaryExpression(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type: node.BIN_EXPR,
-			Params: []node.Node{
-				{Type: node.NUMBER, Value: "7"},
-				node.CreateTokenNode(tokens.PLUS_TOKEN),
-				{Type: node.BIN_EXPR, Params: []node.Node{
-					{Type: node.NUMBER, Value: "5"},
-					node.CreateTokenNode(tokens.MINUS_TOKEN),
-					{Type: node.NUMBER, Value: "2"},
-				}},
-			},
-		},
+		node.CreateBinaryExpression(
+			node.CreateNumber("7"),
+			tokens.PLUS_TOKEN,
+			node.CreateBinaryExpression(
+				node.CreateNumber("5"),
+				tokens.MINUS_TOKEN,
+				node.CreateNumber("2"),
+			),
+		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
@@ -115,20 +100,14 @@ func TestParser_VariableAssignment(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type: node.ASSIGN_STMT,
-			Params: []node.Node{
-				{Type: node.IDENTIFIER, Value: "variable"},
-				{
-					Type: node.BIN_EXPR,
-					Params: []node.Node{
-						node.CreateNumber("8"),
-						node.CreateTokenNode(tokens.FORWARD_SLASH_TOKEN),
-						node.CreateNumber("2"),
-					},
-				},
-			},
-		},
+		node.CreateAssignmentStatement(
+			"variable",
+			node.CreateBinaryExpression(
+				node.CreateNumber("8"),
+				tokens.FORWARD_SLASH_TOKEN,
+				node.CreateNumber("2"),
+			),
+		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
@@ -139,9 +118,7 @@ func TestParser_Identifier(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type: node.IDENTIFIER, Value: "variable",
-		},
+		node.CreateIdentifier("variable"),
 	}
 
 	AssertNodesEqual(t, expectedAST, actualAST)
@@ -153,20 +130,13 @@ func TestParser_PrintStatement(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type: node.PRINT_STMT,
-			Params: []node.Node{
-				{
-					Type: node.NUMBER, Value: "1",
-				},
-				{
-					Type: node.NUMBER, Value: "2",
-				},
-				{
-					Type: node.IDENTIFIER, Value: "variable",
-				},
+		node.CreatePrintStatement(
+			[]node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+				node.CreateIdentifier("variable"),
 			},
-		},
+		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
@@ -177,10 +147,7 @@ func TestParser_PrintStatementNoArguments(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		{
-			Type:   node.PRINT_STMT,
-			Params: []node.Node{},
-		},
+		node.CreatePrintStatement([]node.Node{}),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
@@ -191,17 +158,17 @@ func TestParser_Function(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		CreateFunction(
-			[]string{"a", "b"},
+		node.CreateFunction(
 			[]node.Node{
-				{
-					Type: node.BIN_EXPR,
-					Params: []node.Node{
-						{Type: node.IDENTIFIER, Value: "a"},
-						node.CreateTokenNode(tokens.PLUS_TOKEN),
-						{Type: node.IDENTIFIER, Value: "b"},
-					},
-				},
+				node.CreateIdentifier("a"),
+				node.CreateIdentifier("b"),
+			},
+			[]node.Node{
+				node.CreateBinaryExpression(
+					node.CreateIdentifier("a"),
+					tokens.PLUS_TOKEN,
+					node.CreateIdentifier("b"),
+				),
 			},
 		),
 	}
@@ -214,17 +181,14 @@ func TestParser_FunctionNoParameters(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		CreateFunction(
-			[]string{},
+		node.CreateFunction(
+			[]node.Node{},
 			[]node.Node{
-				{
-					Type: node.BIN_EXPR,
-					Params: []node.Node{
-						{Type: node.NUMBER, Value: "3"},
-						node.CreateTokenNode(tokens.PLUS_TOKEN),
-						{Type: node.NUMBER, Value: "4"},
-					},
-				},
+				node.CreateBinaryExpression(
+					node.CreateNumber("3"),
+					tokens.PLUS_TOKEN,
+					node.CreateNumber("4"),
+				),
 			},
 		),
 	}
@@ -237,8 +201,8 @@ func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
-		CreateFunction(
-			[]string{},
+		node.CreateFunction(
+			[]node.Node{},
 			[]node.Node{},
 		),
 	}
@@ -251,17 +215,17 @@ func TestParser_FunctionCallWithFunctionLiteral(t *testing.T) {
 
 	actualAST := parserObj.Parse()
 
-	functionNode := CreateFunction(
-		[]string{"c", "d"},
+	functionNode := node.CreateFunction(
 		[]node.Node{
-			{
-				Type: node.BIN_EXPR,
-				Params: []node.Node{
-					{Type: node.IDENTIFIER, Value: "d"},
-					node.CreateTokenNode(tokens.MINUS_TOKEN),
-					{Type: node.IDENTIFIER, Value: "c"},
-				},
-			},
+			node.CreateIdentifier("c"),
+			node.CreateIdentifier("d"),
+		},
+		[]node.Node{
+			node.CreateBinaryExpression(
+				node.CreateIdentifier("d"),
+				tokens.MINUS_TOKEN,
+				node.CreateIdentifier("c"),
+			),
 		},
 	)
 
@@ -269,10 +233,10 @@ func TestParser_FunctionCallWithFunctionLiteral(t *testing.T) {
 		node.CreateBinaryExpression(
 			functionNode,
 			tokens.Token{Type: tokens.OPEN_PAREN, Literal: "("},
-			node.Node{Type: node.PARAMETER, Params: []node.Node{
-				{Type: node.NUMBER, Value: "10"},
-				{Type: node.NUMBER, Value: "2"},
-			}},
+			node.CreateParameters([]node.Node{
+				node.CreateNumber("10"),
+				node.CreateNumber("2"),
+			}),
 		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
@@ -285,12 +249,12 @@ func TestParser_FunctionCallWithIdentifier(t *testing.T) {
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
-			node.Node{Type: node.IDENTIFIER, Value: "multiply"},
-			tokens.Token{Type: tokens.OPEN_PAREN, Literal: "("},
-			node.Node{Type: node.PARAMETER, Params: []node.Node{
-				{Type: node.NUMBER, Value: "10"},
-				{Type: node.NUMBER, Value: "3"},
-			}},
+			node.CreateIdentifier("multiply"),
+			tokens.OPEN_PAREN_TOKEN,
+			node.CreateParameters([]node.Node{
+				node.CreateNumber("10"),
+				node.CreateNumber("3"),
+			}),
 		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)

@@ -17,13 +17,13 @@ func TestEvaluator_Numbers(t *testing.T) {
 
 	for _, number := range numbers {
 		ast := []node.Node{
-			{Type: node.NUMBER, Value: number},
+			node.CreateNumber(number),
 		}
 		evaluatorObj := evaluator.New(ast)
 
 		actualResults := evaluatorObj.Evaluate()
 		expectedResults := []node.Node{
-			{Type: node.NUMBER, Value: number},
+			node.CreateNumber(number),
 		}
 
 		AssertNodesEqual(t, expectedResults, actualResults)
@@ -36,7 +36,7 @@ func TestEvaluator_NegativeNumber(t *testing.T) {
 			Type: node.UNARY_EXPR,
 			Params: []node.Node{
 				node.CreateTokenNode(tokens.MINUS_TOKEN),
-				{Type: node.NUMBER, Value: "66"},
+				node.CreateNumber("66"),
 			},
 		},
 	}
@@ -44,7 +44,7 @@ func TestEvaluator_NegativeNumber(t *testing.T) {
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		{Type: node.NUMBER, Value: "-66"},
+		node.CreateNumber("-66"),
 	}
 
 	AssertNodesEqual(t, expectedResults, actualResults)
@@ -52,21 +52,19 @@ func TestEvaluator_NegativeNumber(t *testing.T) {
 
 func TestEvaluator_BinaryExpression(t *testing.T) {
 	ast := []node.Node{
-		{
-			Type: node.BIN_EXPR,
-			Params: []node.Node{
-				{Type: node.NUMBER, Value: "1"},
-				node.CreateTokenNode(tokens.PLUS_TOKEN),
-				{Type: node.NUMBER, Value: "1"},
-			},
-		},
+		node.CreateBinaryExpression(
+			node.CreateNumber("1"),
+			tokens.PLUS_TOKEN,
+			node.CreateNumber("1"),
+		),
 	}
 	evaluatorObj := evaluator.New(ast)
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		{Type: node.NUMBER, Value: "2"},
+		node.CreateNumber("2"),
 	}
+
 	AssertNodesEqual(t, actualResults, expectedResults)
 }
 
@@ -76,49 +74,35 @@ func TestEvaluator_Variable(t *testing.T) {
 		{
 			Type: node.ASSIGN_STMT,
 			Params: []node.Node{
-				{Type: tokens.IDENTIFIER, Value: "variable"},
-				{
-					Type: node.BIN_EXPR,
-					Params: []node.Node{
-						{Type: node.NUMBER, Value: "8"},
-						node.CreateTokenNode(tokens.FORWARD_SLASH_TOKEN),
-						{Type: node.NUMBER, Value: "2"},
-					},
-				},
+				node.CreateIdentifier("variable"),
+				node.CreateBinaryExpression(
+					node.CreateNumber("8"),
+					tokens.FORWARD_SLASH_TOKEN,
+					node.CreateNumber("2"),
+				),
 			},
 		},
-		{
-			Type: node.IDENTIFIER, Value: "variable",
-		},
+		node.CreateIdentifier("variable"),
 	}
 
 	evaluatorObj := evaluator.New(ast)
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		{
-			Type: node.NUMBER, Value: "4",
-		},
+		node.CreateNumber("4"),
 	}
 	AssertNodesEqual(t, actualResults, expectedResults)
 }
 
 func TestEvaluator_PrintStatement(t *testing.T) {
 	ast := []node.Node{
-		{
-			Type: node.PRINT_STMT,
-			Params: []node.Node{
-				{
-					Type: node.NUMBER, Value: "1",
-				},
-				{
-					Type: node.NUMBER, Value: "2",
-				},
-				{
-					Type: node.NUMBER, Value: "3",
-				},
+		node.CreatePrintStatement(
+			[]node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+				node.CreateNumber("3"),
 			},
-		},
+		),
 	}
 
 	evaluatorObj := evaluator.New(ast)
@@ -135,10 +119,7 @@ func TestEvaluator_PrintStatement(t *testing.T) {
 
 func TestEvaluator_PrintStatementNoArguments(t *testing.T) {
 	ast := []node.Node{
-		{
-			Type:   node.PRINT_STMT,
-			Params: []node.Node{},
-		},
+		node.CreatePrintStatement([]node.Node{}),
 	}
 
 	evaluatorObj := evaluator.New(ast)
@@ -155,17 +136,17 @@ func TestEvaluator_PrintStatementNoArguments(t *testing.T) {
 
 func TestEvaluator_Function(t *testing.T) {
 	ast := []node.Node{
-		CreateFunction(
-			[]string{"a", "b"},
+		node.CreateFunction(
 			[]node.Node{
-				{
-					Type: node.BIN_EXPR,
-					Params: []node.Node{
-						{Type: node.IDENTIFIER, Value: "a"},
-						node.CreateTokenNode(tokens.PLUS_TOKEN),
-						{Type: node.IDENTIFIER, Value: "b"},
-					},
-				},
+				node.CreateIdentifier("a"),
+				node.CreateIdentifier("b"),
+			},
+			[]node.Node{
+				node.CreateBinaryExpression(
+					node.CreateIdentifier("a"),
+					tokens.PLUS_TOKEN,
+					node.CreateIdentifier("b"),
+				),
 			},
 		),
 	}
@@ -176,24 +157,24 @@ func TestEvaluator_Function(t *testing.T) {
 }
 
 func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
-	functionNode := CreateFunction(
-		[]string{"c", "d"},
+	functionNode := node.CreateFunction(
 		[]node.Node{
-			{
-				Type: node.BIN_EXPR,
-				Params: []node.Node{
-					{Type: node.IDENTIFIER, Value: "c"},
-					node.CreateTokenNode(tokens.MINUS_TOKEN),
-					{Type: node.IDENTIFIER, Value: "d"},
-				},
-			},
+			node.CreateIdentifier("c"),
+			node.CreateIdentifier("d"),
+		},
+		[]node.Node{
+			node.CreateBinaryExpression(
+				node.CreateIdentifier("c"),
+				tokens.MINUS_TOKEN,
+				node.CreateIdentifier("d"),
+			),
 		},
 	)
 
 	ast := []node.Node{
-		CreateFunctionCall(functionNode, []node.Node{
-			{Type: node.NUMBER, Value: "10"},
-			{Type: node.NUMBER, Value: "2"},
+		node.CreateFunctionCall(functionNode, []node.Node{
+			node.CreateNumber("10"),
+			node.CreateNumber("2"),
 		}),
 	}
 
@@ -201,8 +182,9 @@ func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		{Type: node.NUMBER, Value: "8"},
+		node.CreateNumber("8"),
 	}
+
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
@@ -211,8 +193,11 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 	ast := []node.Node{
 		node.CreateAssignmentStatement(
 			"divide",
-			CreateFunction(
-				[]string{"a", "b"},
+			node.CreateFunction(
+				[]node.Node{
+					node.CreateIdentifier("a"),
+					node.CreateIdentifier("b"),
+				},
 				[]node.Node{
 					node.CreateBinaryExpression(
 						node.Node{Type: node.IDENTIFIER, Value: "a"},
@@ -222,11 +207,11 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 				},
 			),
 		),
-		CreateFunctionCall(
+		node.CreateFunctionCall(
 			node.CreateIdentifier("divide"),
 			[]node.Node{
-				{Type: node.NUMBER, Value: "10"},
-				{Type: node.NUMBER, Value: "2"},
+				node.CreateNumber("10"),
+				node.CreateNumber("2"),
 			},
 		),
 	}
@@ -235,35 +220,33 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		{Type: node.NUMBER, Value: "5"},
+		node.CreateNumber("5"),
 	}
+
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
 func TestEvaluator_FunctionCallWithNoParameters(t *testing.T) {
-	function := CreateFunction(
-		[]string{},
+	function := node.CreateFunction(
+		[]node.Node{},
 		[]node.Node{
-			{
-				Type: node.BIN_EXPR,
-				Params: []node.Node{
-					{Type: node.NUMBER, Value: "3"},
-					node.CreateTokenNode(tokens.PLUS_TOKEN),
-					{Type: node.NUMBER, Value: "4"},
-				},
-			},
+			node.CreateBinaryExpression(
+				node.CreateNumber("3"),
+				tokens.PLUS_TOKEN,
+				node.CreateNumber("4"),
+			),
 		},
 	)
 
 	ast := []node.Node{
-		CreateFunctionCall(function, []node.Node{}),
+		node.CreateFunctionCall(function, []node.Node{}),
 	}
 
 	evaluatorObj := evaluator.New(ast)
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		{Type: node.NUMBER, Value: "7"},
+		node.CreateNumber("7"),
 	}
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
