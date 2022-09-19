@@ -101,27 +101,6 @@ func GetKeywordToken(literal string) Token {
 	return identifierToken
 }
 
-var symbols = map[byte]Token{
-	'+': PLUS_TOKEN,
-	'-': MINUS_TOKEN,
-	'*': ASTERISK_TOKEN,
-	'/': FORWARD_SLASH_TOKEN,
-	';': SEMICOLON_TOKEN,
-	'(': OPEN_PAREN_TOKEN,
-	')': CLOSED_PAREN_TOKEN,
-	'=': ASSIGN_TOKEN,
-	',': COMMA_TOKEN,
-	'{': OPEN_CURLY_BRACKET_TOKEN,
-	'}': CLOSED_CURLY_BRACKET_TOKEN,
-}
-
-func getSymbolType(literal byte) Token {
-	if tokenType, ok := symbols[literal]; ok {
-		return tokenType
-	}
-	panic(fmt.Sprintf("Invalid symbol: %c", literal))
-}
-
 func TokenTypesEqual(first Token, second Token) bool {
 	return first.Type == second.Type
 }

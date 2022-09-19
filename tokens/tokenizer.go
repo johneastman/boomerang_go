@@ -3,6 +3,8 @@ package tokens
 import (
 	"fmt"
 	"regexp"
+	"sort"
+	"strings"
 )
 
 type Tokenizer struct {
@@ -90,7 +92,56 @@ func (t *Tokenizer) Next() Token {
 		return Token{Literal: literal, Type: NUMBER}
 	}
 
-	literal := t.current()
-	t.advance()
-	return getSymbolType(literal)
+	token, err := t.getMatchingTokens()
+	if err != nil {
+		panic(err.Error())
+	}
+	return *token
+}
+
+func (t *Tokenizer) getMatchingTokens() (*Token, error) {
+	// Get list of tokens where the token literal start with current character
+	var matchingTokens []Token
+	for _, token := range tokenData {
+		if strings.HasPrefix(token.Literal, string(t.current())) {
+			matchingTokens = append(matchingTokens, token)
+		}
+	}
+
+	/*
+		Sort the tokens by the length of the token literals in descending order. Sorting in descending ensures shorter
+		tokens with similar characters to longer tokens are not mistakenly matched (for example, with '==', two '='
+		tokens might be returned if the smaller tokens are ordered first).
+	*/
+	sort.SliceStable(matchingTokens, func(i, j int) bool {
+		first := matchingTokens[i]
+		second := matchingTokens[j]
+		return len(first.Literal) > len(second.Literal)
+	})
+
+	/*
+			For every matching token, check that the source code at the current position plus the length of the
+			matching token literal are equal. For example:
+
+				source = "1 == 1"
+			              ^
+		           pos: 2
+			 len of '==': 2
+
+			Search source from 2 to 4 (source[2 : 4]), but the last value is exclusive, so source[2 : 3] is returned,
+			which is  "==".
+	*/
+	for _, matchingToken := range matchingTokens {
+		source := t.source[t.currentPos : t.currentPos+len(matchingToken.Literal)]
+		if source == matchingToken.Literal {
+
+			// Advance past n characters, where n is the length of the token literal
+			for i := 0; i < len(source); i++ {
+				t.advance()
+			}
+
+			return &matchingToken, nil
+		}
+	}
+	return nil, fmt.Errorf("invalid symbol: %c", t.current())
 }
