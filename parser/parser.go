@@ -136,7 +136,7 @@ func (p *parser) parsePrefix() node.Node {
 		return node.CreateIdentifier(identifier.Literal)
 	}
 
-	panic(fmt.Sprintf("Invalid prefix: %s", p.current.Type))
+	panic(fmt.Sprintf("Unexpected token: %s (%#v)", p.current.Type, p.current.Literal))
 }
 
 func (p *parser) parseInfix(left node.Node) node.Node {
