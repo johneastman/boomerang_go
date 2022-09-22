@@ -29,6 +29,61 @@ func TestParser_Numbers(t *testing.T) {
 	}
 }
 
+func TestParser_Strings(t *testing.T) {
+
+	tests := []struct {
+		InputSource  string
+		OutputSource string
+		Params       []node.Node
+	}{
+		{
+			InputSource:  "hello, world!",
+			OutputSource: "hello, world!",
+			Params:       []node.Node{},
+		},
+		{
+			InputSource:  "My age is {55}",
+			OutputSource: "My age is <0>",
+			Params: []node.Node{
+				node.CreateNumber("55"),
+			},
+		},
+		{
+			InputSource:  "{1 + 1} {1 + 1} {1 + 1}",
+			OutputSource: "<0> <1> <2>",
+			Params: []node.Node{
+				node.CreateBinaryExpression(
+					node.CreateNumber("1"),
+					tokens.PLUS_TOKEN,
+					node.CreateNumber("1"),
+				),
+				node.CreateBinaryExpression(
+					node.CreateNumber("1"),
+					tokens.PLUS_TOKEN,
+					node.CreateNumber("1"),
+				),
+				node.CreateBinaryExpression(
+					node.CreateNumber("1"),
+					tokens.PLUS_TOKEN,
+					node.CreateNumber("1"),
+				),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		source := fmt.Sprintf("\"%s\";", test.InputSource)
+		tokenizer := tokens.New(source)
+		parserObj := parser.New(tokenizer)
+
+		actualAST := parserObj.Parse()
+		expectedAST := []node.Node{
+			node.CreateString(test.OutputSource, test.Params),
+		}
+		AssertNodesEqual(t, expectedAST, actualAST)
+	}
+}
+
 func TestParser_TestParameters(t *testing.T) {
 
 	tests := []struct {

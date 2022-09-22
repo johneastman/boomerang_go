@@ -5,6 +5,7 @@ import (
 	"boomerang/tokens"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type evaluator struct {
@@ -69,6 +70,13 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 
 	case node.PARAMETER:
 		return expr
+
+	case node.STRING:
+		for i, param := range expr.Params {
+			value := e.evaluateExpression(param)
+			expr.Value = strings.Replace(expr.Value, fmt.Sprintf("<%d>", i), value.String(), 1)
+		}
+		return node.CreateString(expr.Value, []node.Node{})
 
 	case node.IDENTIFIER:
 		return e.getVariable(expr.Value)

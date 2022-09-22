@@ -16,6 +16,16 @@ func TestNode_CreateNumber(t *testing.T) {
 	AssertNodeEqual(t, expectedNode, actualNode)
 }
 
+func TestNode_CreateString(t *testing.T) {
+	actualNode := node.CreateString("hello, world!", []node.Node{})
+	expectedNode := node.Node{
+		Type:   node.STRING,
+		Value:  "hello, world!",
+		Params: []node.Node{},
+	}
+	AssertNodeEqual(t, expectedNode, actualNode)
+}
+
 func TestNode_CreateTokenNode(t *testing.T) {
 	token := tokens.PLUS_TOKEN
 	actualNode := node.CreateTokenNode(token)

@@ -4,6 +4,8 @@ import (
 	"boomerang/node"
 	"boomerang/tokens"
 	"fmt"
+	"regexp"
+	"strings"
 )
 
 const (
@@ -61,7 +63,7 @@ func (p *parser) parseStatement() node.Node {
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT_TOKEN) {
 		p.advance()
-		p.expectedToken(tokens.OPEN_PAREN_TOKEN)
+		p.expectToken(tokens.OPEN_PAREN_TOKEN)
 
 		parameters := p.parseParameters()
 		statement = node.CreatePrintStatement(parameters.Params)
@@ -70,7 +72,7 @@ func (p *parser) parseStatement() node.Node {
 		statement = p.parseExpression(LOWEST)
 	}
 
-	p.expectedToken(tokens.SEMICOLON_TOKEN)
+	p.expectToken(tokens.SEMICOLON_TOKEN)
 	return statement
 }
 
@@ -89,6 +91,35 @@ func (p *parser) parsePrefix() node.Node {
 		value := p.current.Literal
 		p.advance()
 		return node.CreateNumber(value)
+
+	} else if tokens.TokenTypesEqual(p.current, tokens.STRING_TOKEN) {
+		stringLiteral := p.current.Literal
+		params := []node.Node{}
+		expressionIndex := 0
+
+		r := regexp.MustCompile(`{[^{}]*}`)
+		for {
+			match := r.FindStringIndex(stringLiteral)
+			if len(match) == 0 {
+				break
+			}
+
+			startPos := match[0]
+			endPos := match[1]
+
+			expressionInString := stringLiteral[startPos+1 : endPos-1]
+
+			tokenizer := tokens.New(expressionInString)
+			parserObj := New(tokenizer)
+			expression := parserObj.parseExpression(LOWEST)
+			params = append(params, expression)
+
+			stringLiteral = strings.Replace(stringLiteral, stringLiteral[startPos:endPos], fmt.Sprintf("<%d>", expressionIndex), 1)
+			expressionIndex += 1
+		}
+
+		p.advance()
+		return node.CreateString(stringLiteral, params)
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.MINUS_TOKEN) {
 		op := p.current
@@ -167,10 +198,10 @@ func (p *parser) parseParameters() node.Node {
 
 func (p *parser) parseFunction() node.Node {
 	p.advance()
-	p.expectedToken(tokens.OPEN_PAREN_TOKEN)
+	p.expectToken(tokens.OPEN_PAREN_TOKEN)
 
 	parameters := p.parseParameters()
-	p.expectedToken(tokens.OPEN_CURLY_BRACKET_TOKEN)
+	p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN)
 
 	statements := []node.Node{}
 	for p.current != tokens.CLOSED_CURLY_BRACKET_TOKEN {
@@ -178,7 +209,7 @@ func (p *parser) parseFunction() node.Node {
 		statements = append(statements, statement)
 	}
 
-	p.expectedToken(tokens.CLOSED_CURLY_BRACKET_TOKEN)
+	p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN)
 	return node.CreateFunction(parameters.Params, statements)
 }
 
@@ -190,7 +221,7 @@ func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
 	return level
 }
 
-func (p *parser) expectedToken(token tokens.Token) {
+func (p *parser) expectToken(token tokens.Token) {
 	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
 	// the next token.
 	if !(tokens.TokenTypesEqual(p.current, token)) {

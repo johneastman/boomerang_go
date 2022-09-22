@@ -50,6 +50,53 @@ func TestEvaluator_NegativeNumber(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
+func TestEvaluator_Strings(t *testing.T) {
+
+	tests := []struct {
+		InputSource  string
+		OutputSource string
+		Params       []node.Node
+	}{
+		{
+			InputSource:  "hello, world!",
+			OutputSource: "hello, world!",
+			Params:       []node.Node{},
+		},
+		{
+			InputSource:  "the time is <0>:<1>",
+			OutputSource: "the time is 12:45",
+			Params: []node.Node{
+				node.CreateNumber("12"),
+				node.CreateNumber("45"),
+			},
+		},
+		{
+			InputSource:  "the result is <0>",
+			OutputSource: "the result is 13",
+			Params: []node.Node{
+				node.CreateBinaryExpression(
+					node.CreateNumber("7"),
+					tokens.PLUS_TOKEN,
+					node.CreateNumber("6"),
+				),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		ast := []node.Node{
+			node.CreateString(test.InputSource, test.Params),
+		}
+		evaluatorObj := evaluator.New(ast)
+
+		actualResults := evaluatorObj.Evaluate()
+		expectedResults := []node.Node{
+			node.CreateString(test.OutputSource, []node.Node{}),
+		}
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
+}
+
 func TestEvaluator_Parameters(t *testing.T) {
 
 	parameters := [][]node.Node{
@@ -231,9 +278,9 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 				},
 				[]node.Node{
 					node.CreateBinaryExpression(
-						node.Node{Type: node.IDENTIFIER, Value: "a"},
+						node.CreateIdentifier("a"),
 						tokens.FORWARD_SLASH_TOKEN,
-						node.Node{Type: node.IDENTIFIER, Value: "b"},
+						node.CreateIdentifier("b"),
 					),
 				},
 			),

@@ -2,6 +2,7 @@ package tests
 
 import (
 	"boomerang/tokens"
+	"fmt"
 	"testing"
 )
 
@@ -65,6 +66,27 @@ func TestTokenizer_Numbers(t *testing.T) {
 		token := tokenizer.Next()
 
 		AssertTokenEqual(t, tokens.Token{Type: tokens.NUMBER_TOKEN.Type, Literal: source}, token)
+	}
+}
+
+func TestTokenizer_Strings(t *testing.T) {
+
+	testStrings := []string{
+		"hello, world!",
+		"abcdefghijklmnopqrstuvwxyz",
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"1",
+		"1234567890",
+	}
+
+	for _, testString := range testStrings {
+
+		source := fmt.Sprintf("\"%s\";", testString)
+
+		tokenizer := tokens.New(source)
+		token := tokenizer.Next()
+
+		AssertTokenEqual(t, tokens.Token{Type: tokens.STRING_TOKEN.Type, Literal: testString}, token)
 	}
 }
 

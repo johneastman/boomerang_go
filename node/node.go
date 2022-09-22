@@ -14,6 +14,7 @@ type Node struct {
 
 const (
 	NUMBER                 = "Number"
+	STRING                 = "String"
 	BIN_EXPR               = "BinaryExpression"
 	STMTS                  = "Statements"
 	EXPR                   = "Expression"
@@ -108,7 +109,9 @@ func (n *Node) getParam(key string) (*Node, error) {
 }
 
 func (n *Node) String() string {
-	if n.Type == PARAMETER {
+
+	switch n.Type {
+	case PARAMETER:
 		var s string
 		for i, param := range n.Params {
 			if i < len(n.Params)-1 {
@@ -118,8 +121,12 @@ func (n *Node) String() string {
 			}
 		}
 		return fmt.Sprintf("(%s)", s)
+	case STRING:
+		doubleQuoteLiteral := tokens.DOUBLE_QUOTE_TOKEN.Literal
+		return fmt.Sprintf("%s%s%s", doubleQuoteLiteral, n.Value, doubleQuoteLiteral)
+	default:
+		return n.Value
 	}
-	return n.Value
 }
 
 func CreateTokenNode(token tokens.Token) Node {
@@ -128,6 +135,10 @@ func CreateTokenNode(token tokens.Token) Node {
 
 func CreateNumber(value string) Node {
 	return Node{Type: NUMBER, Value: value}
+}
+
+func CreateString(literal string, parameters []Node) Node {
+	return Node{Type: STRING, Value: literal, Params: parameters}
 }
 
 func CreateIdentifier(name string) Node {

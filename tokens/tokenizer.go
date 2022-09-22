@@ -71,6 +71,20 @@ func (t *Tokenizer) readNumber() string {
 	return t.source[startPos:endPos]
 }
 
+func (t *Tokenizer) isString() bool {
+	return t.current() == DOUBLE_QUOTE_TOKEN.Literal[0]
+}
+
+func (t *Tokenizer) readString() string {
+	startPos := t.currentPos
+	endPos := startPos
+	for !t.isString() {
+		endPos += 1
+		t.advance()
+	}
+	return t.source[startPos:endPos]
+}
+
 func (t *Tokenizer) Next() Token {
 	t.skipWhitespace()
 
@@ -90,6 +104,12 @@ func (t *Tokenizer) Next() Token {
 			panic(fmt.Sprintf("Invalid number literal: %s", literal))
 		}
 		return Token{Literal: literal, Type: NUMBER}
+
+	} else if t.isString() {
+		t.advance()
+		literal := t.readString()
+		t.advance()
+		return Token{Literal: literal, Type: STRING}
 	}
 
 	token, err := t.getMatchingTokens()
