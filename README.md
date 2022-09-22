@@ -26,6 +26,7 @@ EXPRESSION:
 - FACTOR
 FACTOR:
 - NUMBER('float64')
+- STRING
 - MINUS('-')  # unary operator
 - OPEN_PAREN('(')
 - FUNCTION('func')
@@ -37,6 +38,7 @@ FACTOR:
 |Name|Examples|
 |----|--------|
 |NUMBER|`1`, `2`, `3.14159`, `100`, `1234567890`, `0.987654321`|
+|STRING|`"hello, world!"`, `"1234567890"`, `"abcdefghijklmnopqrstuvwxyz"`, `"My number is {1 + 1}"`|
 |PARAMETER|`(1, 2)`, `(1, 2, 3)`, `(1, 2, 3 (6, 7, 8), 4, 5)`|
 
 ### Math Operators
