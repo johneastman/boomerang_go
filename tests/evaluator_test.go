@@ -99,31 +99,76 @@ func TestEvaluator_Strings(t *testing.T) {
 
 func TestEvaluator_Parameters(t *testing.T) {
 
-	parameters := [][]node.Node{
-		{},
-		{node.CreateNumber("55")},
-		{node.CreateNumber("67"), node.CreateNumber("33")},
-		{node.CreateNumber("66"), node.CreateNumber("4"), node.CreateNumber("30")},
+	tests := []struct {
+		Parameters     []node.Node
+		ExpectedResult node.Node
+	}{
 		{
-			node.CreateNumber("5"),
-			node.CreateParameters([]node.Node{
-				node.CreateNumber("78"),
+			Parameters:     []node.Node{},
+			ExpectedResult: node.CreateParameters([]node.Node{}),
+		},
+		{
+			Parameters: []node.Node{
+				node.CreateNumber("55"),
+			},
+			ExpectedResult: node.CreateParameters([]node.Node{node.CreateNumber("55")}),
+		},
+		{
+			Parameters: []node.Node{
+				node.CreateNumber("34"),
+				node.CreateBinaryExpression(
+					node.CreateNumber("40"),
+					tokens.ASTERISK_TOKEN,
+					node.CreateNumber("3"),
+				),
+				node.CreateNumber("66"),
+			},
+			ExpectedResult: node.CreateParameters([]node.Node{
+				node.CreateNumber("34"),
+				node.CreateNumber("120"),
+				node.CreateNumber("66"),
 			}),
-			node.CreateNumber("60"),
+		},
+		{
+			Parameters: []node.Node{
+				node.CreateNumber("66"),
+				node.CreateNumber("4"),
+				node.CreateNumber("30"),
+			},
+			ExpectedResult: node.CreateParameters([]node.Node{
+				node.CreateNumber("66"),
+				node.CreateNumber("4"),
+				node.CreateNumber("30"),
+			}),
+		},
+		{
+			Parameters: []node.Node{
+				node.CreateNumber("5"),
+				node.CreateParameters([]node.Node{
+					node.CreateNumber("78"),
+				}),
+				node.CreateNumber("60"),
+			},
+			ExpectedResult: node.CreateParameters([]node.Node{
+				node.CreateNumber("5"),
+				node.CreateParameters([]node.Node{
+					node.CreateNumber("78"),
+				}),
+				node.CreateNumber("60"),
+			}),
 		},
 	}
 
-	for _, param := range parameters {
+	for _, test := range tests {
 		ast := []node.Node{
-			node.CreateParameters(param),
+			node.CreateParameters(test.Parameters),
 		}
 		evaluatorObj := evaluator.New(ast)
 
 		actualResults := evaluatorObj.Evaluate()
 		expectedResults := []node.Node{
-			node.CreateParameters(param),
+			test.ExpectedResult,
 		}
-
 		AssertNodesEqual(t, expectedResults, actualResults)
 	}
 }

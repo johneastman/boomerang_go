@@ -69,6 +69,9 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 		return expr
 
 	case node.PARAMETER:
+		for i := range expr.Params {
+			expr.Params[i] = e.evaluateExpression(expr.Params[i])
+		}
 		return expr
 
 	case node.STRING:
