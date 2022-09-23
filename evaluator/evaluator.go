@@ -36,26 +36,34 @@ func (e *evaluator) evaluateStatements(stmts []node.Node) []node.Node {
 
 func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool) {
 	if stmt.Type == node.ASSIGN_STMT {
-		variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
-		value := e.evaluateExpression(stmt.GetParam(node.EXPR))
-		e.env[variable.Value] = value
+		e.evaluateAssignmentStatement(stmt)
 		return nil, false
 
 	} else if stmt.Type == node.PRINT_STMT {
-		for i, node := range stmt.Params {
-			evaluatedParam := e.evaluateExpression(node)
-
-			if i < len(stmt.Params)-1 {
-				fmt.Printf("%s ", evaluatedParam.String())
-			} else {
-				fmt.Println(evaluatedParam.String())
-			}
-		}
+		e.evaluatePrintStatement(stmt)
 		return nil, false
 	}
 
 	statementExpression := e.evaluateExpression(stmt)
 	return &statementExpression, true
+}
+
+func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) {
+	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
+	value := e.evaluateExpression(stmt.GetParam(node.EXPR))
+	e.env[variable.Value] = value
+}
+
+func (e *evaluator) evaluatePrintStatement(stmt node.Node) {
+	for i, node := range stmt.Params {
+		evaluatedParam := e.evaluateExpression(node)
+
+		if i < len(stmt.Params)-1 {
+			fmt.Printf("%s ", evaluatedParam.String())
+		} else {
+			fmt.Println(evaluatedParam.String())
+		}
+	}
 }
 
 func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
@@ -69,111 +77,131 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 		return expr
 
 	case node.PARAMETER:
-		for i := range expr.Params {
-			expr.Params[i] = e.evaluateExpression(expr.Params[i])
-		}
-		return expr
+		return e.evaluateParameter(expr)
 
 	case node.STRING:
-		for i, param := range expr.Params {
-			value := e.evaluateExpression(param)
-			expr.Value = strings.Replace(expr.Value, fmt.Sprintf("<%d>", i), value.String(), 1)
-		}
-		return node.CreateString(expr.Value, []node.Node{})
+		return e.evaluateString(expr)
 
 	case node.IDENTIFIER:
 		return e.getVariable(expr.Value)
 
 	case node.UNARY_EXPR:
-		expression := e.evaluateExpression(expr.GetParam(node.EXPR))
-		operator := expr.GetParam(node.OPERATOR)
-		if operator.Type == tokens.MINUS {
-			expressionValue := -e.toFloat(expression.Value)
-			return e.createNumberNode(expressionValue)
-		}
-		panic(fmt.Sprintf("Invalid unary operator: %s", expr.Type))
+		return e.evaluateUnaryExpression(expr)
 
 	case node.BIN_EXPR:
-		left := e.evaluateExpression(expr.GetParam(node.LEFT))
-		right := e.evaluateExpression(expr.GetParam(node.RIGHT))
-		op := expr.GetParam(node.OPERATOR)
-
-		checkOperatorCompatible(left, op, right)
-
-		switch op.Type {
-
-		case tokens.PLUS:
-			result := e.toFloat(left.Value) + e.toFloat(right.Value)
-			return e.createNumberNode(result)
-
-		case tokens.MINUS:
-			result := e.toFloat(left.Value) - e.toFloat(right.Value)
-			return e.createNumberNode(result)
-
-		case tokens.ASTERISK:
-			result := e.toFloat(left.Value) * e.toFloat(right.Value)
-			return e.createNumberNode(result)
-
-		case tokens.FORWARD_SLASH:
-			if right.Value == "0" {
-				panic("Cannot divide by zero.")
-			}
-			result := e.toFloat(left.Value) / e.toFloat(right.Value)
-			return e.createNumberNode(result)
-
-		case tokens.LEFT_PTR:
-			functionCall := node.CreateFunctionCall(left, right.Params)
-			return e.evaluateExpression(functionCall)
-
-		case tokens.RIGHT_PTR:
-			functionCall := node.CreateFunctionCall(right, left.Params)
-			return e.evaluateExpression(functionCall)
-
-		default:
-			panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
-		}
+		return e.evaluateBinaryExpression(expr)
 
 	case node.FUNCTION_CALL:
-		callParams := expr.GetParam(node.CALL_PARAMS) // Parameters pass to function
-		function := expr.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
-
-		if function.Type == node.IDENTIFIER {
-			// If the function object is an identifier, retireve the actual function object from the environment
-			function = e.getVariable(function.Value)
-		}
-
-		// Assert that the function object is, in fact, a callable function
-		if function.Type != node.FUNCTION {
-			panic(fmt.Sprintf("Cannot make function call on type %s", function.Type))
-		}
-
-		// Check that the number of arguments passed to the function matches the number of arguments in the function definition
-		functionParams := function.GetParam(node.PARAMETER) // Parameters included in function definition
-		if len(callParams.Params) != len(functionParams.Params) {
-			panic(fmt.Sprintf("Expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params)))
-		}
-
-		tmpEnv := e.env
-		e.env = map[string]node.Node{}
-
-		// Set parameters to environment
-		for i := range callParams.Params {
-			functionParam := functionParams.Params[i]
-			callParam := callParams.Params[i]
-
-			e.env[functionParam.Value] = e.evaluateExpression(callParam)
-		}
-
-		functionResults := e.evaluateStatements(function.GetParam(node.STMTS).Params)
-		if len(functionResults) == 0 {
-			panic("Function returns nothing")
-		}
-
-		e.env = tmpEnv
-		return functionResults[len(functionResults)-1] // Return the results of the last statement in the function
+		return e.evaluateFunctionCall(expr)
 	}
 
 	panic(fmt.Sprintf("Invalid type %#v", expr.Type))
+}
+
+func (e *evaluator) evaluateParameter(parameterExpression node.Node) node.Node {
+	for i := range parameterExpression.Params {
+		parameterExpression.Params[i] = e.evaluateExpression(parameterExpression.Params[i])
+	}
+	return parameterExpression
+}
+
+func (e *evaluator) evaluateString(stringExpression node.Node) node.Node {
+	for i, param := range stringExpression.Params {
+		value := e.evaluateExpression(param)
+		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), value.String(), 1)
+	}
+	return node.CreateString(stringExpression.Value, []node.Node{})
+}
+
+func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) node.Node {
+	expression := e.evaluateExpression(unaryExpression.GetParam(node.EXPR))
+	operator := unaryExpression.GetParam(node.OPERATOR)
+	if operator.Type == tokens.MINUS {
+		expressionValue := -e.toFloat(expression.Value)
+		return e.createNumberNode(expressionValue)
+	}
+	panic(fmt.Sprintf("Invalid unary operator: %s", unaryExpression.Type))
+}
+
+func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) node.Node {
+	left := e.evaluateExpression(binaryExpression.GetParam(node.LEFT))
+	right := e.evaluateExpression(binaryExpression.GetParam(node.RIGHT))
+	op := binaryExpression.GetParam(node.OPERATOR)
+
+	checkOperatorCompatible(left, op, right)
+
+	switch op.Type {
+
+	case tokens.PLUS:
+		result := e.toFloat(left.Value) + e.toFloat(right.Value)
+		return e.createNumberNode(result)
+
+	case tokens.MINUS:
+		result := e.toFloat(left.Value) - e.toFloat(right.Value)
+		return e.createNumberNode(result)
+
+	case tokens.ASTERISK:
+		result := e.toFloat(left.Value) * e.toFloat(right.Value)
+		return e.createNumberNode(result)
+
+	case tokens.FORWARD_SLASH:
+		if right.Value == "0" {
+			panic("Cannot divide by zero.")
+		}
+		result := e.toFloat(left.Value) / e.toFloat(right.Value)
+		return e.createNumberNode(result)
+
+	case tokens.LEFT_PTR:
+		functionCall := node.CreateFunctionCall(left, right.Params)
+		return e.evaluateExpression(functionCall)
+
+	case tokens.RIGHT_PTR:
+		functionCall := node.CreateFunctionCall(right, left.Params)
+		return e.evaluateExpression(functionCall)
+
+	default:
+		panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
+	}
+}
+
+func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.Node {
+	callParams := functionCallExpression.GetParam(node.CALL_PARAMS) // Parameters pass to function
+	function := functionCallExpression.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
+
+	if function.Type == node.IDENTIFIER {
+		// If the function object is an identifier, retireve the actual function object from the environment
+		function = e.getVariable(function.Value)
+	}
+
+	// Assert that the function object is, in fact, a callable function
+	if function.Type != node.FUNCTION {
+		panic(fmt.Sprintf("Cannot make function call on type %s", function.Type))
+	}
+
+	// Check that the number of arguments passed to the function matches the number of arguments in the function definition
+	functionParams := function.GetParam(node.PARAMETER) // Parameters included in function definition
+	if len(callParams.Params) != len(functionParams.Params) {
+		panic(fmt.Sprintf("Expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params)))
+	}
+
+	tmpEnv := e.env
+	e.env = map[string]node.Node{}
+
+	// Set parameters to environment
+	for i := range callParams.Params {
+		functionParam := functionParams.Params[i]
+		callParam := callParams.Params[i]
+
+		e.env[functionParam.Value] = e.evaluateExpression(callParam)
+	}
+
+	functionResults := e.evaluateStatements(function.GetParam(node.STMTS).Params)
+	if len(functionResults) == 0 {
+		panic("Function returns nothing")
+	}
+
+	e.env = tmpEnv
+	return functionResults[len(functionResults)-1] // Return the results of the last statement in the function
 }
 
 func (e *evaluator) toFloat(s string) float64 {

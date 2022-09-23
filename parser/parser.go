@@ -55,18 +55,10 @@ func (p *parser) parseStatement() node.Node {
 	var statement node.Node
 
 	if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER_TOKEN) && tokens.TokenTypesEqual(p.peek, tokens.ASSIGN_TOKEN) {
-		variableName := p.current.Literal
-		p.advance()
-		p.advance()
-		variableExpression := p.parseExpression(LOWEST)
-		statement = node.CreateAssignmentStatement(variableName, variableExpression)
+		statement = p.parseAssignmentStatement()
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT_TOKEN) {
-		p.advance()
-		p.expectToken(tokens.OPEN_PAREN_TOKEN)
-
-		parameters := p.parseParameters()
-		statement = node.CreatePrintStatement(parameters.Params)
+		statement = p.parsePrintStatement()
 
 	} else {
 		statement = p.parseExpression(LOWEST)
@@ -74,6 +66,22 @@ func (p *parser) parseStatement() node.Node {
 
 	p.expectToken(tokens.SEMICOLON_TOKEN)
 	return statement
+}
+
+func (p *parser) parseAssignmentStatement() node.Node {
+	variableName := p.current.Literal
+	p.advance()
+	p.advance()
+	variableExpression := p.parseExpression(LOWEST)
+	return node.CreateAssignmentStatement(variableName, variableExpression)
+}
+
+func (p *parser) parsePrintStatement() node.Node {
+	p.advance()
+	p.expectToken(tokens.OPEN_PAREN_TOKEN)
+
+	parameters := p.parseParameters()
+	return node.CreatePrintStatement(parameters.Params)
 }
 
 func (p *parser) parseExpression(precedenceLevel int) node.Node {
@@ -87,86 +95,26 @@ func (p *parser) parseExpression(precedenceLevel int) node.Node {
 }
 
 func (p *parser) parsePrefix() node.Node {
-	if tokens.TokenTypesEqual(p.current, tokens.NUMBER_TOKEN) {
-		value := p.current.Literal
-		p.advance()
-		return node.CreateNumber(value)
+	switch p.current.Type {
 
-	} else if tokens.TokenTypesEqual(p.current, tokens.STRING_TOKEN) {
-		stringLiteral := p.current.Literal
-		params := []node.Node{}
-		expressionIndex := 0
+	case tokens.NUMBER_TOKEN.Type:
+		return p.parseNumber()
 
-		r := regexp.MustCompile(`{[^{}]*}`)
-		for {
-			match := r.FindStringIndex(stringLiteral)
-			if len(match) == 0 {
-				break
-			}
+	case tokens.STRING_TOKEN.Type:
+		return p.parseStrings()
 
-			startPos := match[0]
-			endPos := match[1]
+	case tokens.MINUS_TOKEN.Type:
+		return p.parseUnaryExpression()
 
-			expressionInString := stringLiteral[startPos+1 : endPos-1]
+	case tokens.OPEN_PAREN_TOKEN.Type:
+		return p.parseGroupedExpression()
 
-			tokenizer := tokens.New(expressionInString)
-			parserObj := New(tokenizer)
-			expression := parserObj.parseExpression(LOWEST)
-			params = append(params, expression)
-
-			stringLiteral = strings.Replace(stringLiteral, stringLiteral[startPos:endPos], fmt.Sprintf("<%d>", expressionIndex), 1)
-			expressionIndex += 1
-		}
-
-		p.advance()
-		return node.CreateString(stringLiteral, params)
-
-	} else if tokens.TokenTypesEqual(p.current, tokens.MINUS_TOKEN) {
-		op := p.current
-		p.advance()
-		expression := p.parsePrefix()
-		return node.CreateUnaryExpression(op, expression)
-
-	} else if tokens.TokenTypesEqual(p.current, tokens.OPEN_PAREN_TOKEN) {
-		p.advance()
-
-		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
-			p.advance()
-			return node.CreateParameters([]node.Node{})
-		}
-
-		expression := p.parseExpression(LOWEST)
-		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
-			p.advance()
-			return expression
-
-		} else if tokens.TokenTypesEqual(p.current, tokens.COMMA_TOKEN) {
-			p.advance()
-			stmts := []node.Node{expression}
-
-			additionalParams := p.parseParameters()
-			stmts = append(stmts, additionalParams.Params...)
-			return node.CreateParameters(stmts)
-		}
-
-		// The expected tokens are either a closed parenthesis or a comma
-		p.expectTokens(
-			[]tokens.Token{
-				tokens.CLOSED_PAREN_TOKEN,
-				tokens.COMMA_TOKEN,
-			},
-		)
-
-	} else if tokens.TokenTypesEqual(p.current, tokens.FUNCTION_TOKEN) {
+	case tokens.FUNCTION_TOKEN.Type:
 		return p.parseFunction()
 
-	} else if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER_TOKEN) {
-		identifier := p.current
-		p.advance()
-
-		return node.CreateIdentifier(identifier.Literal)
+	case tokens.IDENTIFIER_TOKEN.Type:
+		return p.parseIdentifier()
 	}
-
 	panic(fmt.Sprintf("Unexpected token: %s (%#v)", p.current.Type, p.current.Literal))
 }
 
@@ -175,6 +123,94 @@ func (p *parser) parseInfix(left node.Node) node.Node {
 	p.advance()
 	right := p.parseExpression(p.getPrecedenceLevel(op))
 	return node.CreateBinaryExpression(left, op, right)
+}
+
+func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
+	level, ok := precedenceLevels[operator.Type]
+	if !ok {
+		return LOWEST
+	}
+	return level
+}
+
+func (p *parser) parseIdentifier() node.Node {
+	identifier := p.current
+	p.advance()
+	return node.CreateIdentifier(identifier.Literal)
+}
+
+func (p *parser) parseNumber() node.Node {
+	value := p.current.Literal
+	p.advance()
+	return node.CreateNumber(value)
+}
+
+func (p *parser) parseStrings() node.Node {
+	stringLiteral := p.current.Literal
+	params := []node.Node{}
+	expressionIndex := 0
+
+	r := regexp.MustCompile(`{[^{}]*}`)
+	for {
+		match := r.FindStringIndex(stringLiteral)
+		if len(match) == 0 {
+			break
+		}
+
+		startPos := match[0]
+		endPos := match[1]
+
+		expressionInString := stringLiteral[startPos+1 : endPos-1]
+
+		tokenizer := tokens.New(expressionInString)
+		parserObj := New(tokenizer)
+		expression := parserObj.parseExpression(LOWEST)
+		params = append(params, expression)
+
+		stringLiteral = strings.Replace(stringLiteral, stringLiteral[startPos:endPos], fmt.Sprintf("<%d>", expressionIndex), 1)
+		expressionIndex += 1
+	}
+
+	p.advance()
+	return node.CreateString(stringLiteral, params)
+}
+
+func (p *parser) parseUnaryExpression() node.Node {
+	op := p.current
+	p.advance()
+	expression := p.parsePrefix()
+	return node.CreateUnaryExpression(op, expression)
+}
+
+func (p *parser) parseGroupedExpression() node.Node {
+
+	p.advance()
+
+	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
+		p.advance()
+		return node.CreateParameters([]node.Node{})
+	}
+
+	expression := p.parseExpression(LOWEST)
+	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
+		p.advance()
+		return expression
+
+	} else if tokens.TokenTypesEqual(p.current, tokens.COMMA_TOKEN) {
+		p.advance()
+		stmts := []node.Node{expression}
+
+		additionalParams := p.parseParameters()
+		stmts = append(stmts, additionalParams.Params...)
+		return node.CreateParameters(stmts)
+	}
+
+	panic(fmt.Sprintf(
+		"Expected %s or %s, got %s",
+		tokens.CLOSED_PAREN_TOKEN.Type,
+		tokens.COMMA_TOKEN.Type,
+		p.current.Type,
+	))
 }
 
 func (p *parser) parseParameters() node.Node {
@@ -213,14 +249,6 @@ func (p *parser) parseFunction() node.Node {
 	return node.CreateFunction(parameters.Params, statements)
 }
 
-func (p *parser) getPrecedenceLevel(operator tokens.Token) int {
-	level, ok := precedenceLevels[operator.Type]
-	if !ok {
-		return LOWEST
-	}
-	return level
-}
-
 func (p *parser) expectToken(token tokens.Token) {
 	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
 	// the next token.
@@ -228,30 +256,4 @@ func (p *parser) expectToken(token tokens.Token) {
 		panic(fmt.Sprintf("Expected token type %s (%#v), got %s (%#v)", token.Type, token.Literal, p.current.Type, p.current.Literal))
 	}
 	p.advance()
-}
-
-func (p *parser) expectTokens(expectedTokens []tokens.Token) {
-	var tokensStr string
-	isUnexpectedToken := false
-	for i, token := range expectedTokens {
-
-		/*
-			Check if the expected tokens matches the current token. If it does not, set 'isUnexpectedToken' to true
-			and never perform this check again.
-		*/
-		if !(tokens.TokenTypesEqual(p.current, token)) && !isUnexpectedToken {
-			isUnexpectedToken = true
-		}
-
-		tokensStr += fmt.Sprintf("%s (%s)", token.Type, token.Literal)
-		if i < len(expectedTokens)-1 {
-			tokensStr += ", "
-		}
-	}
-
-	// If any of the given tokens were unexpected, raise an error.
-	if isUnexpectedToken {
-		message := fmt.Sprintf("Expected types: %s, got %s (%s)", tokensStr, p.current.Type, p.current.Literal)
-		panic(message)
-	}
 }
