@@ -93,9 +93,10 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 
 	case node.FUNCTION_CALL:
 		return e.evaluateFunctionCall(expr)
-	}
 
-	panic(fmt.Sprintf("Invalid type %#v", expr.Type))
+	default:
+		panic(fmt.Sprintf("Invalid type %#v", expr.Type))
+	}
 }
 
 func (e *evaluator) evaluateParameter(parameterExpression node.Node) node.Node {
@@ -128,36 +129,25 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) node.No
 	right := e.evaluateExpression(binaryExpression.GetParam(node.RIGHT))
 	op := binaryExpression.GetParam(node.OPERATOR)
 
-	checkOperatorCompatible(left, op, right)
-
 	switch op.Type {
 
 	case tokens.PLUS:
-		result := e.toFloat(left.Value) + e.toFloat(right.Value)
-		return e.createNumberNode(result)
+		return e.add(left, right)
 
 	case tokens.MINUS:
-		result := e.toFloat(left.Value) - e.toFloat(right.Value)
-		return e.createNumberNode(result)
+		return e.subtract(left, right)
 
 	case tokens.ASTERISK:
-		result := e.toFloat(left.Value) * e.toFloat(right.Value)
-		return e.createNumberNode(result)
+		return e.multuply(left, right)
 
 	case tokens.FORWARD_SLASH:
-		if right.Value == "0" {
-			panic("Cannot divide by zero.")
-		}
-		result := e.toFloat(left.Value) / e.toFloat(right.Value)
-		return e.createNumberNode(result)
+		return e.divide(left, right)
 
 	case tokens.LEFT_PTR:
-		functionCall := node.CreateFunctionCall(left, right.Params)
-		return e.evaluateExpression(functionCall)
+		return e.leftPointer(left, right)
 
 	case tokens.RIGHT_PTR:
-		functionCall := node.CreateFunctionCall(right, left.Params)
-		return e.evaluateExpression(functionCall)
+		return e.rightPointer(left, right)
 
 	default:
 		panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
@@ -196,12 +186,64 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.
 	}
 
 	functionResults := e.evaluateStatements(function.GetParam(node.STMTS).Params)
+	e.env = tmpEnv
+
 	if len(functionResults) == 0 {
 		panic("Function returns nothing")
 	}
-
-	e.env = tmpEnv
 	return functionResults[len(functionResults)-1] // Return the results of the last statement in the function
+}
+
+func (e *evaluator) add(left node.Node, right node.Node) node.Node {
+	if left.Type == node.NUMBER && right.Type == node.NUMBER {
+		result := e.toFloat(left.Value) + e.toFloat(right.Value)
+		return e.createNumberNode(result)
+	}
+	panic(fmt.Sprintf("cannot add types %s and %s", left.Type, right.Type))
+}
+
+func (e *evaluator) subtract(left node.Node, right node.Node) node.Node {
+	if left.Type == node.NUMBER && right.Type == node.NUMBER {
+		result := e.toFloat(left.Value) - e.toFloat(right.Value)
+		return e.createNumberNode(result)
+	}
+	panic(fmt.Sprintf("cannot subtract types %s and %s", left.Type, right.Type))
+}
+
+func (e *evaluator) multuply(left node.Node, right node.Node) node.Node {
+	if left.Type == node.NUMBER && right.Type == node.NUMBER {
+		result := e.toFloat(left.Value) * e.toFloat(right.Value)
+		return e.createNumberNode(result)
+	}
+	panic(fmt.Sprintf("cannot subtract types %s and %s", left.Type, right.Type))
+}
+
+func (e *evaluator) divide(left node.Node, right node.Node) node.Node {
+	if left.Type == node.NUMBER && right.Type == node.NUMBER {
+
+		if right.Value == "0" {
+			panic("Cannot divide by zero.")
+		}
+		result := e.toFloat(left.Value) / e.toFloat(right.Value)
+		return e.createNumberNode(result)
+	}
+	panic(fmt.Sprintf("cannot subtract types %s and %s", left.Type, right.Type))
+}
+
+func (e evaluator) leftPointer(left node.Node, right node.Node) node.Node {
+	if left.Type == node.FUNCTION && right.Type == node.PARAMETER {
+		functionCall := node.CreateFunctionCall(left, right.Params)
+		return e.evaluateExpression(functionCall)
+	}
+	panic(fmt.Sprintf("cannot use left pointer on types %s and %s", left.Type, right.Type))
+}
+
+func (e evaluator) rightPointer(left node.Node, right node.Node) node.Node {
+	if left.Type == node.PARAMETER && right.Type == node.FUNCTION {
+		functionCall := node.CreateFunctionCall(right, left.Params)
+		return e.evaluateExpression(functionCall)
+	}
+	panic(fmt.Sprintf("cannot use right pointer on types %s and %s", left.Type, right.Type))
 }
 
 func (e *evaluator) toFloat(s string) float64 {
@@ -221,78 +263,4 @@ func (e *evaluator) getVariable(name string) node.Node {
 		return value
 	}
 	panic(fmt.Sprintf("Undefined variable: %s", name))
-}
-
-func checkOperatorCompatible(left node.Node, op node.Node, right node.Node) {
-
-	operatorCompatibilityTable := map[string]map[string][]string{
-		tokens.LEFT_PTR_TOKEN.Type: {
-			node.LEFT: {
-				node.FUNCTION,
-			},
-			node.RIGHT: {
-				node.PARAMETER,
-			},
-		},
-		tokens.RIGHT_PTR_TOKEN.Type: {
-			node.LEFT: {
-				node.PARAMETER,
-			},
-			node.RIGHT: {
-				node.FUNCTION,
-			},
-		},
-		tokens.PLUS_TOKEN.Type: {
-			node.LEFT: {
-				node.NUMBER,
-			},
-			node.RIGHT: {
-				node.NUMBER,
-			},
-		},
-		tokens.MINUS_TOKEN.Type: {
-			node.LEFT: {
-				node.NUMBER,
-			},
-			node.RIGHT: {
-				node.NUMBER,
-			},
-		},
-		tokens.ASTERISK_TOKEN.Type: {
-			node.LEFT: {
-				node.NUMBER,
-			},
-			node.RIGHT: {
-				node.NUMBER,
-			},
-		},
-		tokens.FORWARD_SLASH_TOKEN.Type: {
-			node.LEFT: {
-				node.NUMBER,
-			},
-			node.RIGHT: {
-				node.NUMBER,
-			},
-		},
-	}
-
-	if compatibleTypes, ok := operatorCompatibilityTable[op.Type]; ok {
-		leftTypes := compatibleTypes[node.LEFT]
-		rightTypes := compatibleTypes[node.RIGHT]
-
-		if !(contains(left.Type, leftTypes) || contains(right.Type, rightTypes)) {
-			panic(fmt.Sprintf("invalid operator %s for %s and %s", op.Type, left.Type, right.Type))
-		}
-	} else {
-		panic(fmt.Sprintf("Unsupported type for compatibility check: %s", op.Type))
-	}
-}
-
-func contains(s string, stringList []string) bool {
-	for _, stringElement := range stringList {
-		if s == stringElement {
-			return true
-		}
-	}
-	return false
 }
