@@ -81,6 +81,18 @@ func TestEvaluator_Strings(t *testing.T) {
 				),
 			},
 		},
+		{
+			InputSource:  "Hello, my name is <0>, and I am <1> years old!",
+			OutputSource: "Hello, my name is John, and I am 5 years old!",
+			Params: []node.Node{
+				node.CreateString("John", []node.Node{}),
+				node.CreateBinaryExpression(
+					node.CreateNumber("3"),
+					tokens.PLUS_TOKEN,
+					node.CreateNumber("2"),
+				),
+			},
+		},
 	}
 
 	for _, test := range tests {
