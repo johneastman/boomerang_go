@@ -91,7 +91,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 	case node.FUNCTION:
 		return expr
 
-	case node.PARAMETER:
+	case node.LIST:
 		return e.evaluateParameter(expr)
 
 	case node.IDENTIFIER:
@@ -181,7 +181,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.
 	}
 
 	// Check that the number of arguments passed to the function matches the number of arguments in the function definition
-	functionParams := function.GetParam(node.PARAMETER) // Parameters included in function definition
+	functionParams := function.GetParam(node.LIST) // Parameters included in function definition
 	if len(callParams.Params) != len(functionParams.Params) {
 		panic(fmt.Sprintf("Expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params)))
 	}
@@ -244,11 +244,11 @@ func (e *evaluator) divide(left node.Node, right node.Node) node.Node {
 }
 
 func (e *evaluator) leftPointer(left node.Node, right node.Node) node.Node {
-	if left.Type == node.FUNCTION && right.Type == node.PARAMETER {
+	if left.Type == node.FUNCTION && right.Type == node.LIST {
 		functionCall := node.CreateFunctionCall(left, right.Params)
 		return e.evaluateExpression(functionCall)
 
-	} else if left.Type == node.BUILTIN_FUNC && right.Type == node.PARAMETER {
+	} else if left.Type == node.BUILTIN_FUNC && right.Type == node.LIST {
 		// For builtin functions, Node.Value stores the builtin-function
 		return e.evaluateBuiltinFunction(left.Value, right)
 	}
@@ -265,8 +265,8 @@ func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, paramete
 
 	case node.BUILTIN_UNWRAP:
 
-		if parameters.Type != node.PARAMETER {
-			panic(fmt.Sprintf("Invalid type for unwrap: %s. Expected %s", parameters.Type, node.PARAMETER))
+		if parameters.Type != node.LIST {
+			panic(fmt.Sprintf("Invalid type for unwrap: %s. Expected %s", parameters.Type, node.LIST))
 		}
 
 		// TODO: Incorporate boolean value into computation
@@ -283,11 +283,11 @@ func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, paramete
 }
 
 func (e *evaluator) rightPointer(left node.Node, right node.Node) node.Node {
-	if left.Type == node.PARAMETER && right.Type == node.FUNCTION {
+	if left.Type == node.LIST && right.Type == node.FUNCTION {
 		functionCall := node.CreateFunctionCall(right, left.Params)
 		return e.evaluateExpression(functionCall)
 
-	} else if left.Type == node.PARAMETER && right.Type == node.BUILTIN_FUNC {
+	} else if left.Type == node.LIST && right.Type == node.BUILTIN_FUNC {
 		// For builtin functions, Node.Value stores the builtin-function
 		return e.evaluateBuiltinFunction(right.Value, left)
 	}

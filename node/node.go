@@ -19,7 +19,6 @@ const (
 	RETURN      = "Return"
 	PRINT_STMT  = "PrintStatement"
 	ASSIGN_STMT = "Assign"
-	PARAMETER   = "Parameter"
 
 	// Expressions
 	EXPR                   = "Expression" // Super type
@@ -38,6 +37,7 @@ const (
 	STRING     = "String"
 	BOOLEAN    = "Boolean"
 	IDENTIFIER = "Identifier"
+	LIST       = "List"
 
 	// Builtin functions
 	BUILTIN_FUNC   = "BuiltinFunction" // Builtin function node type
@@ -77,8 +77,8 @@ var indexMap = map[string]map[string]int{
 		EXPR:     1,
 	},
 	FUNCTION: {
-		PARAMETER: 0,
-		STMTS:     1,
+		LIST:  0,
+		STMTS: 1,
 	},
 	FUNCTION_CALL: {
 		CALL_PARAMS: 0,
@@ -124,7 +124,7 @@ func (n *Node) getParam(key string) (*Node, error) {
 func (n *Node) String() string {
 
 	switch n.Type {
-	case PARAMETER:
+	case LIST:
 		var s string
 		for i, param := range n.Params {
 			if i < len(n.Params)-1 {
@@ -160,6 +160,10 @@ func CreateString(literal string, parameters []Node) Node {
 
 func CreateIdentifier(name string) Node {
 	return Node{Type: IDENTIFIER, Value: name}
+}
+
+func CreateList(parameters []Node) Node {
+	return Node{Type: LIST, Params: parameters}
 }
 
 func CreatePrintStatement(params []Node) Node {
@@ -208,7 +212,7 @@ func CreateFunction(parameters []Node, statements []Node) Node {
 	return Node{
 		Type: FUNCTION,
 		Params: []Node{
-			{Type: PARAMETER, Params: parameters},
+			{Type: LIST, Params: parameters},
 			{Type: STMTS, Params: statements},
 		},
 	}
@@ -227,11 +231,6 @@ func CreateFunctionCall(function Node, callParams []Node) Node {
 		},
 	}
 }
-
-func CreateParameters(parameters []Node) Node {
-	return Node{Type: PARAMETER, Params: parameters}
-}
-
 func CreateReturnValue(statement *Node) Node {
 
 	var parameters []Node
@@ -246,5 +245,5 @@ func CreateReturnValue(statement *Node) Node {
 			*statement,
 		}
 	}
-	return CreateParameters(parameters)
+	return CreateList(parameters)
 }

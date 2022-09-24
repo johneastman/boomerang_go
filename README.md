@@ -33,7 +33,7 @@ FACTOR:
 - OPEN_PAREN('(')
 - FUNCTION('func')
 - IDENTIFIER  # variable
-- PARAMETER
+- LIST
 ```
 
 ### Data Types
@@ -42,7 +42,7 @@ FACTOR:
 |NUMBER|`1`, `2`, `3.14159`, `100`, `1234567890`, `0.987654321`|
 |BOOLEAN|`true`, `false`|
 |STRING|`"hello, world!"`, `"1234567890"`, `"abcdefghijklmnopqrstuvwxyz"`, `"My number is {1 + 1}"`|
-|PARAMETER|`(1, 2)`, `(1, 2, 3)`, `(1, 2, 3 (6, 7, 8), 4, 5)`|
+|LIST|`(1, 2)`, `(1, 2, 3)`, `(1, 2, 3 (6, 7, 8), 4, 5)`|
 
 ### Math Operators
 
@@ -53,8 +53,8 @@ FACTOR:
 |minus|-|NUMBER|
 |multiply|*|NUMBER|
 |divide|/|NUMBER|
-|left pointer|<-|left expression: FUNCTION, BUILTIN_FUNCTION, right expression: PARAMETER|
-|right pointer|->|right expression: PARAMETER, left expression: FUNCTION, BUILTIN_FUNCTION|
+|left pointer|<-|left expression: FUNCTION, BUILTIN_FUNCTION, right expression: LIST|
+|right pointer|->|right expression: LIST, left expression: FUNCTION, BUILTIN_FUNCTION|
 
 #### Unary (Prefix) Operators
 |Name|Literal|Valid Types|
@@ -106,9 +106,9 @@ return (1, 2 + 3, 5);
 Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
 
 
-If a `return` statement is not present, the last statement in a function's body is returned. All custom functions (those defined in boomerang files) return a Parameter object. If nothing is returned from the function or an error occurrs, `(false)` is returned. If the function does return successfully, `(true, <RETURN_VALUE>)` is returned, where `RETURN_VALUE` is what the function is expected to return.
+If a `return` statement is not present, the last statement in a function's body is returned. All custom functions (those defined in boomerang files) return a LIST object. If nothing is returned from the function or an error occurrs, `(false)` is returned. If the function does return successfully, `(true, <RETURN_VALUE>)` is returned, where `RETURN_VALUE` is what the function is expected to return.
 
-To get the actual return value from a function, call `unwrap` on the return value. That method takes a Parameter object and a default value to return. If the function successfully returns a value, the actual value will be returned. Otherwise, the provided default value is returned.
+To get the actual return value from a function, call `unwrap` on the function's return value. That method takes a LIST object and a default value to return. If the function successfully returns a value, the actual value will be returned. Otherwise, the provided default value is returned.
 
 
 Examples:

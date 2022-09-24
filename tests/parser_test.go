@@ -139,7 +139,7 @@ func TestParser_TestParameters(t *testing.T) {
 			Params: []node.Node{
 				node.CreateNumber("1"),
 				node.CreateNumber("2"),
-				node.CreateParameters([]node.Node{
+				node.CreateList([]node.Node{
 					node.CreateNumber("4"),
 					node.CreateNumber("5"),
 					node.CreateNumber("6"),
@@ -155,7 +155,7 @@ func TestParser_TestParameters(t *testing.T) {
 
 		actualAST := parserObj.Parse()
 		expectedAST := []node.Node{
-			node.CreateParameters(test.Params),
+			node.CreateList(test.Params),
 		}
 
 		AssertNodesEqual(t, expectedAST, actualAST)
@@ -351,7 +351,7 @@ func TestParser_FunctionCallWithNoParameters(t *testing.T) {
 		node.CreateBinaryExpression(
 			node.CreateIdentifier("divide"),
 			tokens.LEFT_PTR_TOKEN,
-			node.CreateParameters([]node.Node{}),
+			node.CreateList([]node.Node{}),
 		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
@@ -381,7 +381,7 @@ func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
 		node.CreateBinaryExpression(
 			functionNode,
 			tokens.LEFT_PTR_TOKEN,
-			node.CreateParameters([]node.Node{
+			node.CreateList([]node.Node{
 				node.CreateNumber("10"),
 				node.CreateNumber("2"),
 			}),
@@ -412,7 +412,7 @@ func TestParser_FunctionCallWithFunctionLiteralAndRightPointer(t *testing.T) {
 
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
-			node.CreateParameters([]node.Node{
+			node.CreateList([]node.Node{
 				node.CreateNumber("10"),
 				node.CreateNumber("2"),
 			}),
@@ -432,7 +432,7 @@ func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
 		node.CreateBinaryExpression(
 			node.CreateIdentifier("multiply"),
 			tokens.LEFT_PTR_TOKEN,
-			node.CreateParameters([]node.Node{
+			node.CreateList([]node.Node{
 				node.CreateNumber("10"),
 				node.CreateNumber("3"),
 			}),
@@ -448,7 +448,7 @@ func TestParser_FunctionCallWithIdentifierAndRightPointer(t *testing.T) {
 	actualAST := parserObj.Parse()
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
-			node.CreateParameters([]node.Node{
+			node.CreateList([]node.Node{
 				node.CreateNumber("10"),
 				node.CreateNumber("3"),
 			}),

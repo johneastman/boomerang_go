@@ -139,13 +139,13 @@ func TestEvaluator_Parameters(t *testing.T) {
 	}{
 		{
 			Parameters:     []node.Node{},
-			ExpectedResult: node.CreateParameters([]node.Node{}),
+			ExpectedResult: node.CreateList([]node.Node{}),
 		},
 		{
 			Parameters: []node.Node{
 				node.CreateNumber("55"),
 			},
-			ExpectedResult: node.CreateParameters([]node.Node{node.CreateNumber("55")}),
+			ExpectedResult: node.CreateList([]node.Node{node.CreateNumber("55")}),
 		},
 		{
 			Parameters: []node.Node{
@@ -157,7 +157,7 @@ func TestEvaluator_Parameters(t *testing.T) {
 				),
 				node.CreateNumber("66"),
 			},
-			ExpectedResult: node.CreateParameters([]node.Node{
+			ExpectedResult: node.CreateList([]node.Node{
 				node.CreateNumber("34"),
 				node.CreateNumber("120"),
 				node.CreateNumber("66"),
@@ -169,7 +169,7 @@ func TestEvaluator_Parameters(t *testing.T) {
 				node.CreateNumber("4"),
 				node.CreateNumber("30"),
 			},
-			ExpectedResult: node.CreateParameters([]node.Node{
+			ExpectedResult: node.CreateList([]node.Node{
 				node.CreateNumber("66"),
 				node.CreateNumber("4"),
 				node.CreateNumber("30"),
@@ -178,14 +178,14 @@ func TestEvaluator_Parameters(t *testing.T) {
 		{
 			Parameters: []node.Node{
 				node.CreateNumber("5"),
-				node.CreateParameters([]node.Node{
+				node.CreateList([]node.Node{
 					node.CreateNumber("78"),
 				}),
 				node.CreateNumber("60"),
 			},
-			ExpectedResult: node.CreateParameters([]node.Node{
+			ExpectedResult: node.CreateList([]node.Node{
 				node.CreateNumber("5"),
-				node.CreateParameters([]node.Node{
+				node.CreateList([]node.Node{
 					node.CreateNumber("78"),
 				}),
 				node.CreateNumber("60"),
@@ -195,7 +195,7 @@ func TestEvaluator_Parameters(t *testing.T) {
 
 	for _, test := range tests {
 		ast := []node.Node{
-			node.CreateParameters(test.Parameters),
+			node.CreateList(test.Parameters),
 		}
 		evaluatorObj := evaluator.New(ast)
 
@@ -476,7 +476,7 @@ func TestEvaluator_BuiltinLen(t *testing.T) {
 		node.CreateBinaryExpression(
 			node.CreateIdentifier("len"),
 			tokens.LEFT_PTR_TOKEN,
-			node.CreateParameters([]node.Node{
+			node.CreateList([]node.Node{
 				node.CreateNumber("1"),
 				node.CreateNumber("2"),
 				node.CreateNumber("3"),
@@ -535,7 +535,7 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 		unwrapFunctionCall := node.CreateBinaryExpression(
 			node.CreateIdentifier("unwrap"),
 			tokens.LEFT_PTR_TOKEN,
-			node.CreateParameters(
+			node.CreateList(
 				[]node.Node{
 					node.CreateIdentifier(resultVariableName),
 					node.CreateString("hello, world!", []node.Node{}),

@@ -206,7 +206,7 @@ func (p *parser) parseGroupedExpression() node.Node {
 
 	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
 		p.advance()
-		return node.CreateParameters([]node.Node{})
+		return node.CreateList([]node.Node{})
 	}
 
 	expression := p.parseExpression(LOWEST)
@@ -220,7 +220,7 @@ func (p *parser) parseGroupedExpression() node.Node {
 
 		additionalParams := p.parseParameters()
 		stmts = append(stmts, additionalParams.Params...)
-		return node.CreateParameters(stmts)
+		return node.CreateList(stmts)
 	}
 
 	panic(fmt.Sprintf(
@@ -247,7 +247,7 @@ func (p *parser) parseParameters() node.Node {
 			continue
 		}
 	}
-	return node.Node{Type: node.PARAMETER, Params: params}
+	return node.Node{Type: node.LIST, Params: params}
 }
 
 func (p *parser) parseFunction() node.Node {

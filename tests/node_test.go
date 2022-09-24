@@ -170,7 +170,7 @@ func TestNode_CreateFunction(t *testing.T) {
 	expectedNode := node.Node{
 		Type: node.FUNCTION,
 		Params: []node.Node{
-			{Type: node.PARAMETER, Params: []node.Node{
+			{Type: node.LIST, Params: []node.Node{
 				{Type: node.IDENTIFIER, Value: "x"},
 				{Type: node.IDENTIFIER, Value: "y"},
 				{Type: node.IDENTIFIER, Value: "z"},
@@ -227,7 +227,7 @@ func TestNode_CreateFunctionCall(t *testing.T) {
 
 func TestNode_CreateParameters(t *testing.T) {
 	token := tokens.ASTERISK_TOKEN
-	actualNode := node.CreateParameters([]node.Node{
+	actualNode := node.CreateList([]node.Node{
 		node.CreateNumber("1"),
 		node.CreateIdentifier("variable"),
 		node.CreateBinaryExpression(
@@ -238,7 +238,7 @@ func TestNode_CreateParameters(t *testing.T) {
 	})
 
 	expectedNode := node.Node{
-		Type: node.PARAMETER,
+		Type: node.LIST,
 		Params: []node.Node{
 			{Type: node.NUMBER, Value: "1"},
 			{Type: node.IDENTIFIER, Value: "variable"},
@@ -270,7 +270,7 @@ func TestNode_String(t *testing.T) {
 			String: "2",
 		},
 		{
-			Node: node.CreateParameters([]node.Node{
+			Node: node.CreateList([]node.Node{
 				node.CreateNumber("1"),
 				node.CreateNumber("2"),
 				node.CreateNumber("3"),
@@ -278,11 +278,11 @@ func TestNode_String(t *testing.T) {
 			String: "(1, 2, 3)",
 		},
 		{
-			Node: node.CreateParameters([]node.Node{
+			Node: node.CreateList([]node.Node{
 				node.CreateNumber("1"),
 				node.CreateNumber("2"),
 				node.CreateNumber("3"),
-				node.CreateParameters([]node.Node{
+				node.CreateList([]node.Node{
 					node.CreateNumber("5"),
 					node.CreateNumber("7"),
 					node.CreateNumber("6"),
@@ -331,7 +331,7 @@ func TestNode_BuiltinFunction(t *testing.T) {
 func TestNode_CreateReturnValueNoParams(t *testing.T) {
 	actualNode := node.CreateReturnValue(nil)
 	expectedNode := node.Node{
-		Type: node.PARAMETER,
+		Type: node.LIST,
 		Params: []node.Node{
 			{
 				Type:  node.BOOLEAN,
@@ -347,7 +347,7 @@ func TestNode_CreateReturnValueParams(t *testing.T) {
 	actualReturnValue := node.CreateNumber("5")
 	actualNode := node.CreateReturnValue(&actualReturnValue)
 	expectedNode := node.Node{
-		Type: node.PARAMETER,
+		Type: node.LIST,
 		Params: []node.Node{
 			{
 				Type:  node.BOOLEAN,
