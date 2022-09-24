@@ -491,3 +491,69 @@ func TestEvaluator_BuiltinLen(t *testing.T) {
 	}
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
+
+func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
+
+	tests := []struct {
+		Body                []node.Node
+		ExpectedReturnValue node.Node
+	}{
+		{
+			Body: []node.Node{
+				node.CreateBinaryExpression(
+					node.CreateNumber("13"),
+					tokens.PLUS_TOKEN,
+					node.CreateNumber("7"),
+				),
+			},
+			ExpectedReturnValue: node.CreateNumber("20"),
+		},
+		{
+			Body:                []node.Node{},
+			ExpectedReturnValue: node.CreateString("hello, world!", []node.Node{}),
+		},
+	}
+
+	for _, test := range tests {
+		functionName := "function"
+		functionAssignment := node.CreateAssignmentStatement(
+			functionName,
+			node.CreateFunction(
+				[]node.Node{},
+				test.Body,
+			),
+		)
+
+		resultVariableName := "result"
+		functionCallAssignment := node.CreateAssignmentStatement(
+			resultVariableName,
+			node.CreateFunctionCall(
+				node.CreateIdentifier(functionName), []node.Node{},
+			),
+		)
+
+		unwrapFunctionCall := node.CreateBinaryExpression(
+			node.CreateIdentifier("unwrap"),
+			tokens.LEFT_PTR_TOKEN,
+			node.CreateParameters(
+				[]node.Node{
+					node.CreateIdentifier(resultVariableName),
+					node.CreateString("hello, world!", []node.Node{}),
+				},
+			),
+		)
+
+		ast := []node.Node{
+			functionAssignment,
+			functionCallAssignment,
+			unwrapFunctionCall,
+		}
+		evaluatorObj := evaluator.New(ast)
+
+		actualResults := evaluatorObj.Evaluate()
+		expectedResults := []node.Node{
+			test.ExpectedReturnValue,
+		}
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
+}

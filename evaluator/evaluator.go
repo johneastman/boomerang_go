@@ -256,12 +256,27 @@ func (e *evaluator) leftPointer(left node.Node, right node.Node) node.Node {
 	panic(fmt.Sprintf("cannot use left pointer on types %s and %s", left.Type, right.Type))
 }
 
-func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, right node.Node) node.Node {
+func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, parameters node.Node) node.Node {
 
 	switch builtinFunctionType {
 	case node.BUILTIN_LEN:
-		value := len(right.Params)
+		value := len(parameters.Params)
 		return node.CreateNumber(fmt.Sprint(value))
+
+	case node.BUILTIN_UNWRAP:
+
+		if parameters.Type != node.PARAMETER {
+			panic(fmt.Sprintf("Invalid type for unwrap: %s. Expected %s", parameters.Type, node.PARAMETER))
+		}
+
+		// TODO: Incorporate boolean value into computation
+		returnParam := parameters.Params[0]
+		defaultValue := parameters.Params[1]
+		if len(returnParam.Params) == 1 {
+			return e.evaluateExpression(defaultValue)
+		}
+		return e.evaluateExpression(returnParam.Params[1]) // Params[0] contains the boolean value
+
 	default:
 		panic(fmt.Sprintf("Undefined builtin function: %s", builtinFunctionType))
 	}

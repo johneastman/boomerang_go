@@ -12,8 +12,13 @@ type environment struct {
 
 func CreateEnvironment() environment {
 	env := map[string]node.Node{}
+
+	// Builtin bariables
 	env["pi"] = node.CreateNumber(fmt.Sprintf("%v", math.Pi))
+
+	// Builtin functions
 	env["len"] = node.CreateBuiltinFunction(node.BUILTIN_LEN)
+	env["unwrap"] = node.CreateBuiltinFunction(node.BUILTIN_UNWRAP)
 
 	return environment{env: env}
 }
