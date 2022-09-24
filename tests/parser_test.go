@@ -439,3 +439,18 @@ func TestParser_FunctionCallWithIdentifierAndRightPointer(t *testing.T) {
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
+
+func TestParser_ReturnStatements(t *testing.T) {
+	tokenizer := tokens.New("return 1 + 1;")
+	parserObj := parser.New(tokenizer)
+
+	actualAST := parserObj.Parse()
+	expectedAST := []node.Node{
+		node.CreateReturnStatement(node.CreateBinaryExpression(
+			node.CreateNumber("1"),
+			tokens.PLUS_TOKEN,
+			node.CreateNumber("1"),
+		)),
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}

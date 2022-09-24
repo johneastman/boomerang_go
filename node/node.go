@@ -30,6 +30,7 @@ const (
 	PRINT_STMT             = "PrintStatement"
 	ASSIGN_STMT            = "Assign"
 	ASSIGN_STMT_IDENTIFIER = "Identifier"
+	RETURN                 = "Return"
 )
 
 /*
@@ -181,6 +182,10 @@ func CreateAssignmentStatement(variableName string, value Node) Node {
 			value,
 		},
 	}
+}
+
+func CreateReturnStatement(expression Node) Node {
+	return Node{Type: RETURN, Params: []Node{expression}}
 }
 
 func CreateFunction(parameters []Node, statements []Node) Node {

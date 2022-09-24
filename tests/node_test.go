@@ -284,3 +284,22 @@ func TestNode_String(t *testing.T) {
 		}
 	}
 }
+
+func TestNode_ReturnStatement(t *testing.T) {
+	actualNode := node.CreateReturnStatement(node.CreateBinaryExpression(
+		node.CreateNumber("1"),
+		tokens.FORWARD_SLASH_TOKEN,
+		node.CreateNumber("2"),
+	))
+	expectedNode := node.Node{Type: node.RETURN, Params: []node.Node{
+		{
+			Type: node.BIN_EXPR,
+			Params: []node.Node{
+				{Type: node.NUMBER, Value: "1"},
+				{Type: tokens.FORWARD_SLASH_TOKEN.Type, Value: tokens.FORWARD_SLASH_TOKEN.Literal},
+				{Type: node.NUMBER, Value: "2"},
+			}},
+	}}
+
+	AssertNodeEqual(t, expectedNode, actualNode)
+}

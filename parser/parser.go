@@ -60,12 +60,21 @@ func (p *parser) parseStatement() node.Node {
 	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT_TOKEN) {
 		statement = p.parsePrintStatement()
 
+	} else if tokens.TokenTypesEqual(p.current, tokens.RETURN_TOKEN) {
+		statement = p.parseReturnStatement()
+
 	} else {
 		statement = p.parseExpression(LOWEST)
 	}
 
 	p.expectToken(tokens.SEMICOLON_TOKEN)
 	return statement
+}
+
+func (p *parser) parseReturnStatement() node.Node {
+	p.advance()
+	expression := p.parseExpression(LOWEST)
+	return node.CreateReturnStatement(expression)
 }
 
 func (p *parser) parseAssignmentStatement() node.Node {

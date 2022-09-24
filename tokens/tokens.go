@@ -31,6 +31,7 @@ const (
 	LEFT_PTR             = "LEFT_POINTER"
 	RIGHT_PTR            = "RIGHT_POINTER"
 	DOUBLE_QUOTE         = "DOUBLE_QUOTE"
+	RETURN               = "RETURN"
 )
 
 // Tokens
@@ -54,6 +55,7 @@ var (
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
 	FUNCTION_TOKEN = getToken(FUNCTION)
+	RETURN_TOKEN   = getToken(RETURN)
 
 	// Data Types
 	NUMBER_TOKEN = getToken(NUMBER)
@@ -85,6 +87,7 @@ var tokenData = map[string]Token{
 	IDENTIFIER:           {Type: "IDENTIFIER", Literal: ""},
 	DOUBLE_QUOTE:         {Type: "DOUBLE_QUOTE", Literal: "\""},
 	STRING:               {Type: "STRING", Literal: ""},
+	RETURN:               {Type: "RETURN", Literal: "return"},
 }
 
 func getToken(name string) Token {
@@ -100,8 +103,9 @@ func GetTokenType(name string) string {
 }
 
 var keywords = map[string]Token{
-	"print": PRINT_TOKEN,
-	"func":  FUNCTION_TOKEN,
+	"print":  PRINT_TOKEN,
+	"func":   FUNCTION_TOKEN,
+	"return": RETURN_TOKEN,
 }
 
 func GetKeywordToken(literal string) Token {

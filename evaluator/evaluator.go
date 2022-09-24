@@ -29,6 +29,11 @@ func (e *evaluator) evaluateStatements(stmts []node.Node) []node.Node {
 	for _, stmt := range stmts {
 		if result, isExpr := e.evaluateStatement(stmt); isExpr {
 			results = append(results, *result)
+
+			if result.Type == node.RETURN {
+				results = append(results, result.Params[0])
+				break
+			}
 		}
 	}
 	return results
@@ -42,6 +47,10 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool) {
 	} else if stmt.Type == node.PRINT_STMT {
 		e.evaluatePrintStatement(stmt)
 		return nil, false
+
+	} else if stmt.Type == node.RETURN {
+		stmt.Params[0] = e.evaluateExpression(stmt.Params[0])
+		return &stmt, true
 	}
 
 	statementExpression := e.evaluateExpression(stmt)

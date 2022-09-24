@@ -16,6 +16,7 @@ STATEMENT:
 - ASSIGN
 - PRINT
 - EXPRESSION
+- RETURN('return')
 EXPRESSION:
 - ADD('+')
 - SUBTRACT('-')
@@ -43,7 +44,7 @@ FACTOR:
 
 ### Math Operators
 
-#### Infix Operators
+#### Binary (Infix) Operators
 |Name|Literal|Valid Types|
 |----|-------|-----------|
 |add|+|NUMBER|
@@ -53,7 +54,7 @@ FACTOR:
 |left pointer|<-|left expression: FUNCTION, right expression: PARAMETER|
 |right pointer|->|right expression: PARAMETER, left expression: FUNCTION|
 
-#### Prefix Operators
+#### Unary (Prefix) Operators
 |Name|Literal|Valid Types|
 |----|-------|-----------|
 |minus|-|NUMBER|
@@ -83,10 +84,23 @@ print(number, number * 2);
 print(); # Does nothing
 ```
 
+#### Return
+Syntax: `return EXPRESSION`
+<br/>
+Examples:
+```
+return 1;
+return 1 + 1;
+return "hello, world!";
+return (1, 2 + 3, 5);
+```
+
+### Expressions
+
 #### Functions
 Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
 <br/>
-The last statement in a function's body is returned. Currently, functions with no statements in their body are allowed.
+If a `return` statement is not present, the last statement in a function's body is returned. Currently, functions with no statements in their body are not allowed.
 <br/>
 Examples:
 ```
