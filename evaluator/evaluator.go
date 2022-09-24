@@ -109,7 +109,7 @@ func (e *evaluator) evaluateParameter(parameterExpression node.Node) node.Node {
 func (e *evaluator) evaluateString(stringExpression node.Node) node.Node {
 	for i, param := range stringExpression.Params {
 		value := e.evaluateExpression(param)
-		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), value.String(), 1)
+		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), value.Value, 1)
 	}
 	return node.CreateString(stringExpression.Value, []node.Node{})
 }
