@@ -5,8 +5,9 @@ import (
 )
 
 type Token struct {
-	Literal string
-	Type    string
+	Literal    string
+	Type       string
+	LineNumber int
 }
 
 // Token names

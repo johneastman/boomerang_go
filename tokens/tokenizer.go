@@ -8,12 +8,13 @@ import (
 )
 
 type Tokenizer struct {
-	source     string
-	currentPos int
+	source            string
+	currentPos        int
+	currentLineNumber int
 }
 
 func New(source string) Tokenizer {
-	return Tokenizer{source: source, currentPos: 0}
+	return Tokenizer{source: source, currentPos: 0, currentLineNumber: 1}
 }
 
 func (t *Tokenizer) current() byte {
@@ -29,6 +30,9 @@ func (t *Tokenizer) advance() {
 
 func (t *Tokenizer) skipWhitespace() {
 	for t.current() == ' ' || t.current() == '\t' || t.current() == '\n' || t.current() == '\r' {
+		if t.current() == '\n' {
+			t.currentLineNumber += 1
+		}
 		t.advance()
 	}
 }
@@ -89,12 +93,15 @@ func (t *Tokenizer) Next() (*Token, error) {
 	t.skipWhitespace()
 
 	if t.current() == 0 {
-		return &EOF_TOKEN, nil
+		token := EOF_TOKEN
+		token.LineNumber = t.currentLineNumber
+		return &token, nil
 	}
 
 	if t.isIdentifier(false) {
 		literal := t.readIdentifier()
 		token := GetKeywordToken(literal)
+		token.LineNumber = t.currentLineNumber
 		return &token, nil
 
 	} else if t.isNumber() {
@@ -102,22 +109,32 @@ func (t *Tokenizer) Next() (*Token, error) {
 
 		r, _ := regexp.Compile("^([0-9]*[.])?[0-9]+$")
 		if !r.MatchString(literal) {
-			return nil, fmt.Errorf("invalid number literal: %s", literal)
+			return nil, fmt.Errorf("error at line %d: invalid number literal: %s", t.currentLineNumber, literal)
 		}
-		return &Token{Literal: literal, Type: NUMBER}, nil
+
+		token := t.createToken(NUMBER, literal)
+		return &token, nil
 
 	} else if t.isString() {
 		t.advance()
 		literal := t.readString()
 		t.advance()
-		return &Token{Literal: literal, Type: STRING}, nil
+
+		token := t.createToken(STRING, literal)
+		return &token, nil
 	}
 
 	token, err := t.getMatchingTokens()
 	if err != nil {
 		return nil, fmt.Errorf(err.Error())
 	}
+
+	token.LineNumber = t.currentLineNumber
 	return token, nil
+}
+
+func (t *Tokenizer) createToken(tokenType string, tokenLiteral string) Token {
+	return Token{Type: tokenType, Literal: tokenLiteral, LineNumber: t.currentLineNumber}
 }
 
 func (t *Tokenizer) getMatchingTokens() (*Token, error) {
@@ -168,5 +185,5 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 			return &matchingToken, nil
 		}
 	}
-	return nil, fmt.Errorf("invalid symbol: %c", t.current())
+	return nil, fmt.Errorf("error at line %d: invalid symbol: %c", t.currentLineNumber, t.current())
 }

@@ -162,7 +162,12 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 		return p.parseIdentifier()
 
 	default:
-		return nil, fmt.Errorf("unexpected token: %s (%#v)", p.current.Type, p.current.Literal)
+		return nil, fmt.Errorf("error at line %d: unexpected token at line %d: %s (%#v)",
+			p.current.LineNumber,
+			p.current.LineNumber,
+			p.current.Type,
+			p.current.Literal,
+		)
 	}
 }
 
@@ -294,8 +299,8 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		return &listNode, nil
 	}
 
-	return nil, fmt.Errorf(
-		"expected %s or %s, got %s",
+	return nil, fmt.Errorf("error at line %d: expected %s or %s, got %s",
+		p.current.LineNumber,
 		tokens.CLOSED_PAREN_TOKEN.Type,
 		tokens.COMMA_TOKEN.Type,
 		p.current.Type,
@@ -338,7 +343,7 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 	p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN)
 
 	statements := []node.Node{}
-	for p.current != tokens.CLOSED_CURLY_BRACKET_TOKEN {
+	for p.current.Type != tokens.CLOSED_CURLY_BRACKET_TOKEN.Type {
 		statement, err := p.parseStatement()
 		if err != nil {
 			return nil, utils.CreateError(err)
@@ -357,7 +362,13 @@ func (p *Parser) expectToken(token tokens.Token) *error {
 	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
 	// the next token.
 	if !(tokens.TokenTypesEqual(p.current, token)) {
-		err := fmt.Errorf("expected token type %s (%#v), got %s (%#v)", token.Type, token.Literal, p.current.Type, p.current.Literal)
+		err := fmt.Errorf("error at line %d: expected token type %s (%#v), got %s (%#v)",
+			p.current.LineNumber,
+			token.Type,
+			token.Literal,
+			p.current.Type,
+			p.current.Literal,
+		)
 		return &err
 	}
 	p.advance()
