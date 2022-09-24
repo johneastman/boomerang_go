@@ -200,7 +200,11 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.
 	functionResults := e.evaluateStatements(function.GetParam(node.STMTS).Params)
 	e.env = tmpEnv
 
-	return node.CreateReturnValue(functionResults)
+	var returnStatement *node.Node = nil
+	if len(functionResults) > 0 {
+		returnStatement = &functionResults[len(functionResults)-1]
+	}
+	return node.CreateReturnValue(returnStatement)
 }
 
 func (e *evaluator) add(left node.Node, right node.Node) node.Node {

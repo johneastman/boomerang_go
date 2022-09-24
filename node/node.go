@@ -13,27 +13,36 @@ type Node struct {
 }
 
 const (
-	NUMBER                 = "Number"
-	STRING                 = "String"
-	BOOLEAN                = "Boolean"
-	BIN_EXPR               = "BinaryExpression"
-	STMTS                  = "Statements"
-	EXPR                   = "Expression"
-	IDENTIFIER             = "Identifier"
+
+	// Statements
+	STMTS       = "Statements" // Super type
+	RETURN      = "Return"
+	PRINT_STMT  = "PrintStatement"
+	ASSIGN_STMT = "Assign"
+	PARAMETER   = "Parameter"
+
+	// Expressions
+	EXPR                   = "Expression" // Super type
+	UNARY_EXPR             = "UnaryExpression"
 	OPERATOR               = "Operator"
-	PARAMETER              = "Parameter"
 	CALL_PARAMS            = "FunctionCallParameters"
 	FUNCTION               = "Function"
 	FUNCTION_CALL          = "FunctionCall"
+	BIN_EXPR               = "BinaryExpression"
 	LEFT                   = "Left"
 	RIGHT                  = "Right"
-	UNARY_EXPR             = "UnaryExpression"
-	PRINT_STMT             = "PrintStatement"
-	ASSIGN_STMT            = "Assign"
 	ASSIGN_STMT_IDENTIFIER = "Identifier"
-	RETURN                 = "Return"
-	BUILTIN_FUNC           = "BuiltinFunction"
-	BUILTIN_LEN            = "BuiltinLen"
+
+	// Factors
+	NUMBER     = "Number"
+	STRING     = "String"
+	BOOLEAN    = "Boolean"
+	IDENTIFIER = "Identifier"
+
+	// Builtin functions
+	BUILTIN_FUNC   = "BuiltinFunction" // Builtin function node type
+	BUILTIN_LEN    = "BuiltinLen"
+	BUILTIN_UNWRAP = "BuiltinUnwrap"
 )
 
 /*
@@ -223,17 +232,19 @@ func CreateParameters(parameters []Node) Node {
 	return Node{Type: PARAMETER, Params: parameters}
 }
 
-func CreateReturnValue(parameters []Node) Node {
-	if len(parameters) == 0 {
-		booleanValue := tokens.FALSE_TOKEN.Literal
-		return CreateParameters([]Node{
-			CreateBoolean(booleanValue),
-		})
+func CreateReturnValue(statement *Node) Node {
+
+	var parameters []Node
+
+	if statement == nil {
+		parameters = []Node{
+			CreateBoolean(tokens.FALSE_TOKEN.Literal),
+		}
 	} else {
-		booleanValue := tokens.TRUE_TOKEN.Literal
-		return CreateParameters([]Node{
-			CreateBoolean(booleanValue),
-			parameters[len(parameters)-1],
-		})
+		parameters = []Node{
+			CreateBoolean(tokens.TRUE_TOKEN.Literal),
+			*statement,
+		}
 	}
+	return CreateParameters(parameters)
 }

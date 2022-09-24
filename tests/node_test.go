@@ -329,7 +329,7 @@ func TestNode_BuiltinFunction(t *testing.T) {
 }
 
 func TestNode_CreateReturnValueNoParams(t *testing.T) {
-	actualNode := node.CreateReturnValue([]node.Node{})
+	actualNode := node.CreateReturnValue(nil)
 	expectedNode := node.Node{
 		Type: node.PARAMETER,
 		Params: []node.Node{
@@ -343,9 +343,9 @@ func TestNode_CreateReturnValueNoParams(t *testing.T) {
 }
 
 func TestNode_CreateReturnValueParams(t *testing.T) {
-	actualNode := node.CreateReturnValue([]node.Node{
-		node.CreateNumber("5"),
-	})
+
+	actualReturnValue := node.CreateNumber("5")
+	actualNode := node.CreateReturnValue(&actualReturnValue)
 	expectedNode := node.Node{
 		Type: node.PARAMETER,
 		Params: []node.Node{
