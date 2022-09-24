@@ -108,6 +108,8 @@ Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; .
 
 If a `return` statement is not present, the last statement in a function's body is returned. All custom functions (those defined in boomerang files) return a Parameter object. If nothing is returned from the function or an error occurrs, `(false)` is returned. If the function does return successfully, `(true, <RETURN_VALUE>)` is returned, where `RETURN_VALUE` is what the function is expected to return.
 
+To get the actual return value from a function, call `unwrap` on the return value. That method takes a Parameter object and a default value to return. If the function successfully returns a value, the actual value will be returned. Otherwise, the provided default value is returned.
+
 
 Examples:
 ```
@@ -115,16 +117,23 @@ add = func(a, b) {
   a + b;
 };
 sum = add <- (1, 2); # sum: (true, 3)
+value = unwrap <- (sum, 0) # value: 3
+
 sum = (3, 4) -> add; # sum: (true, 7)
+value = unwrap <- (sum, 0) # value: 7
 
 sum = func(c, d) {
   c + d;
 } <- (1, 2); # sum = (true, 3)
+value = unwrap <- (sum, 0) # value: 3
 
 value = () -> func() { # value: (true, 24)
   number = 1 + 1;
   (number + 2) * 6;
 };
+value = unwrap <- (value, 0) # value: 24
 
 value = () -> func() {};  # value: (false)
+
+result = unwrap <- (value, 2) # result: 2
 ```
