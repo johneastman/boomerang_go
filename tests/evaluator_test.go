@@ -421,3 +421,24 @@ func TestEvaluator_FunctionCallWithNoParameters(t *testing.T) {
 	}
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
+
+func TestEvaluator_BuiltinLen(t *testing.T) {
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			node.CreateIdentifier("len"),
+			tokens.LEFT_PTR_TOKEN,
+			node.CreateParameters([]node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+				node.CreateNumber("3"),
+			}),
+		),
+	}
+	evaluatorObj := evaluator.New(ast)
+
+	actualResults := evaluatorObj.Evaluate()
+	expectedResults := []node.Node{
+		node.CreateNumber("3"),
+	}
+	AssertNodesEqual(t, expectedResults, actualResults)
+}

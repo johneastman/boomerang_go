@@ -31,6 +31,8 @@ const (
 	ASSIGN_STMT            = "Assign"
 	ASSIGN_STMT_IDENTIFIER = "Identifier"
 	RETURN                 = "Return"
+	BUILTIN_FUNC           = "BuiltinFunction"
+	BUILTIN_LEN            = "BuiltinLen"
 )
 
 /*
@@ -196,6 +198,10 @@ func CreateFunction(parameters []Node, statements []Node) Node {
 			{Type: STMTS, Params: statements},
 		},
 	}
+}
+
+func CreateBuiltinFunction(functionType string) Node {
+	return Node{Type: BUILTIN_FUNC, Value: functionType}
 }
 
 func CreateFunctionCall(function Node, callParams []Node) Node {

@@ -10,13 +10,13 @@ import (
 
 type evaluator struct {
 	ast []node.Node
-	env map[string]node.Node
+	env environment
 }
 
 func New(ast []node.Node) evaluator {
 	return evaluator{
 		ast: ast,
-		env: map[string]node.Node{},
+		env: CreateEnvironment(),
 	}
 }
 
@@ -60,7 +60,7 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool) {
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) {
 	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
 	value := e.evaluateExpression(stmt.GetParam(node.EXPR))
-	e.env[variable.Value] = value
+	e.env.SetIdentifier(variable.Value, value)
 }
 
 func (e *evaluator) evaluatePrintStatement(stmt node.Node) {
@@ -92,7 +92,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 		return e.evaluateString(expr)
 
 	case node.IDENTIFIER:
-		return e.getVariable(expr.Value)
+		return e.env.GetIdentifier(expr.Value)
 
 	case node.UNARY_EXPR:
 		return e.evaluateUnaryExpression(expr)
@@ -169,7 +169,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.
 
 	if function.Type == node.IDENTIFIER {
 		// If the function object is an identifier, retireve the actual function object from the environment
-		function = e.getVariable(function.Value)
+		function = e.env.GetIdentifier(function.Value)
 	}
 
 	// Assert that the function object is, in fact, a callable function
@@ -184,14 +184,14 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.
 	}
 
 	tmpEnv := e.env
-	e.env = map[string]node.Node{}
+	e.env = CreateEnvironment()
 
 	// Set parameters to environment
 	for i := range callParams.Params {
 		functionParam := functionParams.Params[i]
 		callParam := callParams.Params[i]
 
-		e.env[functionParam.Value] = e.evaluateExpression(callParam)
+		e.env.SetIdentifier(functionParam.Value, e.evaluateExpression(callParam))
 	}
 
 	functionResults := e.evaluateStatements(function.GetParam(node.STMTS).Params)
@@ -239,15 +239,31 @@ func (e *evaluator) divide(left node.Node, right node.Node) node.Node {
 	panic(fmt.Sprintf("cannot subtract types %s and %s", left.Type, right.Type))
 }
 
-func (e evaluator) leftPointer(left node.Node, right node.Node) node.Node {
+func (e *evaluator) leftPointer(left node.Node, right node.Node) node.Node {
 	if left.Type == node.FUNCTION && right.Type == node.PARAMETER {
 		functionCall := node.CreateFunctionCall(left, right.Params)
 		return e.evaluateExpression(functionCall)
+
+	} else if left.Type == node.BUILTIN_FUNC && right.Type == node.PARAMETER {
+		// For builtin functions, Node.Value stores the builtin-function
+		return e.evaluateBuiltinFunction(left.Value, right)
 	}
+
 	panic(fmt.Sprintf("cannot use left pointer on types %s and %s", left.Type, right.Type))
 }
 
-func (e evaluator) rightPointer(left node.Node, right node.Node) node.Node {
+func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, right node.Node) node.Node {
+
+	switch builtinFunctionType {
+	case node.BUILTIN_LEN:
+		value := len(right.Params)
+		return node.CreateNumber(fmt.Sprint(value))
+	default:
+		panic(fmt.Sprintf("Undefined builtin function: %s", builtinFunctionType))
+	}
+}
+
+func (e *evaluator) rightPointer(left node.Node, right node.Node) node.Node {
 	if left.Type == node.PARAMETER && right.Type == node.FUNCTION {
 		functionCall := node.CreateFunctionCall(right, left.Params)
 		return e.evaluateExpression(functionCall)
@@ -265,11 +281,4 @@ func (e *evaluator) toFloat(s string) float64 {
 
 func (e *evaluator) createNumberNode(value float64) node.Node {
 	return node.CreateNumber(fmt.Sprint(value))
-}
-
-func (e *evaluator) getVariable(name string) node.Node {
-	if value, ok := e.env[name]; ok {
-		return value
-	}
-	panic(fmt.Sprintf("Undefined variable: %s", name))
 }
