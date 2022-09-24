@@ -5,12 +5,12 @@ import (
 	"boomerang/parser"
 	"boomerang/tokens"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 )
 
 func getSource(path string) string {
-	fileContent, err := ioutil.ReadFile(path)
+	fileContent, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
