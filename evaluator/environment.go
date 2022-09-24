@@ -31,5 +31,5 @@ func (e *environment) GetIdentifier(key string) (*node.Node, error) {
 	if value, ok := e.env[key]; ok {
 		return &value, nil
 	}
-	return nil, fmt.Errorf("Undefined variable: %s", key)
+	return nil, fmt.Errorf("undefined variable: %s", key)
 }

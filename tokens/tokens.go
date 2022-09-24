@@ -120,7 +120,6 @@ func GetKeywordToken(literal string) Token {
 	if token, ok := keywords[literal]; ok {
 		return token
 	}
-
 	identifierToken := getToken(IDENTIFIER)
 	identifierToken.Literal = literal
 	return identifierToken

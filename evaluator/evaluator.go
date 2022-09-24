@@ -127,7 +127,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 		return e.evaluateFunctionCall(expr)
 
 	default:
-		panic(fmt.Sprintf("Invalid type %#v", expr.Type))
+		return nil, fmt.Errorf("invalid type %#v", expr.Type)
 	}
 }
 
@@ -169,7 +169,7 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		return &node, nil
 	}
 
-	return nil, fmt.Errorf("Invalid unary operator: %s", unaryExpression.Type)
+	return nil, fmt.Errorf("invalid unary operator: %s", unaryExpression.Type)
 }
 
 func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.Node, error) {
@@ -203,17 +203,14 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 		return e.leftPointer(*left, *right)
 
 	default:
-		return nil, fmt.Errorf("Invalid Operator: %s (%s)", op.Type, op.Value)
+		return nil, fmt.Errorf("invalid Operator: %s (%s)", op.Type, op.Value)
 	}
 }
 
 func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*node.Node, error) {
 	callParams := functionCallExpression.GetParam(node.CALL_PARAMS) // Parameters pass to function
 
-	function, err := functionCallExpression.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
-	if err != nil {
-		return nil, utils.CreateError(err)
-	}
+	function := functionCallExpression.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
 
 	if function.Type == node.IDENTIFIER {
 		// If the function object is an identifier, retireve the actual function object from the environment
@@ -221,18 +218,18 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		if err != nil {
 			return nil, utils.CreateError(err)
 		}
-		function = identifierFunction
+		function = *identifierFunction
 	}
 
 	// Assert that the function object is, in fact, a callable function
 	if function.Type != node.FUNCTION {
-		return nil, fmt.Errorf("Cannot make function call on type %s", function.Type)
+		return nil, fmt.Errorf("cannot make function call on type %s", function.Type)
 	}
 
 	// Check that the number of arguments passed to the function matches the number of arguments in the function definition
 	functionParams := function.GetParam(node.LIST) // Parameters included in function definition
 	if len(callParams.Params) != len(functionParams.Params) {
-		return nil, fmt.Errorf("Expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params))
+		return nil, fmt.Errorf("expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params))
 	}
 
 	tmpEnv := e.env
@@ -298,7 +295,7 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 
 		if right.Value == "0" {
-			panic("Cannot divide by zero.")
+			return nil, fmt.Errorf("cannot divide by zero")
 		}
 		result := e.toFloat(left.Value) / e.toFloat(right.Value)
 
@@ -334,7 +331,7 @@ func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, paramete
 	case node.BUILTIN_UNWRAP:
 
 		if parameters.Type != node.LIST {
-			return nil, fmt.Errorf("Invalid type for unwrap: %s. Expected %s", parameters.Type, node.LIST)
+			return nil, fmt.Errorf("invalid type for unwrap: %s. Expected %s", parameters.Type, node.LIST)
 		}
 
 		// TODO: Incorporate boolean value into computation
@@ -346,16 +343,17 @@ func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, paramete
 		return e.evaluateExpression(returnParam.Params[1]) // Params[0] contains the boolean value
 
 	default:
-		return nil, fmt.Errorf("Undefined builtin function: %s", builtinFunctionType)
+		return nil, fmt.Errorf("undefined builtin function: %s", builtinFunctionType)
 	}
 }
 
 func (e *evaluator) toFloat(s string) float64 {
-	intVal, err := strconv.ParseFloat(s, 64)
+	floatVal, err := strconv.ParseFloat(s, 64)
 	if err != nil {
+		// TODO: May need to change return type to (*float64, error) if type conversion is introduced
 		panic(fmt.Sprintf("Cannot convert string to number: %s", s))
 	}
-	return intVal
+	return floatVal
 }
 
 func (e *evaluator) createNumberNode(value float64) node.Node {

@@ -160,8 +160,10 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 
 	case tokens.IDENTIFIER_TOKEN.Type:
 		return p.parseIdentifier()
+
+	default:
+		return nil, fmt.Errorf("unexpected token: %s (%#v)", p.current.Type, p.current.Literal)
 	}
-	panic(fmt.Sprintf("Unexpected token: %s (%#v)", p.current.Type, p.current.Literal))
 }
 
 func (p *Parser) parseInfix(left node.Node) (*node.Node, error) {
@@ -292,12 +294,12 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		return &listNode, nil
 	}
 
-	panic(fmt.Sprintf(
-		"Expected %s or %s, got %s",
+	return nil, fmt.Errorf(
+		"expected %s or %s, got %s",
 		tokens.CLOSED_PAREN_TOKEN.Type,
 		tokens.COMMA_TOKEN.Type,
 		p.current.Type,
-	))
+	)
 }
 
 func (p *Parser) parseParameters() (*node.Node, error) {
@@ -351,11 +353,13 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 	return &functionNode, nil
 }
 
-func (p *Parser) expectToken(token tokens.Token) {
+func (p *Parser) expectToken(token tokens.Token) *error {
 	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
 	// the next token.
 	if !(tokens.TokenTypesEqual(p.current, token)) {
-		panic(fmt.Sprintf("Expected token type %s (%#v), got %s (%#v)", token.Type, token.Literal, p.current.Type, p.current.Literal))
+		err := fmt.Errorf("expected token type %s (%#v), got %s (%#v)", token.Type, token.Literal, p.current.Type, p.current.Literal)
+		return &err
 	}
 	p.advance()
+	return nil
 }

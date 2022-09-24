@@ -102,7 +102,7 @@ func (t *Tokenizer) Next() (*Token, error) {
 
 		r, _ := regexp.Compile("^([0-9]*[.])?[0-9]+$")
 		if !r.MatchString(literal) {
-			panic(fmt.Sprintf("Invalid number literal: %s", literal))
+			return nil, fmt.Errorf("invalid number literal: %s", literal)
 		}
 		return &Token{Literal: literal, Type: NUMBER}, nil
 
