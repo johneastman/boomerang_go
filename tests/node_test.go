@@ -327,3 +327,37 @@ func TestNode_BuiltinFunction(t *testing.T) {
 	expectedNode := node.Node{Type: node.BUILTIN_FUNC, Value: node.BUILTIN_LEN}
 	AssertNodeEqual(t, expectedNode, actualNode)
 }
+
+func TestNode_CreateReturnValueNoParams(t *testing.T) {
+	actualNode := node.CreateReturnValue([]node.Node{})
+	expectedNode := node.Node{
+		Type: node.PARAMETER,
+		Params: []node.Node{
+			{
+				Type:  node.BOOLEAN,
+				Value: tokens.FALSE_TOKEN.Literal,
+			},
+		},
+	}
+	AssertNodeEqual(t, expectedNode, actualNode)
+}
+
+func TestNode_CreateReturnValueParams(t *testing.T) {
+	actualNode := node.CreateReturnValue([]node.Node{
+		node.CreateNumber("5"),
+	})
+	expectedNode := node.Node{
+		Type: node.PARAMETER,
+		Params: []node.Node{
+			{
+				Type:  node.BOOLEAN,
+				Value: tokens.TRUE_TOKEN.Literal,
+			},
+			{
+				Type:  node.NUMBER,
+				Value: "5",
+			},
+		},
+	}
+	AssertNodeEqual(t, expectedNode, actualNode)
+}

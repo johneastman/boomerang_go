@@ -339,7 +339,9 @@ func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		node.CreateNumber("8"),
+		node.CreateReturnValue([]node.Node{
+			node.CreateNumber("8"),
+		}),
 	}
 
 	AssertNodesEqual(t, expectedResults, actualResults)
@@ -375,7 +377,9 @@ func TestEvaluator_FunctionCallReturnStatement(t *testing.T) {
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		node.CreateNumber("777"),
+		node.CreateReturnValue([]node.Node{
+			node.CreateNumber("777"),
+		}),
 	}
 
 	AssertNodesEqual(t, expectedResults, actualResults)
@@ -413,7 +417,9 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		node.CreateNumber("5"),
+		node.CreateReturnValue([]node.Node{
+			node.CreateNumber("5"),
+		}),
 	}
 
 	AssertNodesEqual(t, expectedResults, actualResults)
@@ -439,7 +445,28 @@ func TestEvaluator_FunctionCallWithNoParameters(t *testing.T) {
 
 	actualResults := evaluatorObj.Evaluate()
 	expectedResults := []node.Node{
-		node.CreateNumber("7"),
+		node.CreateReturnValue([]node.Node{
+			node.CreateNumber("7"),
+		}),
+	}
+	AssertNodesEqual(t, expectedResults, actualResults)
+}
+
+func TestEvaluator_FunctionCallNoReturn(t *testing.T) {
+	function := node.CreateFunction(
+		[]node.Node{},
+		[]node.Node{},
+	)
+
+	ast := []node.Node{
+		node.CreateFunctionCall(function, []node.Node{}),
+	}
+
+	evaluatorObj := evaluator.New(ast)
+
+	actualResults := evaluatorObj.Evaluate()
+	expectedResults := []node.Node{
+		node.CreateReturnValue([]node.Node{}),
 	}
 	AssertNodesEqual(t, expectedResults, actualResults)
 }

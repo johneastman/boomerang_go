@@ -222,3 +222,18 @@ func CreateFunctionCall(function Node, callParams []Node) Node {
 func CreateParameters(parameters []Node) Node {
 	return Node{Type: PARAMETER, Params: parameters}
 }
+
+func CreateReturnValue(parameters []Node) Node {
+	if len(parameters) == 0 {
+		booleanValue := tokens.FALSE_TOKEN.Literal
+		return CreateParameters([]Node{
+			CreateBoolean(booleanValue),
+		})
+	} else {
+		booleanValue := tokens.TRUE_TOKEN.Literal
+		return CreateParameters([]Node{
+			CreateBoolean(booleanValue),
+			parameters[len(parameters)-1],
+		})
+	}
+}

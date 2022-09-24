@@ -200,10 +200,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.
 	functionResults := e.evaluateStatements(function.GetParam(node.STMTS).Params)
 	e.env = tmpEnv
 
-	if len(functionResults) == 0 {
-		panic("Function returns nothing")
-	}
-	return functionResults[len(functionResults)-1] // Return the results of the last statement in the function
+	return node.CreateReturnValue(functionResults)
 }
 
 func (e *evaluator) add(left node.Node, right node.Node) node.Node {
