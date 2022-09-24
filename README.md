@@ -106,7 +106,7 @@ return (1, 2 + 3, 5);
 Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
 
 
-If a `return` statement is not present, the last statement in a function's body is returned. Currently, functions with no statements in their body are not allowed.
+If a `return` statement is not present, the last statement in a function's body is returned. All custom functions (those defined in boomerang files) return a Parameter object. If nothing is returned from the function or an error occurrs, `(false)` is returned. If the function does return successfully, `(true, <RETURN_VALUE>)` is returned, where `RETURN_VALUE` is what the function is expected to return.
 
 
 Examples:
@@ -114,15 +114,17 @@ Examples:
 add = func(a, b) {
   a + b;
 };
-add <- (1, 2);
-(3, 4) -> add;
+sum = add <- (1, 2); # sum: (true, 3)
+sum = (3, 4) -> add; # sum: (true, 7)
 
 sum = func(c, d) {
   c + d;
-} <- (1, 2);
+} <- (1, 2); # sum = (true, 3)
 
-value = () -> func() {
+value = () -> func() { # value: (true, 24)
   number = 1 + 1;
   (number + 2) * 6;
 };
+
+value = () -> func() {};  # value: (false)
 ```
