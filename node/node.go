@@ -15,6 +15,7 @@ type Node struct {
 const (
 	NUMBER                 = "Number"
 	STRING                 = "String"
+	BOOLEAN                = "Boolean"
 	BIN_EXPR               = "BinaryExpression"
 	STMTS                  = "Statements"
 	EXPR                   = "Expression"
@@ -138,6 +139,10 @@ func CreateTokenNode(token tokens.Token) Node {
 
 func CreateNumber(value string) Node {
 	return Node{Type: NUMBER, Value: value}
+}
+
+func CreateBoolean(value string) Node {
+	return Node{Type: BOOLEAN, Value: value}
 }
 
 func CreateString(literal string, parameters []Node) Node {

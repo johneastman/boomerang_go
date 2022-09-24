@@ -109,8 +109,11 @@ func (p *parser) parsePrefix() node.Node {
 	case tokens.NUMBER_TOKEN.Type:
 		return p.parseNumber()
 
+	case tokens.BOOLEAN_TOKEN.Type:
+		return p.parseBoolean()
+
 	case tokens.STRING_TOKEN.Type:
-		return p.parseStrings()
+		return p.parseString()
 
 	case tokens.MINUS_TOKEN.Type:
 		return p.parseUnaryExpression()
@@ -154,7 +157,13 @@ func (p *parser) parseNumber() node.Node {
 	return node.CreateNumber(value)
 }
 
-func (p *parser) parseStrings() node.Node {
+func (p *parser) parseBoolean() node.Node {
+	value := p.current.Literal
+	p.advance()
+	return node.CreateBoolean(value)
+}
+
+func (p *parser) parseString() node.Node {
 	stringLiteral := p.current.Literal
 	params := []node.Node{}
 	expressionIndex := 0

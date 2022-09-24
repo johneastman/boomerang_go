@@ -29,6 +29,25 @@ func TestParser_Numbers(t *testing.T) {
 	}
 }
 
+func TestParser_Booleans(t *testing.T) {
+	booleans := []string{
+		"true",
+		"false",
+	}
+
+	for _, boolean := range booleans {
+		tokenizer := tokens.New(fmt.Sprintf("%s;", boolean))
+		parserObj := parser.New(tokenizer)
+
+		actualAST := parserObj.Parse()
+		expectedAST := []node.Node{
+			node.CreateBoolean(boolean),
+		}
+
+		AssertNodesEqual(t, expectedAST, actualAST)
+	}
+}
+
 func TestParser_Strings(t *testing.T) {
 
 	tests := []struct {

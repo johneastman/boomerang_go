@@ -26,12 +26,15 @@ const (
 	FUNCTION             = "FUNCTION"
 	NUMBER               = "NUMBER"
 	STRING               = "STRING"
+	BOOLEAN              = "BOOLEAN"
 	IDENTIFIER           = "IDENTIFIER"
 	EOF                  = "EOF"
 	LEFT_PTR             = "LEFT_POINTER"
 	RIGHT_PTR            = "RIGHT_POINTER"
 	DOUBLE_QUOTE         = "DOUBLE_QUOTE"
 	RETURN               = "RETURN"
+	TRUE                 = "TRUE"
+	FALSE                = "FALSE"
 )
 
 // Tokens
@@ -56,10 +59,13 @@ var (
 	PRINT_TOKEN    = getToken(PRINT)
 	FUNCTION_TOKEN = getToken(FUNCTION)
 	RETURN_TOKEN   = getToken(RETURN)
+	TRUE_TOKEN     = getToken(TRUE)
+	FALSE_TOKEN    = getToken(FALSE)
 
 	// Data Types
-	NUMBER_TOKEN = getToken(NUMBER)
-	STRING_TOKEN = getToken(STRING)
+	NUMBER_TOKEN  = getToken(NUMBER)
+	STRING_TOKEN  = getToken(STRING)
+	BOOLEAN_TOKEN = getToken(BOOLEAN)
 
 	// Misc
 	IDENTIFIER_TOKEN = getToken(IDENTIFIER)
@@ -87,7 +93,10 @@ var tokenData = map[string]Token{
 	IDENTIFIER:           {Type: "IDENTIFIER", Literal: ""},
 	DOUBLE_QUOTE:         {Type: "DOUBLE_QUOTE", Literal: "\""},
 	STRING:               {Type: "STRING", Literal: ""},
+	BOOLEAN:              {Type: "BOOLEAN", Literal: ""},
 	RETURN:               {Type: "RETURN", Literal: "return"},
+	TRUE:                 {Type: "BOOLEAN", Literal: "true"},
+	FALSE:                {Type: "BOOLEAN", Literal: "false"},
 }
 
 func getToken(name string) Token {
@@ -106,6 +115,8 @@ var keywords = map[string]Token{
 	"print":  PRINT_TOKEN,
 	"func":   FUNCTION_TOKEN,
 	"return": RETURN_TOKEN,
+	"true":   TRUE_TOKEN,
+	"false":  FALSE_TOKEN,
 }
 
 func GetKeywordToken(literal string) Token {

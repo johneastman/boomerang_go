@@ -30,6 +30,28 @@ func TestEvaluator_Numbers(t *testing.T) {
 	}
 }
 
+func TestEvaluator_Booleans(t *testing.T) {
+
+	booleans := []string{
+		"true",
+		"false",
+	}
+
+	for _, boolean := range booleans {
+		ast := []node.Node{
+			node.CreateBoolean(boolean),
+		}
+		evaluatorObj := evaluator.New(ast)
+
+		actualResults := evaluatorObj.Evaluate()
+		expectedResults := []node.Node{
+			node.CreateBoolean(boolean),
+		}
+
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
+}
+
 func TestEvaluator_NegativeNumber(t *testing.T) {
 	ast := []node.Node{
 		{

@@ -16,6 +16,24 @@ func TestNode_CreateNumber(t *testing.T) {
 	AssertNodeEqual(t, expectedNode, actualNode)
 }
 
+func TestNode_CreateBoolean(t *testing.T) {
+
+	booleanLiterals := []string{
+		"true",
+		"false",
+	}
+
+	for _, booleanLiteral := range booleanLiterals {
+		actualNode := node.CreateBoolean(booleanLiteral)
+		expectedNode := node.Node{
+			Type:  node.BOOLEAN,
+			Value: booleanLiteral,
+		}
+
+		AssertNodeEqual(t, expectedNode, actualNode)
+	}
+}
+
 func TestNode_CreateString(t *testing.T) {
 	actualNode := node.CreateString("hello, world!", []node.Node{})
 	expectedNode := node.Node{

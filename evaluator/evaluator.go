@@ -82,14 +82,17 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 	case node.NUMBER:
 		return expr
 
+	case node.BOOLEAN:
+		return expr
+
+	case node.STRING:
+		return e.evaluateString(expr)
+
 	case node.FUNCTION:
 		return expr
 
 	case node.PARAMETER:
 		return e.evaluateParameter(expr)
-
-	case node.STRING:
-		return e.evaluateString(expr)
 
 	case node.IDENTIFIER:
 		return e.env.GetIdentifier(expr.Value)
@@ -267,6 +270,10 @@ func (e *evaluator) rightPointer(left node.Node, right node.Node) node.Node {
 	if left.Type == node.PARAMETER && right.Type == node.FUNCTION {
 		functionCall := node.CreateFunctionCall(right, left.Params)
 		return e.evaluateExpression(functionCall)
+
+	} else if left.Type == node.PARAMETER && right.Type == node.BUILTIN_FUNC {
+		// For builtin functions, Node.Value stores the builtin-function
+		return e.evaluateBuiltinFunction(right.Value, left)
 	}
 	panic(fmt.Sprintf("cannot use right pointer on types %s and %s", left.Type, right.Type))
 }

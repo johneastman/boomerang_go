@@ -35,6 +35,8 @@ func TestTokenizer_Keywords(t *testing.T) {
 	keywordTokens := []tokens.Token{
 		tokens.PRINT_TOKEN,
 		tokens.FUNCTION_TOKEN,
+		tokens.TRUE_TOKEN,
+		tokens.FALSE_TOKEN,
 	}
 
 	for _, expectedToken := range keywordTokens {
@@ -90,7 +92,7 @@ func TestTokenizer_Strings(t *testing.T) {
 	}
 }
 
-func TestTokenizer_Idenifiers(t *testing.T) {
+func TestTokenizer_Identifiers(t *testing.T) {
 
 	variables := []string{
 		"variable",
