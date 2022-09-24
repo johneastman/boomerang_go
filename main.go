@@ -24,16 +24,19 @@ func main() {
 	parser, err := parser.New(tokenizer)
 	if err != nil {
 		fmt.Println(err.Error())
+		return
 	}
 
 	statements, err := parser.Parse()
 	if err != nil {
 		fmt.Println(err.Error())
+		return
 	}
 
 	eval := evaluator.New(*statements)
 	_, err = eval.Evaluate()
 	if err != nil {
 		fmt.Println(err.Error())
+		return
 	}
 }
