@@ -69,21 +69,21 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool, error) 
 	return statementExpression, true, nil
 }
 
-func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) *error {
+func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
 	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
 	value, err := e.evaluateExpression(stmt.GetParam(node.EXPR))
 	if err != nil {
-		return &err
+		return err
 	}
 	e.env.SetIdentifier(variable.Value, *value)
 	return nil
 }
 
-func (e *evaluator) evaluatePrintStatement(stmt node.Node) *error {
+func (e *evaluator) evaluatePrintStatement(stmt node.Node) error {
 	for i, node := range stmt.Params {
 		evaluatedParam, err := e.evaluateExpression(node)
 		if err != nil {
-			return &err
+			return err
 		}
 
 		if i < len(stmt.Params)-1 {

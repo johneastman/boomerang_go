@@ -68,8 +68,13 @@ func (p Parser) Parse() (ast *[]node.Node, err error) {
 	return &statements, nil
 }
 
-func (p *Parser) parseStatement() (*node.Node, error) {
-	defer p.expectToken(tokens.SEMICOLON_TOKEN)
+func (p *Parser) parseStatement() (stmt *node.Node, stmtErr error) {
+	defer func() {
+		if err := p.expectToken(tokens.SEMICOLON_TOKEN); err != nil {
+			stmtErr = err
+			stmt = nil
+		}
+	}()
 
 	if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER_TOKEN) && tokens.TokenTypesEqual(p.peek, tokens.ASSIGN_TOKEN) {
 		return p.parseAssignmentStatement()
@@ -121,7 +126,10 @@ func (p *Parser) parsePrintStatement() (*node.Node, error) {
 	if err := p.advance(); err != nil {
 		return nil, utils.CreateError(err)
 	}
-	p.expectToken(tokens.OPEN_PAREN_TOKEN)
+
+	if err := p.expectToken(tokens.OPEN_PAREN_TOKEN); err != nil {
+		return nil, err
+	}
 
 	parameters, err := p.parseParameters()
 	if err != nil {
@@ -371,13 +379,19 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 	if err := p.advance(); err != nil {
 		return nil, utils.CreateError(err)
 	}
-	p.expectToken(tokens.OPEN_PAREN_TOKEN)
+
+	if err := p.expectToken(tokens.OPEN_PAREN_TOKEN); err != nil {
+		return nil, err
+	}
 
 	parameters, err := p.parseParameters()
 	if err != nil {
 		return nil, utils.CreateError(err)
 	}
-	p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN)
+
+	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
 
 	statements := []node.Node{}
 	for p.current.Type != tokens.CLOSED_CURLY_BRACKET_TOKEN.Type {
@@ -389,13 +403,15 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 		statements = append(statements, *statement)
 	}
 
-	p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN)
+	if err := p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
 
 	functionNode := node.CreateFunction(parameters.Params, statements)
 	return &functionNode, nil
 }
 
-func (p *Parser) expectToken(token tokens.Token) *error {
+func (p *Parser) expectToken(token tokens.Token) error {
 	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
 	// the next token.
 	if !(tokens.TokenTypesEqual(p.current, token)) {
@@ -406,9 +422,8 @@ func (p *Parser) expectToken(token tokens.Token) *error {
 			p.current.Type,
 			p.current.Literal,
 		)
-		return &err
+		return err
 	}
 
-	err := p.advance()
-	return &err
+	return p.advance()
 }
