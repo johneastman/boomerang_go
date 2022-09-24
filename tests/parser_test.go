@@ -350,7 +350,7 @@ func TestParser_FunctionCallWithNoParameters(t *testing.T) {
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			node.CreateIdentifier("divide"),
-			tokens.LEFT_PTR_TOKEN,
+			tokens.PTR_TOKEN,
 			node.CreateList([]node.Node{}),
 		),
 	}
@@ -380,44 +380,11 @@ func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			functionNode,
-			tokens.LEFT_PTR_TOKEN,
+			tokens.PTR_TOKEN,
 			node.CreateList([]node.Node{
 				node.CreateNumber("10"),
 				node.CreateNumber("2"),
 			}),
-		),
-	}
-	AssertNodesEqual(t, expectedAST, actualAST)
-}
-
-func TestParser_FunctionCallWithFunctionLiteralAndRightPointer(t *testing.T) {
-	tokenizer := tokens.New("(10, 2) -> func(c, d) { d - c; };")
-	parserObj := parser.New(tokenizer)
-
-	actualAST := parserObj.Parse()
-
-	functionNode := node.CreateFunction(
-		[]node.Node{
-			node.CreateIdentifier("c"),
-			node.CreateIdentifier("d"),
-		},
-		[]node.Node{
-			node.CreateBinaryExpression(
-				node.CreateIdentifier("d"),
-				tokens.MINUS_TOKEN,
-				node.CreateIdentifier("c"),
-			),
-		},
-	)
-
-	expectedAST := []node.Node{
-		node.CreateBinaryExpression(
-			node.CreateList([]node.Node{
-				node.CreateNumber("10"),
-				node.CreateNumber("2"),
-			}),
-			tokens.RIGHT_PTR_TOKEN,
-			functionNode,
 		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)
@@ -431,29 +398,11 @@ func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			node.CreateIdentifier("multiply"),
-			tokens.LEFT_PTR_TOKEN,
+			tokens.PTR_TOKEN,
 			node.CreateList([]node.Node{
 				node.CreateNumber("10"),
 				node.CreateNumber("3"),
 			}),
-		),
-	}
-	AssertNodesEqual(t, expectedAST, actualAST)
-}
-
-func TestParser_FunctionCallWithIdentifierAndRightPointer(t *testing.T) {
-	tokenizer := tokens.New("(10, 3) -> multiply;")
-	parserObj := parser.New(tokenizer)
-
-	actualAST := parserObj.Parse()
-	expectedAST := []node.Node{
-		node.CreateBinaryExpression(
-			node.CreateList([]node.Node{
-				node.CreateNumber("10"),
-				node.CreateNumber("3"),
-			}),
-			tokens.RIGHT_PTR_TOKEN,
-			node.CreateIdentifier("multiply"),
 		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)

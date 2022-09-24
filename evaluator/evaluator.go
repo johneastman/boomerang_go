@@ -143,23 +143,20 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) node.No
 
 	switch op.Type {
 
-	case tokens.PLUS:
+	case tokens.PLUS_TOKEN.Type:
 		return e.add(left, right)
 
-	case tokens.MINUS:
+	case tokens.MINUS_TOKEN.Type:
 		return e.subtract(left, right)
 
-	case tokens.ASTERISK:
+	case tokens.ASTERISK_TOKEN.Type:
 		return e.multuply(left, right)
 
 	case tokens.FORWARD_SLASH:
 		return e.divide(left, right)
 
-	case tokens.LEFT_PTR:
+	case tokens.PTR_TOKEN.Type:
 		return e.leftPointer(left, right)
-
-	case tokens.RIGHT_PTR:
-		return e.rightPointer(left, right)
 
 	default:
 		panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
@@ -280,18 +277,6 @@ func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, paramete
 	default:
 		panic(fmt.Sprintf("Undefined builtin function: %s", builtinFunctionType))
 	}
-}
-
-func (e *evaluator) rightPointer(left node.Node, right node.Node) node.Node {
-	if left.Type == node.LIST && right.Type == node.FUNCTION {
-		functionCall := node.CreateFunctionCall(right, left.Params)
-		return e.evaluateExpression(functionCall)
-
-	} else if left.Type == node.LIST && right.Type == node.BUILTIN_FUNC {
-		// For builtin functions, Node.Value stores the builtin-function
-		return e.evaluateBuiltinFunction(right.Value, left)
-	}
-	panic(fmt.Sprintf("cannot use right pointer on types %s and %s", left.Type, right.Type))
 }
 
 func (e *evaluator) toFloat(s string) float64 {

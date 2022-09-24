@@ -29,8 +29,7 @@ const (
 	BOOLEAN              = "BOOLEAN"
 	IDENTIFIER           = "IDENTIFIER"
 	EOF                  = "EOF"
-	LEFT_PTR             = "LEFT_POINTER"
-	RIGHT_PTR            = "RIGHT_POINTER"
+	PTR                  = "POINTER"
 	DOUBLE_QUOTE         = "DOUBLE_QUOTE"
 	RETURN               = "RETURN"
 	TRUE                 = "TRUE"
@@ -51,8 +50,7 @@ var (
 	COMMA_TOKEN                = getToken(COMMA)
 	OPEN_CURLY_BRACKET_TOKEN   = getToken(OPEN_CURLY_BRACKET)
 	CLOSED_CURLY_BRACKET_TOKEN = getToken(CLOSED_CURLY_BRACKET)
-	LEFT_PTR_TOKEN             = getToken(LEFT_PTR)
-	RIGHT_PTR_TOKEN            = getToken(RIGHT_PTR)
+	PTR_TOKEN                  = getToken(PTR)
 	DOUBLE_QUOTE_TOKEN         = getToken(DOUBLE_QUOTE)
 
 	// Keywords
@@ -87,8 +85,7 @@ var tokenData = map[string]Token{
 	EOF:                  {Type: "EOF", Literal: ""},
 	PRINT:                {Type: "PRINT", Literal: "print"},
 	FUNCTION:             {Type: "FUNCTION", Literal: "func"},
-	LEFT_PTR:             {Type: "LEFT_POINTER", Literal: "<-"},
-	RIGHT_PTR:            {Type: "RIGHT_POINTER", Literal: "->"},
+	PTR:                  {Type: "LEFT_POINTER", Literal: "<-"},
 	NUMBER:               {Type: "NUMBER", Literal: ""},
 	IDENTIFIER:           {Type: "IDENTIFIER", Literal: ""},
 	DOUBLE_QUOTE:         {Type: "DOUBLE_QUOTE", Literal: "\""},

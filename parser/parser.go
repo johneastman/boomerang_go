@@ -16,8 +16,7 @@ const (
 )
 
 var precedenceLevels = map[string]int{
-	tokens.LEFT_PTR_TOKEN.Type:      FUNC_CALL,
-	tokens.RIGHT_PTR_TOKEN.Type:     FUNC_CALL,
+	tokens.PTR_TOKEN.Type:           FUNC_CALL,
 	tokens.PLUS_TOKEN.Type:          SUM,
 	tokens.MINUS_TOKEN.Type:         SUM,
 	tokens.ASTERISK_TOKEN.Type:      PRODUCT,

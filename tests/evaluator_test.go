@@ -475,7 +475,7 @@ func TestEvaluator_BuiltinLen(t *testing.T) {
 	ast := []node.Node{
 		node.CreateBinaryExpression(
 			node.CreateIdentifier("len"),
-			tokens.LEFT_PTR_TOKEN,
+			tokens.PTR_TOKEN,
 			node.CreateList([]node.Node{
 				node.CreateNumber("1"),
 				node.CreateNumber("2"),
@@ -534,7 +534,7 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 
 		unwrapFunctionCall := node.CreateBinaryExpression(
 			node.CreateIdentifier("unwrap"),
-			tokens.LEFT_PTR_TOKEN,
+			tokens.PTR_TOKEN,
 			node.CreateList(
 				[]node.Node{
 					node.CreateIdentifier(resultVariableName),

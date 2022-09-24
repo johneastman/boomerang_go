@@ -23,7 +23,6 @@ EXPRESSION:
 - MULTIPLY('*')
 - DIVIDE('/')
 - LEFT_POINTER('<-')
-- RIGHT_POINTER('->')
 - FACTOR
 FACTOR:
 - NUMBER('float64')
@@ -54,7 +53,6 @@ FACTOR:
 |multiply|*|NUMBER|
 |divide|/|NUMBER|
 |left pointer|<-|left expression: FUNCTION, BUILTIN_FUNCTION, right expression: LIST|
-|right pointer|->|right expression: LIST, left expression: FUNCTION, BUILTIN_FUNCTION|
 
 #### Unary (Prefix) Operators
 |Name|Literal|Valid Types|
@@ -119,21 +117,18 @@ add = func(a, b) {
 sum = add <- (1, 2); # sum: (true, 3)
 value = unwrap <- (sum, 0) # value: 3
 
-sum = (3, 4) -> add; # sum: (true, 7)
-value = unwrap <- (sum, 0) # value: 7
-
 sum = func(c, d) {
   c + d;
 } <- (1, 2); # sum = (true, 3)
 value = unwrap <- (sum, 0) # value: 3
 
-value = () -> func() { # value: (true, 24)
+value = func() { # value: (true, 24)
   number = 1 + 1;
   (number + 2) * 6;
-};
+} <- ();
 value = unwrap <- (value, 0) # value: 24
 
-value = () -> func() {};  # value: (false)
+value = func() {} <- ();  # value: (false)
 
 result = unwrap <- (value, 2) # result: 2
 ```
