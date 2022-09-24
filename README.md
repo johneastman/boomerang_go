@@ -63,7 +63,8 @@ FACTOR:
 
 #### Variable Assignment
 Syntax: `IDENTIFIER = EXPRESSION`
-<br/>
+
+
 Examples:
 ```
 number = 1;
@@ -73,7 +74,8 @@ number = -1 + 1;
 
 #### Print
 Syntax: `print(EXPRESSION, EXPRESSION, ..., EXPRESSION)`
-<br/>
+
+
 Examples:
 ```
 print(1, 2, 3 + 4);
@@ -86,7 +88,8 @@ print(); # Does nothing
 
 #### Return
 Syntax: `return EXPRESSION`
-<br/>
+
+
 Examples:
 ```
 return 1;
@@ -99,9 +102,11 @@ return (1, 2 + 3, 5);
 
 #### Functions
 Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
-<br/>
+
+
 If a `return` statement is not present, the last statement in a function's body is returned. Currently, functions with no statements in their body are not allowed.
-<br/>
+
+
 Examples:
 ```
 add = func(a, b) {
