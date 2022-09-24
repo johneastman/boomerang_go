@@ -3,6 +3,7 @@ package evaluator
 import (
 	"boomerang/node"
 	"boomerang/tokens"
+	"boomerang/utils"
 	"fmt"
 	"strconv"
 	"strings"
@@ -20,52 +21,70 @@ func New(ast []node.Node) evaluator {
 	}
 }
 
-func (e *evaluator) Evaluate() []node.Node {
+func (e *evaluator) Evaluate() (*[]node.Node, error) {
 	return e.evaluateStatements(e.ast)
 }
 
-func (e *evaluator) evaluateStatements(stmts []node.Node) []node.Node {
+func (e *evaluator) evaluateStatements(stmts []node.Node) (*[]node.Node, error) {
 	results := []node.Node{}
 	for _, stmt := range stmts {
-		if result, isExpr := e.evaluateStatement(stmt); isExpr {
-			results = append(results, *result)
+		result, isExpr, err := e.evaluateStatement(stmt)
+		if err != nil {
+			return nil, utils.CreateError(err)
+		}
 
+		if isExpr {
+			results = append(results, *result)
 			if result.Type == node.RETURN {
 				results = append(results, result.Params[0])
 				break
 			}
 		}
 	}
-	return results
+	return &results, nil
 }
 
-func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool) {
+func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool, error) {
 	if stmt.Type == node.ASSIGN_STMT {
 		e.evaluateAssignmentStatement(stmt)
-		return nil, false
+		return nil, false, nil
 
 	} else if stmt.Type == node.PRINT_STMT {
 		e.evaluatePrintStatement(stmt)
-		return nil, false
+		return nil, false, nil
 
 	} else if stmt.Type == node.RETURN {
-		stmt.Params[0] = e.evaluateExpression(stmt.Params[0])
-		return &stmt, true
+		param, err := e.evaluateExpression(stmt.Params[0])
+		if err != nil {
+			return nil, false, utils.CreateError(err)
+		}
+		stmt.Params[0] = *param
+		return &stmt, true, nil
 	}
 
-	statementExpression := e.evaluateExpression(stmt)
-	return &statementExpression, true
+	statementExpression, err := e.evaluateExpression(stmt)
+	if err != nil {
+		return nil, false, utils.CreateError(err)
+	}
+	return statementExpression, true, nil
 }
 
-func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) {
+func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) *error {
 	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
-	value := e.evaluateExpression(stmt.GetParam(node.EXPR))
-	e.env.SetIdentifier(variable.Value, value)
+	value, err := e.evaluateExpression(stmt.GetParam(node.EXPR))
+	if err != nil {
+		return &err
+	}
+	e.env.SetIdentifier(variable.Value, *value)
+	return nil
 }
 
-func (e *evaluator) evaluatePrintStatement(stmt node.Node) {
+func (e *evaluator) evaluatePrintStatement(stmt node.Node) *error {
 	for i, node := range stmt.Params {
-		evaluatedParam := e.evaluateExpression(node)
+		evaluatedParam, err := e.evaluateExpression(node)
+		if err != nil {
+			return &err
+		}
 
 		if i < len(stmt.Params)-1 {
 			fmt.Printf("%s ", evaluatedParam.String())
@@ -73,23 +92,24 @@ func (e *evaluator) evaluatePrintStatement(stmt node.Node) {
 			fmt.Println(evaluatedParam.String())
 		}
 	}
+	return nil
 }
 
-func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
+func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 	switch expr.Type {
 
 	case node.NUMBER:
-		return expr
+		return &expr, nil
 
 	case node.BOOLEAN:
-		return expr
+		return &expr, nil
+
+	case node.FUNCTION:
+		return &expr, nil
 
 	case node.STRING:
 		return e.evaluateString(expr)
-
-	case node.FUNCTION:
-		return expr
 
 	case node.LIST:
 		return e.evaluateParameter(expr)
@@ -111,76 +131,108 @@ func (e *evaluator) evaluateExpression(expr node.Node) node.Node {
 	}
 }
 
-func (e *evaluator) evaluateParameter(parameterExpression node.Node) node.Node {
+func (e *evaluator) evaluateParameter(parameterExpression node.Node) (*node.Node, error) {
 	for i := range parameterExpression.Params {
-		parameterExpression.Params[i] = e.evaluateExpression(parameterExpression.Params[i])
+
+		parameter, err := e.evaluateExpression(parameterExpression.Params[i])
+		if err != nil {
+			return nil, utils.CreateError(err)
+		}
+		parameterExpression.Params[i] = *parameter
 	}
-	return parameterExpression
+	return &parameterExpression, nil
 }
 
-func (e *evaluator) evaluateString(stringExpression node.Node) node.Node {
+func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, error) {
 	for i, param := range stringExpression.Params {
-		value := e.evaluateExpression(param)
+		value, err := e.evaluateExpression(param)
+		if err != nil {
+			return nil, utils.CreateError(err)
+		}
 		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), value.Value, 1)
 	}
-	return node.CreateString(stringExpression.Value, []node.Node{})
+
+	node := node.CreateString(stringExpression.Value, []node.Node{})
+	return &node, nil
 }
 
-func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) node.Node {
-	expression := e.evaluateExpression(unaryExpression.GetParam(node.EXPR))
+func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.Node, error) {
+	expression, err := e.evaluateExpression(unaryExpression.GetParam(node.EXPR))
+	if err != nil {
+		return nil, utils.CreateError(err)
+	}
 	operator := unaryExpression.GetParam(node.OPERATOR)
 	if operator.Type == tokens.MINUS {
 		expressionValue := -e.toFloat(expression.Value)
-		return e.createNumberNode(expressionValue)
+
+		node := e.createNumberNode(expressionValue)
+		return &node, nil
 	}
-	panic(fmt.Sprintf("Invalid unary operator: %s", unaryExpression.Type))
+
+	return nil, fmt.Errorf("Invalid unary operator: %s", unaryExpression.Type)
 }
 
-func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) node.Node {
-	left := e.evaluateExpression(binaryExpression.GetParam(node.LEFT))
-	right := e.evaluateExpression(binaryExpression.GetParam(node.RIGHT))
+func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.Node, error) {
+	left, err := e.evaluateExpression(binaryExpression.GetParam(node.LEFT))
+	if err != nil {
+		return nil, utils.CreateError(err)
+	}
+
+	right, err := e.evaluateExpression(binaryExpression.GetParam(node.RIGHT))
+	if err != nil {
+		return nil, utils.CreateError(err)
+	}
+
 	op := binaryExpression.GetParam(node.OPERATOR)
 
 	switch op.Type {
 
 	case tokens.PLUS_TOKEN.Type:
-		return e.add(left, right)
+		return e.add(*left, *right)
 
 	case tokens.MINUS_TOKEN.Type:
-		return e.subtract(left, right)
+		return e.subtract(*left, *right)
 
 	case tokens.ASTERISK_TOKEN.Type:
-		return e.multuply(left, right)
+		return e.multuply(*left, *right)
 
 	case tokens.FORWARD_SLASH:
-		return e.divide(left, right)
+		return e.divide(*left, *right)
 
 	case tokens.PTR_TOKEN.Type:
-		return e.leftPointer(left, right)
+		return e.leftPointer(*left, *right)
 
 	default:
-		panic(fmt.Sprintf("Invalid Operator: %s (%s)", op.Type, op.Value))
+		return nil, fmt.Errorf("Invalid Operator: %s (%s)", op.Type, op.Value)
 	}
 }
 
-func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.Node {
+func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*node.Node, error) {
 	callParams := functionCallExpression.GetParam(node.CALL_PARAMS) // Parameters pass to function
-	function := functionCallExpression.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
+
+	function, err := functionCallExpression.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
+	if err != nil {
+		return nil, utils.CreateError(err)
+	}
 
 	if function.Type == node.IDENTIFIER {
 		// If the function object is an identifier, retireve the actual function object from the environment
-		function = e.env.GetIdentifier(function.Value)
+		identifierFunction, err := e.env.GetIdentifier(function.Value)
+		if err != nil {
+			return nil, utils.CreateError(err)
+		}
+		function = identifierFunction
 	}
 
 	// Assert that the function object is, in fact, a callable function
 	if function.Type != node.FUNCTION {
-		panic(fmt.Sprintf("Cannot make function call on type %s", function.Type))
+		return nil, fmt.Errorf("Cannot make function call on type %s", function.Type)
 	}
 
 	// Check that the number of arguments passed to the function matches the number of arguments in the function definition
 	functionParams := function.GetParam(node.LIST) // Parameters included in function definition
 	if len(callParams.Params) != len(functionParams.Params) {
-		panic(fmt.Sprintf("Expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params)))
+		return nil, fmt.Errorf("Expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params))
 	}
 
 	tmpEnv := e.env
@@ -191,58 +243,75 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) node.
 		functionParam := functionParams.Params[i]
 		callParam := callParams.Params[i]
 
-		e.env.SetIdentifier(functionParam.Value, e.evaluateExpression(callParam))
+		value, err := e.evaluateExpression(callParam)
+		if err != nil {
+			return nil, utils.CreateError(err)
+		}
+		e.env.SetIdentifier(functionParam.Value, *value)
 	}
 
-	functionResults := e.evaluateStatements(function.GetParam(node.STMTS).Params)
+	functionResults, err := e.evaluateStatements(function.GetParam(node.STMTS).Params)
+	if err != nil {
+		return nil, utils.CreateError(err)
+	}
 	e.env = tmpEnv
 
 	var returnStatement *node.Node = nil
-	if len(functionResults) > 0 {
-		returnStatement = &functionResults[len(functionResults)-1]
+	if len(*functionResults) > 0 {
+		returnStatement = &(*functionResults)[len(*functionResults)-1]
 	}
-	return node.CreateReturnValue(returnStatement)
+	node := node.CreateReturnValue(returnStatement)
+	return &node, nil
 }
 
-func (e *evaluator) add(left node.Node, right node.Node) node.Node {
+func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) + e.toFloat(right.Value)
-		return e.createNumberNode(result)
+
+		node := e.createNumberNode(result)
+		return &node, nil
 	}
-	panic(fmt.Sprintf("cannot add types %s and %s", left.Type, right.Type))
+	return nil, fmt.Errorf("cannot add types %s and %s", left.Type, right.Type)
 }
 
-func (e *evaluator) subtract(left node.Node, right node.Node) node.Node {
+func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) - e.toFloat(right.Value)
-		return e.createNumberNode(result)
+
+		node := e.createNumberNode(result)
+		return &node, nil
 	}
-	panic(fmt.Sprintf("cannot subtract types %s and %s", left.Type, right.Type))
+	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
 }
 
-func (e *evaluator) multuply(left node.Node, right node.Node) node.Node {
+func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) * e.toFloat(right.Value)
-		return e.createNumberNode(result)
+
+		node := e.createNumberNode(result)
+		return &node, nil
 	}
-	panic(fmt.Sprintf("cannot subtract types %s and %s", left.Type, right.Type))
+	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
 }
 
-func (e *evaluator) divide(left node.Node, right node.Node) node.Node {
+func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 
 		if right.Value == "0" {
 			panic("Cannot divide by zero.")
 		}
 		result := e.toFloat(left.Value) / e.toFloat(right.Value)
-		return e.createNumberNode(result)
+
+		node := e.createNumberNode(result)
+		return &node, nil
 	}
-	panic(fmt.Sprintf("cannot subtract types %s and %s", left.Type, right.Type))
+	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
 }
 
-func (e *evaluator) leftPointer(left node.Node, right node.Node) node.Node {
+func (e *evaluator) leftPointer(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.FUNCTION && right.Type == node.LIST {
 		functionCall := node.CreateFunctionCall(left, right.Params)
+
 		return e.evaluateExpression(functionCall)
 
 	} else if left.Type == node.BUILTIN_FUNC && right.Type == node.LIST {
@@ -250,20 +319,22 @@ func (e *evaluator) leftPointer(left node.Node, right node.Node) node.Node {
 		return e.evaluateBuiltinFunction(left.Value, right)
 	}
 
-	panic(fmt.Sprintf("cannot use left pointer on types %s and %s", left.Type, right.Type))
+	return nil, fmt.Errorf("cannot use left pointer on types %s and %s", left.Type, right.Type)
 }
 
-func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, parameters node.Node) node.Node {
+func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, parameters node.Node) (*node.Node, error) {
 
 	switch builtinFunctionType {
 	case node.BUILTIN_LEN:
 		value := len(parameters.Params)
-		return node.CreateNumber(fmt.Sprint(value))
+
+		node := node.CreateNumber(fmt.Sprint(value))
+		return &node, nil
 
 	case node.BUILTIN_UNWRAP:
 
 		if parameters.Type != node.LIST {
-			panic(fmt.Sprintf("Invalid type for unwrap: %s. Expected %s", parameters.Type, node.LIST))
+			return nil, fmt.Errorf("Invalid type for unwrap: %s. Expected %s", parameters.Type, node.LIST)
 		}
 
 		// TODO: Incorporate boolean value into computation
@@ -275,7 +346,7 @@ func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, paramete
 		return e.evaluateExpression(returnParam.Params[1]) // Params[0] contains the boolean value
 
 	default:
-		panic(fmt.Sprintf("Undefined builtin function: %s", builtinFunctionType))
+		return nil, fmt.Errorf("Undefined builtin function: %s", builtinFunctionType)
 	}
 }
 

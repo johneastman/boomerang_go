@@ -27,9 +27,9 @@ func (e *environment) SetIdentifier(key string, value node.Node) {
 	e.env[key] = value
 }
 
-func (e *environment) GetIdentifier(key string) node.Node {
+func (e *environment) GetIdentifier(key string) (*node.Node, error) {
 	if value, ok := e.env[key]; ok {
-		return value
+		return &value, nil
 	}
-	panic(fmt.Sprintf("Undefined variable: %s", key))
+	return nil, fmt.Errorf("Undefined variable: %s", key)
 }

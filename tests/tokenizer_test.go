@@ -24,8 +24,8 @@ func TestTokenizer_Symbols(t *testing.T) {
 	}
 
 	for _, expectedToken := range expectedTokens {
-		actualToken := tokenizer.Next()
-		AssertTokenEqual(t, expectedToken, actualToken)
+		actualToken, _ := tokenizer.Next()
+		AssertTokenEqual(t, expectedToken, *actualToken)
 	}
 }
 
@@ -40,8 +40,8 @@ func TestTokenizer_Keywords(t *testing.T) {
 
 	for _, expectedToken := range keywordTokens {
 		tokenizer := tokens.New(expectedToken.Literal)
-		actualToken := tokenizer.Next()
-		AssertTokenEqual(t, expectedToken, actualToken)
+		actualToken, _ := tokenizer.Next()
+		AssertTokenEqual(t, expectedToken, *actualToken)
 	}
 }
 
@@ -64,9 +64,9 @@ func TestTokenizer_Numbers(t *testing.T) {
 
 	for _, source := range numbers {
 		tokenizer := tokens.New(source)
-		token := tokenizer.Next()
+		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, tokens.Token{Type: tokens.NUMBER_TOKEN.Type, Literal: source}, token)
+		AssertTokenEqual(t, tokens.Token{Type: tokens.NUMBER_TOKEN.Type, Literal: source}, *token)
 	}
 }
 
@@ -85,9 +85,9 @@ func TestTokenizer_Strings(t *testing.T) {
 		source := fmt.Sprintf("\"%s\";", testString)
 
 		tokenizer := tokens.New(source)
-		token := tokenizer.Next()
+		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, tokens.Token{Type: tokens.STRING_TOKEN.Type, Literal: testString}, token)
+		AssertTokenEqual(t, tokens.Token{Type: tokens.STRING_TOKEN.Type, Literal: testString}, *token)
 	}
 }
 
@@ -102,8 +102,8 @@ func TestTokenizer_Identifiers(t *testing.T) {
 
 	for _, variable := range variables {
 		tokenizer := tokens.New(variable)
-		token := tokenizer.Next()
+		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, tokens.Token{Type: tokens.IDENTIFIER_TOKEN.Type, Literal: variable}, token)
+		AssertTokenEqual(t, tokens.Token{Type: tokens.IDENTIFIER_TOKEN.Type, Literal: variable}, *token)
 	}
 }

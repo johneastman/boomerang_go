@@ -94,7 +94,7 @@ func (n *Node) GetParam(key string) Node {
 	return *node
 }
 
-func (n *Node) GetParamByKeys(keys []string) Node {
+func (n *Node) GetParamByKeys(keys []string) (*Node, error) {
 	/*
 		Check if any of the keys in a list of keys exist as parameters in a node. This method is useful for evaluating
 		function calls, which could be a variable (e.g., "add = func() { a + b; }; add(1, 2)") or a function literal
@@ -105,10 +105,10 @@ func (n *Node) GetParamByKeys(keys []string) Node {
 
 		// If err is nil, the node has been found
 		if err == nil {
-			return *node
+			return node, nil
 		}
 	}
-	panic(fmt.Sprintf("No keys matching provided keys: %s", strings.Join(keys, ", ")))
+	return nil, fmt.Errorf("no keys matching provided keys: %s", strings.Join(keys, ", "))
 }
 
 func (n *Node) getParam(key string) (*Node, error) {

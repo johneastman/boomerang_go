@@ -4,6 +4,7 @@ import (
 	"boomerang/evaluator"
 	"boomerang/parser"
 	"boomerang/tokens"
+	"fmt"
 	"io/ioutil"
 	"log"
 )
@@ -20,9 +21,19 @@ func main() {
 	source := getSource("source.bmg")
 	tokenizer := tokens.New(source)
 
-	parser := parser.New(tokenizer)
-	statements := parser.Parse()
+	parser, err := parser.New(tokenizer)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
-	eval := evaluator.New(statements)
-	eval.Evaluate()
+	statements, err := parser.Parse()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	eval := evaluator.New(*statements)
+	_, err = eval.Evaluate()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }

@@ -85,16 +85,17 @@ func (t *Tokenizer) readString() string {
 	return t.source[startPos:endPos]
 }
 
-func (t *Tokenizer) Next() Token {
+func (t *Tokenizer) Next() (*Token, error) {
 	t.skipWhitespace()
 
 	if t.current() == 0 {
-		return EOF_TOKEN
+		return &EOF_TOKEN, nil
 	}
 
 	if t.isIdentifier(false) {
 		literal := t.readIdentifier()
-		return GetKeywordToken(literal)
+		token := GetKeywordToken(literal)
+		return &token, nil
 
 	} else if t.isNumber() {
 		literal := t.readNumber()
@@ -103,20 +104,20 @@ func (t *Tokenizer) Next() Token {
 		if !r.MatchString(literal) {
 			panic(fmt.Sprintf("Invalid number literal: %s", literal))
 		}
-		return Token{Literal: literal, Type: NUMBER}
+		return &Token{Literal: literal, Type: NUMBER}, nil
 
 	} else if t.isString() {
 		t.advance()
 		literal := t.readString()
 		t.advance()
-		return Token{Literal: literal, Type: STRING}
+		return &Token{Literal: literal, Type: STRING}, nil
 	}
 
 	token, err := t.getMatchingTokens()
 	if err != nil {
-		panic(err.Error())
+		return nil, fmt.Errorf(err.Error())
 	}
-	return *token
+	return token, nil
 }
 
 func (t *Tokenizer) getMatchingTokens() (*Token, error) {
