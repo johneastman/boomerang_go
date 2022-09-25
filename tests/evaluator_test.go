@@ -104,7 +104,7 @@ func TestEvaluator_Strings(t *testing.T) {
 			InputSource:  "Hello, my name is <0>, and I am <1> years old!",
 			OutputSource: "Hello, my name is John, and I am 5 years old!",
 			Params: []node.Node{
-				node.CreateString("John", []node.Node{}),
+				node.CreateRawString("John"),
 				node.CreateBinaryExpression(
 					node.CreateNumber("3"),
 					tokens.PLUS_TOKEN,
@@ -121,7 +121,7 @@ func TestEvaluator_Strings(t *testing.T) {
 
 		actualResults := getResults(ast)
 		expectedResults := []node.Node{
-			node.CreateString(test.OutputSource, []node.Node{}),
+			node.CreateRawString(test.OutputSource),
 		}
 		AssertNodesEqual(t, expectedResults, actualResults)
 	}
@@ -486,7 +486,7 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 		},
 		{
 			Body:                []node.Node{},
-			ExpectedReturnValue: node.CreateString("hello, world!", []node.Node{}),
+			ExpectedReturnValue: node.CreateRawString("hello, world!"),
 		},
 	}
 
@@ -514,7 +514,7 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 			node.CreateList(
 				[]node.Node{
 					node.CreateIdentifier(resultVariableName),
-					node.CreateString("hello, world!", []node.Node{}),
+					node.CreateRawString("hello, world!"),
 				},
 			),
 		)
@@ -560,4 +560,41 @@ func getResults(ast []node.Node) []node.Node {
 	evaluatorObj := evaluator.New(ast)
 	actualResults, _ := evaluatorObj.Evaluate()
 	return *actualResults
+}
+
+func TestEvaluator_IfStatement(t *testing.T) {
+
+	variableName := "variable"
+
+	tests := []struct {
+		Condition     node.Node
+		ExpectedValue node.Node
+	}{
+		{
+			node.CreateBooleanTrue(),
+			node.CreateNumber("2"),
+		},
+		{
+			node.CreateBooleanFalse(),
+			node.CreateNumber("1"),
+		},
+	}
+
+	for _, test := range tests {
+		ast := []node.Node{
+			node.CreateAssignmentStatement(variableName, node.CreateNumber("1")),
+			node.CreateIfStatement(
+				test.Condition,
+				[]node.Node{
+					node.CreateAssignmentStatement(variableName, node.CreateNumber("2")),
+				},
+			),
+			node.CreateIdentifier(variableName),
+		}
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			test.ExpectedValue,
+		}
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
 }

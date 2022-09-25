@@ -34,8 +34,28 @@ func TestNode_CreateBoolean(t *testing.T) {
 	}
 }
 
+func TestNode_CreateBooleanTrue(t *testing.T) {
+	actualNode := node.CreateBooleanTrue()
+	expectedNode := node.Node{
+		Type:  node.BOOLEAN,
+		Value: tokens.TRUE_TOKEN.Literal,
+	}
+
+	AssertNodeEqual(t, expectedNode, actualNode)
+}
+
+func TestNode_CreateBooleanFalse(t *testing.T) {
+	actualNode := node.CreateBooleanFalse()
+	expectedNode := node.Node{
+		Type:  node.BOOLEAN,
+		Value: tokens.FALSE_TOKEN.Literal,
+	}
+
+	AssertNodeEqual(t, expectedNode, actualNode)
+}
+
 func TestNode_CreateString(t *testing.T) {
-	actualNode := node.CreateString("hello, world!", []node.Node{})
+	actualNode := node.CreateRawString("hello, world!")
 	expectedNode := node.Node{
 		Type:   node.STRING,
 		Value:  "hello, world!",
@@ -359,5 +379,29 @@ func TestNode_CreateReturnValueParams(t *testing.T) {
 			},
 		},
 	}
+	AssertNodeEqual(t, expectedNode, actualNode)
+}
+
+func TestNode_CreateIfStatement(t *testing.T) {
+	actualNode := node.CreateIfStatement(
+		node.CreateBooleanTrue(),
+		[]node.Node{
+			node.CreatePrintStatement([]node.Node{
+				node.CreateRawString("true!!!"),
+			}),
+		},
+	)
+	expectedNode := node.Node{
+		Type: node.IF_STMT,
+		Params: []node.Node{
+			{Type: node.BOOLEAN, Value: tokens.TRUE_TOKEN.Literal},
+			{Type: node.TRUE_BRANCH, Params: []node.Node{
+				{Type: node.PRINT_STMT, Params: []node.Node{
+					{Type: node.STRING, Value: "true!!!"},
+				}},
+			}},
+		},
+	}
+
 	AssertNodeEqual(t, expectedNode, actualNode)
 }

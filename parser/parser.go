@@ -69,6 +69,23 @@ func (p Parser) Parse() (ast *[]node.Node, err error) {
 	return &statements, nil
 }
 
+func (p *Parser) parseBlockStatements() (*[]node.Node, error) {
+	statements := []node.Node{}
+	for p.current.Type != tokens.CLOSED_CURLY_BRACKET_TOKEN.Type {
+		statement, err := p.parseStatement()
+		if err != nil {
+			return nil, err
+		}
+
+		statements = append(statements, *statement)
+	}
+
+	if err := p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
+	return &statements, nil
+}
+
 func (p *Parser) parseStatement() (stmt *node.Node, stmtErr error) {
 	defer func() {
 		if err := p.expectToken(tokens.SEMICOLON_TOKEN); err != nil {
@@ -86,8 +103,33 @@ func (p *Parser) parseStatement() (stmt *node.Node, stmtErr error) {
 	} else if tokens.TokenTypesEqual(p.current, tokens.RETURN_TOKEN) {
 		return p.parseReturnStatement()
 
+	} else if tokens.TokenTypesEqual(p.current, tokens.IF_TOKEN) {
+		return p.parseIfStatement()
 	}
 	return p.parseExpression(LOWEST)
+}
+
+func (p *Parser) parseIfStatement() (*node.Node, error) {
+	if err := p.advance(); err != nil {
+		return nil, err
+	}
+
+	condition, err := p.parseExpression(LOWEST)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
+
+	statements, err := p.parseBlockStatements()
+	if err != nil {
+		return nil, err
+	}
+
+	node := node.CreateIfStatement(*condition, *statements)
+	return &node, nil
 }
 
 func (p *Parser) parseReturnStatement() (*node.Node, error) {
@@ -400,21 +442,12 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 		return nil, err
 	}
 
-	statements := []node.Node{}
-	for p.current.Type != tokens.CLOSED_CURLY_BRACKET_TOKEN.Type {
-		statement, err := p.parseStatement()
-		if err != nil {
-			return nil, err
-		}
-
-		statements = append(statements, *statement)
-	}
-
-	if err := p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN); err != nil {
+	statements, err := p.parseBlockStatements()
+	if err != nil {
 		return nil, err
 	}
 
-	functionNode := node.CreateFunction(parameters.Params, statements)
+	functionNode := node.CreateFunction(parameters.Params, *statements)
 	return &functionNode, nil
 }
 

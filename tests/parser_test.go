@@ -27,15 +27,24 @@ func TestParser_Numbers(t *testing.T) {
 }
 
 func TestParser_Booleans(t *testing.T) {
-	booleans := []string{
-		"true",
-		"false",
+	tests := []struct {
+		Source       string
+		ExpectedNode node.Node
+	}{
+		{
+			"true",
+			node.CreateBooleanTrue(),
+		},
+		{
+			"false",
+			node.CreateBooleanFalse(),
+		},
 	}
 
-	for _, boolean := range booleans {
-		actualAST := getAST(fmt.Sprintf("%s;", boolean))
+	for _, test := range tests {
+		actualAST := getAST(fmt.Sprintf("%s;", test.Source))
 		expectedAST := []node.Node{
-			node.CreateBoolean(boolean),
+			test.ExpectedNode,
 		}
 
 		AssertNodesEqual(t, expectedAST, actualAST)
@@ -372,6 +381,21 @@ func TestParser_ListIndex(t *testing.T) {
 			node.CreateIdentifier("numbers"),
 			tokens.OPEN_BRACKET_TOKEN,
 			node.CreateNumber("1"),
+		),
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
+func TestParser_IfStatement(t *testing.T) {
+	actualAST := getAST("if true { print(\"true!!!\"); };")
+	expectedAST := []node.Node{
+		node.CreateIfStatement(
+			node.CreateBooleanTrue(),
+			[]node.Node{
+				node.CreatePrintStatement([]node.Node{
+					node.CreateRawString("true!!!"),
+				}),
+			},
 		),
 	}
 	AssertNodesEqual(t, expectedAST, actualAST)

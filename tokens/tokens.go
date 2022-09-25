@@ -37,6 +37,7 @@ const (
 	FALSE                = "FALSE"
 	OPEN_BRACKET         = "OPEN_BRACKET"
 	CLOSED_BRACKET       = "CLOSED_BRACKET"
+	IF                   = "IF"
 )
 
 // Tokens
@@ -64,6 +65,7 @@ var (
 	RETURN_TOKEN   = getToken(RETURN)
 	TRUE_TOKEN     = getToken(TRUE)
 	FALSE_TOKEN    = getToken(FALSE)
+	IF_TOKEN       = getToken(IF)
 
 	// Data Types
 	NUMBER_TOKEN  = getToken(NUMBER)
@@ -101,6 +103,7 @@ var tokenData = map[string]Token{
 	FALSE:                {Type: "BOOLEAN", Literal: "false"},
 	OPEN_BRACKET:         {Type: "OPEN_BRACKET", Literal: "["},
 	CLOSED_BRACKET:       {Type: "CLOSED_BRACKET", Literal: "]"},
+	IF:                   {Type: "IF", Literal: "if"},
 }
 
 func getToken(name string) Token {
@@ -121,6 +124,7 @@ var keywords = map[string]Token{
 	"return": RETURN_TOKEN,
 	"true":   TRUE_TOKEN,
 	"false":  FALSE_TOKEN,
+	"if":     IF_TOKEN,
 }
 
 func GetKeywordToken(literal string) Token {

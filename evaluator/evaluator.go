@@ -63,6 +63,12 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool, error) 
 		}
 		stmt.Params[0] = *param
 		return &stmt, true, nil
+
+	} else if stmt.Type == node.IF_STMT {
+		if err := e.evaluateIfStatement(stmt); err != nil {
+			return nil, false, err
+		}
+		return nil, false, nil
 	}
 
 	statementExpression, err := e.evaluateExpression(stmt)
@@ -70,6 +76,24 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool, error) 
 		return nil, false, err
 	}
 	return statementExpression, true, nil
+}
+
+func (e *evaluator) evaluateIfStatement(ifStatement node.Node) error {
+	condition := ifStatement.GetParam(node.CONDITION)
+	trueStatements := ifStatement.GetParam(node.TRUE_BRANCH)
+
+	evaluatedCondition, err := e.evaluateExpression(condition)
+	if err != nil {
+		return err
+	}
+
+	if evaluatedCondition.Value == tokens.TRUE_TOKEN.Literal {
+		_, err = e.evaluateStatements(trueStatements.Params)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
@@ -155,7 +179,7 @@ func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, erro
 		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), value.Value, 1)
 	}
 
-	node := node.CreateString(stringExpression.Value, []node.Node{})
+	node := node.CreateRawString(stringExpression.Value)
 	return &node, nil
 }
 

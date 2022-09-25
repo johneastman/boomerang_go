@@ -19,6 +19,9 @@ const (
 	RETURN      = "Return"
 	PRINT_STMT  = "PrintStatement"
 	ASSIGN_STMT = "Assign"
+	IF_STMT     = "IfStatement"
+	TRUE_BRANCH = "TrueBranch"
+	CONDITION   = "Condition"
 
 	// Expressions
 	EXPR                   = "Expression" // Super type
@@ -83,6 +86,10 @@ var indexMap = map[string]map[string]int{
 	FUNCTION_CALL: {
 		CALL_PARAMS: 0,
 		FUNCTION:    1,
+	},
+	IF_STMT: {
+		CONDITION:   0,
+		TRUE_BRANCH: 1,
 	},
 }
 
@@ -154,8 +161,22 @@ func CreateBoolean(value string) Node {
 	return Node{Type: BOOLEAN, Value: value}
 }
 
+func CreateBooleanTrue() Node {
+	return CreateBoolean(tokens.TRUE_TOKEN.Literal)
+}
+
+func CreateBooleanFalse() Node {
+	return CreateBoolean(tokens.FALSE_TOKEN.Literal)
+}
+
 func CreateString(literal string, parameters []Node) Node {
+	// Strings that may contain interpolation
 	return Node{Type: STRING, Value: literal, Params: parameters}
+}
+
+func CreateRawString(literal string) Node {
+	// Strings with no interpolation
+	return CreateString(literal, []Node{})
 }
 
 func CreateIdentifier(name string) Node {
@@ -231,17 +252,28 @@ func CreateFunctionCall(function Node, callParams []Node) Node {
 		},
 	}
 }
+
+func CreateIfStatement(condition Node, trueBranch []Node) Node {
+	return Node{
+		Type: IF_STMT,
+		Params: []Node{
+			condition,
+			{Type: TRUE_BRANCH, Params: trueBranch},
+		},
+	}
+}
+
 func CreateReturnValue(statement *Node) Node {
 
 	var parameters []Node
 
 	if statement == nil {
 		parameters = []Node{
-			CreateBoolean(tokens.FALSE_TOKEN.Literal),
+			CreateBooleanFalse(),
 		}
 	} else {
 		parameters = []Node{
-			CreateBoolean(tokens.TRUE_TOKEN.Literal),
+			CreateBooleanTrue(),
 			*statement,
 		}
 	}

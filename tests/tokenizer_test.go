@@ -38,6 +38,7 @@ func TestTokenizer_Keywords(t *testing.T) {
 		tokens.FUNCTION_TOKEN,
 		tokens.TRUE_TOKEN,
 		tokens.FALSE_TOKEN,
+		tokens.IF_TOKEN,
 	}
 
 	for _, expectedToken := range keywordTokens {
