@@ -56,15 +56,31 @@ func (p *Parser) advance() error {
 	return nil
 }
 
-func (p Parser) Parse() (ast *[]node.Node, err error) {
+func (p Parser) Parse() (*[]node.Node, error) {
+	statements, err := p.parseGlobalStatements()
+	if err != nil {
+		return nil, err
+	}
+	return statements, nil
+}
+
+func (p *Parser) parseGlobalStatements() (*[]node.Node, error) {
 	statements := []node.Node{}
-	for !tokens.TokenTypesEqual(p.current, tokens.EOF_TOKEN) {
-		stmt, err := p.parseStatement()
+	for p.current.Type != tokens.EOF_TOKEN.Type {
+		statement, err := p.parseStatement()
 		if err != nil {
 			return nil, err
 		}
 
-		statements = append(statements, *stmt)
+		/*
+			The purpose of the parser is to validate that the syntax structure is correct, and having a return statement outside a
+			function is invalid, so the parser should perform that validation.
+		*/
+		if statement.Type == node.RETURN {
+			return nil, fmt.Errorf("%s statement invalid in global scope", tokens.RETURN_TOKEN.Literal)
+		}
+
+		statements = append(statements, *statement)
 	}
 	return &statements, nil
 }

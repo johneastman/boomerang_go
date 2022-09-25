@@ -18,6 +18,12 @@ func CreateEnvironment() environment {
 
 	// Builtin functions
 	env["len"] = node.CreateBuiltinFunction(node.BUILTIN_LEN)
+
+	/*
+		I originally wanted "unwrap" to be implemented in pure Boomerang code, but because custom functions
+		return a list and the purpose of unwrap is to extract the return value from that list, this implementation
+		needs to be a builtin method.
+	*/
 	env["unwrap"] = node.CreateBuiltinFunction(node.BUILTIN_UNWRAP)
 
 	return environment{env: env}
