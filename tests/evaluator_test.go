@@ -533,6 +533,29 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 	}
 }
 
+func TestEvaluator_ListIndex(t *testing.T) {
+	ast := []node.Node{
+		node.CreateAssignmentStatement(
+			"numbers",
+			node.CreateList([]node.Node{
+				node.CreateNumber("1"),
+				node.CreateNumber("2"),
+				node.CreateNumber("3"),
+			}),
+		),
+		node.CreateBinaryExpression(
+			node.CreateIdentifier("numbers"),
+			tokens.OPEN_BRACKET_TOKEN,
+			node.CreateNumber("1"),
+		),
+	}
+	actualResults := getResults(ast)
+	expectedResults := []node.Node{
+		node.CreateNumber("2"),
+	}
+	AssertNodesEqual(t, expectedResults, actualResults)
+}
+
 func getResults(ast []node.Node) []node.Node {
 	evaluatorObj := evaluator.New(ast)
 	actualResults, _ := evaluatorObj.Evaluate()

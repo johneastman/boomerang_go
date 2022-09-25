@@ -365,6 +365,18 @@ func TestParser_ReturnStatements(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
+func TestParser_ListIndex(t *testing.T) {
+	actualAST := getAST("numbers[1];")
+	expectedAST := []node.Node{
+		node.CreateBinaryExpression(
+			node.CreateIdentifier("numbers"),
+			tokens.OPEN_BRACKET_TOKEN,
+			node.CreateNumber("1"),
+		),
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
 func getAST(source string) []node.Node {
 	t := tokens.New(source)
 	p, _ := parser.New(t)

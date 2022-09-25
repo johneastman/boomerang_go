@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenizer_Symbols(t *testing.T) {
-	tokenizer := tokens.New("+-*/()=,{}<-;")
+	tokenizer := tokens.New("+-*/()=,{}<-[];")
 	expectedTokens := []tokens.Token{
 		tokens.PLUS_TOKEN,
 		tokens.MINUS_TOKEN,
@@ -20,6 +20,8 @@ func TestTokenizer_Symbols(t *testing.T) {
 		tokens.OPEN_CURLY_BRACKET_TOKEN,
 		tokens.CLOSED_CURLY_BRACKET_TOKEN,
 		tokens.PTR_TOKEN,
+		tokens.OPEN_BRACKET_TOKEN,
+		tokens.CLOSED_BRACKET_TOKEN,
 		tokens.SEMICOLON_TOKEN,
 	}
 

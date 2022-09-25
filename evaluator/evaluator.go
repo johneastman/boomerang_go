@@ -3,7 +3,6 @@ package evaluator
 import (
 	"boomerang/node"
 	"boomerang/tokens"
-	"boomerang/utils"
 	"fmt"
 	"strconv"
 	"strings"
@@ -30,7 +29,7 @@ func (e *evaluator) evaluateStatements(stmts []node.Node) (*[]node.Node, error) 
 	for _, stmt := range stmts {
 		result, isExpr, err := e.evaluateStatement(stmt)
 		if err != nil {
-			return nil, utils.CreateError(err)
+			return nil, err
 		}
 
 		if isExpr {
@@ -46,17 +45,21 @@ func (e *evaluator) evaluateStatements(stmts []node.Node) (*[]node.Node, error) 
 
 func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool, error) {
 	if stmt.Type == node.ASSIGN_STMT {
-		e.evaluateAssignmentStatement(stmt)
+		if err := e.evaluateAssignmentStatement(stmt); err != nil {
+			return nil, false, err
+		}
 		return nil, false, nil
 
 	} else if stmt.Type == node.PRINT_STMT {
-		e.evaluatePrintStatement(stmt)
+		if err := e.evaluatePrintStatement(stmt); err != nil {
+			return nil, false, err
+		}
 		return nil, false, nil
 
 	} else if stmt.Type == node.RETURN {
 		param, err := e.evaluateExpression(stmt.Params[0])
 		if err != nil {
-			return nil, false, utils.CreateError(err)
+			return nil, false, err
 		}
 		stmt.Params[0] = *param
 		return &stmt, true, nil
@@ -64,7 +67,7 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool, error) 
 
 	statementExpression, err := e.evaluateExpression(stmt)
 	if err != nil {
-		return nil, false, utils.CreateError(err)
+		return nil, false, err
 	}
 	return statementExpression, true, nil
 }
@@ -136,7 +139,7 @@ func (e *evaluator) evaluateParameter(parameterExpression node.Node) (*node.Node
 
 		parameter, err := e.evaluateExpression(parameterExpression.Params[i])
 		if err != nil {
-			return nil, utils.CreateError(err)
+			return nil, err
 		}
 		parameterExpression.Params[i] = *parameter
 	}
@@ -147,7 +150,7 @@ func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, erro
 	for i, param := range stringExpression.Params {
 		value, err := e.evaluateExpression(param)
 		if err != nil {
-			return nil, utils.CreateError(err)
+			return nil, err
 		}
 		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), value.Value, 1)
 	}
@@ -159,7 +162,7 @@ func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, erro
 func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.Node, error) {
 	expression, err := e.evaluateExpression(unaryExpression.GetParam(node.EXPR))
 	if err != nil {
-		return nil, utils.CreateError(err)
+		return nil, err
 	}
 	operator := unaryExpression.GetParam(node.OPERATOR)
 	if operator.Type == tokens.MINUS {
@@ -175,12 +178,12 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.Node, error) {
 	left, err := e.evaluateExpression(binaryExpression.GetParam(node.LEFT))
 	if err != nil {
-		return nil, utils.CreateError(err)
+		return nil, err
 	}
 
 	right, err := e.evaluateExpression(binaryExpression.GetParam(node.RIGHT))
 	if err != nil {
-		return nil, utils.CreateError(err)
+		return nil, err
 	}
 
 	op := binaryExpression.GetParam(node.OPERATOR)
@@ -202,6 +205,9 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 	case tokens.PTR_TOKEN.Type:
 		return e.leftPointer(*left, *right)
 
+	case tokens.OPEN_BRACKET_TOKEN.Type:
+		return e.index(*left, *right)
+
 	default:
 		return nil, fmt.Errorf("invalid Operator: %s (%s)", op.Type, op.Value)
 	}
@@ -216,7 +222,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		// If the function object is an identifier, retireve the actual function object from the environment
 		identifierFunction, err := e.env.GetIdentifier(function.Value)
 		if err != nil {
-			return nil, utils.CreateError(err)
+			return nil, err
 		}
 		function = *identifierFunction
 	}
@@ -242,14 +248,14 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 		value, err := e.evaluateExpression(callParam)
 		if err != nil {
-			return nil, utils.CreateError(err)
+			return nil, err
 		}
 		e.env.SetIdentifier(functionParam.Value, *value)
 	}
 
 	functionResults, err := e.evaluateStatements(function.GetParam(node.STMTS).Params)
 	if err != nil {
-		return nil, utils.CreateError(err)
+		return nil, err
 	}
 	e.env = tmpEnv
 
@@ -259,6 +265,24 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	}
 	node := node.CreateReturnValue(returnStatement)
 	return &node, nil
+}
+
+func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
+	if left.Type == node.LIST && right.Type == node.NUMBER {
+
+		index, err := strconv.Atoi(right.Value)
+		if err != nil {
+			return nil, fmt.Errorf("index must be an integer")
+		}
+
+		if index >= len(left.Params) {
+			return nil, fmt.Errorf("index out of range: %d. Length of list: %d", index, len(left.Params))
+		}
+
+		node := left.Params[index]
+		return &node, nil
+	}
+	return nil, fmt.Errorf("invalid types for index: %s and %s", left.Type, right.Type)
 }
 
 func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {

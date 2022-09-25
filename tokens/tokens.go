@@ -35,6 +35,8 @@ const (
 	RETURN               = "RETURN"
 	TRUE                 = "TRUE"
 	FALSE                = "FALSE"
+	OPEN_BRACKET         = "OPEN_BRACKET"
+	CLOSED_BRACKET       = "CLOSED_BRACKET"
 )
 
 // Tokens
@@ -53,6 +55,8 @@ var (
 	CLOSED_CURLY_BRACKET_TOKEN = getToken(CLOSED_CURLY_BRACKET)
 	PTR_TOKEN                  = getToken(PTR)
 	DOUBLE_QUOTE_TOKEN         = getToken(DOUBLE_QUOTE)
+	OPEN_BRACKET_TOKEN         = getToken(OPEN_BRACKET)
+	CLOSED_BRACKET_TOKEN       = getToken(CLOSED_BRACKET)
 
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
@@ -95,6 +99,8 @@ var tokenData = map[string]Token{
 	RETURN:               {Type: "RETURN", Literal: "return"},
 	TRUE:                 {Type: "BOOLEAN", Literal: "true"},
 	FALSE:                {Type: "BOOLEAN", Literal: "false"},
+	OPEN_BRACKET:         {Type: "OPEN_BRACKET", Literal: "["},
+	CLOSED_BRACKET:       {Type: "CLOSED_BRACKET", Literal: "]"},
 }
 
 func getToken(name string) Token {
