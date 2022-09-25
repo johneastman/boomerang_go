@@ -8,6 +8,15 @@ import (
 	"testing"
 )
 
+func CreateTokenFromToken(token tokens.Token) tokens.Token {
+	token.LineNumber = 1
+	return token
+}
+
+func CreateTokenFromValues(type_ string, literal string, lineNum int) tokens.Token {
+	return tokens.Token{Type: type_, Literal: literal, LineNumber: lineNum}
+}
+
 func AssertTokensEqual(t *testing.T, expectedTokens []tokens.Token, actualTokens []tokens.Token) {
 	if len(expectedTokens) != len(actualTokens) {
 		t.Fatalf("Expected length: %d, Actual length: %d\n", len(expectedTokens), len(actualTokens))
@@ -28,6 +37,10 @@ func AssertTokenEqual(t *testing.T, expected tokens.Token, actual tokens.Token) 
 
 	if expected.Type != actual.Type {
 		t.Fatalf("Expected Type: %s, Actual Type: %s\n", expected.Type, actual.Type)
+	}
+
+	if expected.LineNumber != actual.LineNumber {
+		t.Fatalf("Expected Line Number: %d, Actual Line Number: %d", expected.LineNumber, actual.LineNumber)
 	}
 }
 

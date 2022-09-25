@@ -9,20 +9,20 @@ import (
 func TestTokenizer_Symbols(t *testing.T) {
 	tokenizer := tokens.New("+-*/()=,{}<-[];")
 	expectedTokens := []tokens.Token{
-		tokens.PLUS_TOKEN,
-		tokens.MINUS_TOKEN,
-		tokens.ASTERISK_TOKEN,
-		tokens.FORWARD_SLASH_TOKEN,
-		tokens.OPEN_PAREN_TOKEN,
-		tokens.CLOSED_PAREN_TOKEN,
-		tokens.ASSIGN_TOKEN,
-		tokens.COMMA_TOKEN,
-		tokens.OPEN_CURLY_BRACKET_TOKEN,
-		tokens.CLOSED_CURLY_BRACKET_TOKEN,
-		tokens.PTR_TOKEN,
-		tokens.OPEN_BRACKET_TOKEN,
-		tokens.CLOSED_BRACKET_TOKEN,
-		tokens.SEMICOLON_TOKEN,
+		CreateTokenFromToken(tokens.PLUS_TOKEN),
+		CreateTokenFromToken(tokens.MINUS_TOKEN),
+		CreateTokenFromToken(tokens.ASTERISK_TOKEN),
+		CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
+		CreateTokenFromToken(tokens.OPEN_PAREN_TOKEN),
+		CreateTokenFromToken(tokens.CLOSED_PAREN_TOKEN),
+		CreateTokenFromToken(tokens.ASSIGN_TOKEN),
+		CreateTokenFromToken(tokens.COMMA_TOKEN),
+		CreateTokenFromToken(tokens.OPEN_CURLY_BRACKET_TOKEN),
+		CreateTokenFromToken(tokens.CLOSED_CURLY_BRACKET_TOKEN),
+		CreateTokenFromToken(tokens.PTR_TOKEN),
+		CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
+		CreateTokenFromToken(tokens.CLOSED_BRACKET_TOKEN),
+		CreateTokenFromToken(tokens.SEMICOLON_TOKEN),
 	}
 
 	for _, expectedToken := range expectedTokens {
@@ -34,11 +34,11 @@ func TestTokenizer_Symbols(t *testing.T) {
 func TestTokenizer_Keywords(t *testing.T) {
 
 	keywordTokens := []tokens.Token{
-		tokens.PRINT_TOKEN,
-		tokens.FUNCTION_TOKEN,
-		tokens.TRUE_TOKEN,
-		tokens.FALSE_TOKEN,
-		tokens.IF_TOKEN,
+		CreateTokenFromToken(tokens.PRINT_TOKEN),
+		CreateTokenFromToken(tokens.FUNCTION_TOKEN),
+		CreateTokenFromToken(tokens.TRUE_TOKEN),
+		CreateTokenFromToken(tokens.FALSE_TOKEN),
+		CreateTokenFromToken(tokens.IF_TOKEN),
 	}
 
 	for _, expectedToken := range keywordTokens {
@@ -69,7 +69,7 @@ func TestTokenizer_Numbers(t *testing.T) {
 		tokenizer := tokens.New(source)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, tokens.Token{Type: tokens.NUMBER_TOKEN.Type, Literal: source}, *token)
+		AssertTokenEqual(t, CreateTokenFromValues(tokens.NUMBER_TOKEN.Type, source, 1), *token)
 	}
 }
 
@@ -90,7 +90,7 @@ func TestTokenizer_Strings(t *testing.T) {
 		tokenizer := tokens.New(source)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, tokens.Token{Type: tokens.STRING_TOKEN.Type, Literal: testString}, *token)
+		AssertTokenEqual(t, CreateTokenFromValues(tokens.STRING_TOKEN.Type, testString, 1), *token)
 	}
 }
 
@@ -107,6 +107,6 @@ func TestTokenizer_Identifiers(t *testing.T) {
 		tokenizer := tokens.New(variable)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, tokens.Token{Type: tokens.IDENTIFIER_TOKEN.Type, Literal: variable}, *token)
+		AssertTokenEqual(t, CreateTokenFromValues(tokens.IDENTIFIER_TOKEN.Type, variable, 1), *token)
 	}
 }
