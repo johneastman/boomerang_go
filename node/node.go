@@ -7,9 +7,10 @@ import (
 )
 
 type Node struct {
-	Type   string
-	Value  string
-	Params []Node
+	Type    string
+	Value   string
+	LineNum int
+	Params  []Node
 }
 
 const (
@@ -87,6 +88,7 @@ var indexMap = map[string]map[string]int{
 	FUNCTION_CALL: {
 		CALL_PARAMS: 0,
 		FUNCTION:    1,
+		IDENTIFIER:  1,
 	},
 	IF_STMT: {
 		CONDITION:   0,
@@ -119,17 +121,17 @@ func (n *Node) GetParamByKeys(keys []string) Node {
 			return *node
 		}
 	}
-	panic(fmt.Sprintf("No keys matching provided keys: %s", strings.Join(keys, ", ")))
+	panic(fmt.Sprintf("no keys matching provided keys: %s", strings.Join(keys, ", ")))
 }
 
 func (n *Node) getParam(key string) (*Node, error) {
-	if stmt_indices, stmt_ok := indexMap[n.Type]; stmt_ok {
-		if param_index, param_ok := stmt_indices[key]; param_ok {
-			return &n.Params[param_index], nil
+	if stmtIndices, stmtOk := indexMap[n.Type]; stmtOk {
+		if paramIndex, paramOk := stmtIndices[key]; paramOk {
+			return &n.Params[paramIndex], nil
 		}
-		return nil, fmt.Errorf("invalid parameter: %s", key)
+		panic(fmt.Sprintf("invalid parameter: %s", key))
 	}
-	return nil, fmt.Errorf("invalid statement type: %s", n.Type)
+	panic(fmt.Sprintf("invalid statement type: %s", n.Type))
 }
 
 func (n *Node) String() string {

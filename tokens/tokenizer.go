@@ -1,7 +1,7 @@
 package tokens
 
 import (
-	"fmt"
+	"boomerang/utils"
 	"regexp"
 	"sort"
 	"strings"
@@ -109,7 +109,12 @@ func (t *Tokenizer) Next() (*Token, error) {
 
 		r, _ := regexp.Compile("^([0-9]*[.])?[0-9]+$")
 		if !r.MatchString(literal) {
-			return nil, fmt.Errorf("error at line %d: invalid number literal: %s", t.currentLineNumber, literal)
+			return nil, utils.CreateError(
+				t.currentLineNumber,
+				"error at line %d: invalid number literal: %s",
+				t.currentLineNumber,
+				literal,
+			)
 		}
 
 		token := t.createToken(NUMBER, literal)
@@ -126,7 +131,7 @@ func (t *Tokenizer) Next() (*Token, error) {
 
 	token, err := t.getMatchingTokens()
 	if err != nil {
-		return nil, fmt.Errorf(err.Error())
+		return nil, err
 	}
 
 	token.LineNumber = t.currentLineNumber
@@ -185,5 +190,5 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 			return &matchingToken, nil
 		}
 	}
-	return nil, fmt.Errorf("error at line %d: invalid symbol: %c", t.currentLineNumber, t.current())
+	return nil, utils.CreateError(t.currentLineNumber, "invalid symbol %c", t.current())
 }

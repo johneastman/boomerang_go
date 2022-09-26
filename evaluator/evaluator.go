@@ -166,7 +166,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 		return e.evaluateParameter(expr)
 
 	case node.IDENTIFIER:
-		return e.env.GetIdentifier(expr.Value)
+		return e.env.GetIdentifier(expr)
 
 	case node.UNARY_EXPR:
 		return e.evaluateUnaryExpression(expr)
@@ -268,7 +268,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 	if function.Type == node.IDENTIFIER {
 		// If the function object is an identifier, retireve the actual function object from the environment
-		identifierFunction, err := e.env.GetIdentifier(function.Value)
+		identifierFunction, err := e.env.GetIdentifier(function)
 		if err != nil {
 			return nil, err
 		}
@@ -410,13 +410,19 @@ func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, paramete
 			return nil, fmt.Errorf("invalid type for unwrap: %s. Expected %s", parameters.Type, node.LIST)
 		}
 
-		// TODO: Incorporate boolean value into computation
 		returnParam := parameters.Params[0]
-		defaultValue := parameters.Params[1]
-		if len(returnParam.Params) == 1 {
-			return e.evaluateExpression(defaultValue)
+		returnParamFirst, err := e.evaluateExpression(returnParam.Params[0]) // Params[0] contains the boolean value
+		if err != nil {
+			return nil, err
 		}
-		return e.evaluateExpression(returnParam.Params[1]) // Params[0] contains the boolean value
+
+		// If the boolean value in the first element of the list is "true", return the function's actual return value
+		if returnParamFirst.Value == tokens.TRUE_TOKEN.Literal {
+			return e.evaluateExpression(returnParam.Params[1]) // Params[1] contains the actual return value, if Params[0] is true
+		}
+
+		// Otherwise, return the provided default value
+		return e.evaluateExpression(parameters.Params[1])
 
 	default:
 		return nil, fmt.Errorf("undefined builtin function: %s", builtinFunctionType)

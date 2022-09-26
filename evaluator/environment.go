@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"boomerang/node"
+	"boomerang/utils"
 	"fmt"
 	"math"
 )
@@ -33,9 +34,10 @@ func (e *environment) SetIdentifier(key string, value node.Node) {
 	e.env[key] = value
 }
 
-func (e *environment) GetIdentifier(key string) (*node.Node, error) {
-	if value, ok := e.env[key]; ok {
+func (e *environment) GetIdentifier(key node.Node) (*node.Node, error) {
+	identifierName := key.Value
+	if value, ok := e.env[identifierName]; ok {
 		return &value, nil
 	}
-	return nil, fmt.Errorf("undefined variable: %s", key)
+	return nil, utils.CreateError(key.LineNum, "undefined identifier: %s", identifierName)
 }

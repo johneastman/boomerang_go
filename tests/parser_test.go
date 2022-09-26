@@ -401,6 +401,23 @@ func TestParser_IfStatement(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
+func TestParser_UnexpectedTokenError(t *testing.T) {
+	tokenizer := tokens.New("1")
+	p, err := parser.New(tokenizer)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = p.Parse()
+
+	actualError := err.Error()
+	expectedError := "error at line 1: expected token type SEMICOLON (\";\"), got EOF (\"\")"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %#v, Actual Error: %#v", expectedError, actualError)
+	}
+}
+
 func getAST(source string) []node.Node {
 	t := tokens.New(source)
 
