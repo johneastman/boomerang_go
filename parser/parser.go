@@ -64,42 +64,28 @@ func (p Parser) Parse() (*[]node.Node, error) {
 	return statements, nil
 }
 
-func (p *Parser) parseGlobalStatements() (*[]node.Node, error) {
+func (p *Parser) parseStatements(terminatingToken tokens.Token) (*[]node.Node, error) {
 	statements := []node.Node{}
-	for p.current.Type != tokens.EOF_TOKEN.Type {
+	for p.current.Type != terminatingToken.Type {
 		statement, err := p.parseStatement()
 		if err != nil {
 			return nil, err
 		}
-
-		/*
-			The purpose of the parser is to validate that the syntax structure is correct, and having a return statement outside a
-			function is invalid, so the parser should perform that validation.
-		*/
-		if statement.Type == node.RETURN {
-			return nil, fmt.Errorf("%s statement invalid in global scope", tokens.RETURN_TOKEN.Literal)
-		}
-
 		statements = append(statements, *statement)
+	}
+
+	if err := p.expectToken(terminatingToken); err != nil {
+		return nil, err
 	}
 	return &statements, nil
 }
 
+func (p *Parser) parseGlobalStatements() (*[]node.Node, error) {
+	return p.parseStatements(tokens.EOF_TOKEN)
+}
+
 func (p *Parser) parseBlockStatements() (*[]node.Node, error) {
-	statements := []node.Node{}
-	for p.current.Type != tokens.CLOSED_CURLY_BRACKET_TOKEN.Type {
-		statement, err := p.parseStatement()
-		if err != nil {
-			return nil, err
-		}
-
-		statements = append(statements, *statement)
-	}
-
-	if err := p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN); err != nil {
-		return nil, err
-	}
-	return &statements, nil
+	return p.parseStatements(tokens.CLOSED_CURLY_BRACKET_TOKEN)
 }
 
 func (p *Parser) parseStatement() (stmt *node.Node, stmtErr error) {

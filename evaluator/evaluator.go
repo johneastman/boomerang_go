@@ -36,9 +36,7 @@ func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) (*[]node.Node, e
 		if result != nil {
 			results = append(results, *result)
 			if result.Type == node.RETURN {
-				returnValue := result.GetParam(node.RETURN_VALUE)
-				results = append(results, returnValue)
-				break
+				return nil, fmt.Errorf("%s statements not allowed in the global scope", tokens.RETURN_TOKEN.Literal)
 			}
 		}
 	}

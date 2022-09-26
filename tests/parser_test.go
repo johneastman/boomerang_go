@@ -363,15 +363,7 @@ func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
 }
 
 func TestParser_ReturnStatements(t *testing.T) {
-	/*
-		Because return statements are now allowed in the global scope (which is enforced by the parser), the return statement
-		neeeds to be in a function. So to test that the return AST is correct, it is extracted from the function AST and used
-		in the tests.
-	*/
-	ast := getAST("func() { return 1 + 1; };")
-	functionAST := ast[0]
-	actualAST := functionAST.GetParam(node.STMTS).Params
-
+	actualAST := getAST("return 1 + 1;")
 	expectedAST := []node.Node{
 		node.CreateReturnStatement(node.CreateBinaryExpression(
 			node.CreateNumber("1"),
