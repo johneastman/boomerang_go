@@ -598,3 +598,71 @@ func TestEvaluator_IfStatement(t *testing.T) {
 		AssertNodesEqual(t, expectedResults, actualResults)
 	}
 }
+
+func TestEvaluator_FunctionReturnIfStatement(t *testing.T) {
+	/*
+		Source:
+		func(a, b) {
+			if true {
+				return a + b;
+			}
+			return 0;
+		}
+	*/
+	tests := []struct {
+		Condition   node.Node
+		ReturnValue node.Node
+	}{
+		{
+			Condition: node.CreateBooleanTrue(),
+			ReturnValue: node.CreateList([]node.Node{
+				node.CreateBooleanTrue(),
+				node.CreateNumber("7"),
+			}),
+		},
+		{
+			Condition: node.CreateBooleanFalse(),
+			ReturnValue: node.CreateList([]node.Node{
+				node.CreateBooleanTrue(),
+				node.CreateNumber("0"),
+			}),
+		},
+	}
+
+	for _, test := range tests {
+		ast := []node.Node{
+			node.CreateFunctionCall(
+				node.CreateFunction(
+					[]node.Node{
+						node.CreateIdentifier("a"),
+						node.CreateIdentifier("b"),
+					},
+					[]node.Node{
+						node.CreateIfStatement(
+							test.Condition,
+							[]node.Node{
+								node.CreateReturnStatement(
+									node.CreateBinaryExpression(
+										node.CreateIdentifier("a"),
+										tokens.PLUS_TOKEN,
+										node.CreateIdentifier("b"),
+									),
+								),
+							},
+						),
+						node.CreateNumber("0"),
+					},
+				),
+				[]node.Node{
+					node.CreateNumber("3"),
+					node.CreateNumber("4"),
+				},
+			),
+		}
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			test.ReturnValue,
+		}
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
+}

@@ -27,15 +27,17 @@ func (e *evaluator) Evaluate() (*[]node.Node, error) {
 func (e *evaluator) evaluateStatements(stmts []node.Node) (*[]node.Node, error) {
 	results := []node.Node{}
 	for _, stmt := range stmts {
-		result, isExpr, err := e.evaluateStatement(stmt)
+		result, err := e.evaluateStatement(stmt)
 		if err != nil {
 			return nil, err
 		}
 
-		if isExpr {
+		// If 'result' is not nil, then the statement returned a value (likely an expression statement)
+		if result != nil {
 			results = append(results, *result)
 			if result.Type == node.RETURN {
-				results = append(results, result.Params[0])
+				returnValue := result.GetParam(node.RETURN_VALUE)
+				results = append(results, returnValue)
 				break
 			}
 		}
@@ -43,57 +45,77 @@ func (e *evaluator) evaluateStatements(stmts []node.Node) (*[]node.Node, error) 
 	return &results, nil
 }
 
-func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, bool, error) {
+func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 	if stmt.Type == node.ASSIGN_STMT {
 		if err := e.evaluateAssignmentStatement(stmt); err != nil {
-			return nil, false, err
+			return nil, err
 		}
-		return nil, false, nil
+		return nil, nil
 
 	} else if stmt.Type == node.PRINT_STMT {
 		if err := e.evaluatePrintStatement(stmt); err != nil {
-			return nil, false, err
+			return nil, err
 		}
-		return nil, false, nil
+		return nil, nil
 
 	} else if stmt.Type == node.RETURN {
-		param, err := e.evaluateExpression(stmt.Params[0])
+		returnValue, err := e.evaluateExpression(stmt.GetParam(node.RETURN_VALUE))
 		if err != nil {
-			return nil, false, err
+			return nil, err
 		}
-		stmt.Params[0] = *param
-		return &stmt, true, nil
+		stmt.Params[0] = *returnValue
+		return &stmt, nil
 
 	} else if stmt.Type == node.IF_STMT {
-		if err := e.evaluateIfStatement(stmt); err != nil {
-			return nil, false, err
+		ifStatement, err := e.evaluateIfStatement(stmt)
+		if err != nil {
+			return nil, err
 		}
-		return nil, false, nil
+
+		if ifStatement != nil {
+			return ifStatement, nil
+		}
+		return nil, nil
 	}
 
 	statementExpression, err := e.evaluateExpression(stmt)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
-	return statementExpression, true, nil
+	return statementExpression, nil
 }
 
-func (e *evaluator) evaluateIfStatement(ifStatement node.Node) error {
+func (e *evaluator) evaluateIfStatement(ifStatement node.Node) (*node.Node, error) {
 	condition := ifStatement.GetParam(node.CONDITION)
 	trueStatements := ifStatement.GetParam(node.TRUE_BRANCH)
 
 	evaluatedCondition, err := e.evaluateExpression(condition)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if evaluatedCondition.Value == tokens.TRUE_TOKEN.Literal {
-		_, err = e.evaluateStatements(trueStatements.Params)
-		if err != nil {
-			return err
+		var returnValue *node.Node
+		for _, statement := range trueStatements.Params {
+			result, err := e.evaluateStatement(statement)
+			if err != nil {
+				return nil, err
+			}
+
+			/*
+				Check for return statements to propogate the return value up
+
+				 Not all statements return a value, so check that the value is not nil before checking if the value
+				 is a return node.
+			*/
+			if result != nil && result.Type == node.RETURN {
+				returnValue = result
+				break
+			}
 		}
+		return returnValue, nil
 	}
-	return nil
+	return nil, nil
 }
 
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
@@ -277,18 +299,30 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		e.env.SetIdentifier(functionParam.Value, *value)
 	}
 
-	functionResults, err := e.evaluateStatements(function.GetParam(node.STMTS).Params)
-	if err != nil {
-		return nil, err
+	functionStatements := function.GetParam(node.STMTS).Params
+	if len(functionStatements) == 0 {
+		node := node.CreateReturnValue(nil)
+		return &node, nil
 	}
+
+	var returnStatement *node.Node
+	for _, statement := range functionStatements {
+		value, err := e.evaluateStatement(statement)
+		if err != nil {
+			return nil, err
+		}
+
+		if value != nil && value.Type == node.RETURN {
+			returnStatement = node.Ptr(value.GetParam(node.RETURN_VALUE))
+			break
+		}
+		returnStatement = value
+	}
+
+	// Reset environment back to original scope environment
 	e.env = tmpEnv
 
-	var returnStatement *node.Node = nil
-	if len(*functionResults) > 0 {
-		returnStatement = &(*functionResults)[len(*functionResults)-1]
-	}
-	node := node.CreateReturnValue(returnStatement)
-	return &node, nil
+	return node.Ptr(node.CreateReturnValue(returnStatement)), nil
 }
 
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
@@ -302,9 +336,7 @@ func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 		if index >= len(left.Params) {
 			return nil, fmt.Errorf("index out of range: %d. Length of list: %d", index, len(left.Params))
 		}
-
-		node := left.Params[index]
-		return &node, nil
+		return node.Ptr(left.Params[index]), nil
 	}
 	return nil, fmt.Errorf("invalid types for index: %s and %s", left.Type, right.Type)
 }
@@ -313,8 +345,7 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) + e.toFloat(right.Value)
 
-		node := e.createNumberNode(result)
-		return &node, nil
+		return node.Ptr(e.createNumberNode(result)), nil
 	}
 	return nil, fmt.Errorf("cannot add types %s and %s", left.Type, right.Type)
 }

@@ -15,13 +15,14 @@ type Node struct {
 const (
 
 	// Statements
-	STMTS       = "Statements" // Super type
-	RETURN      = "Return"
-	PRINT_STMT  = "PrintStatement"
-	ASSIGN_STMT = "Assign"
-	IF_STMT     = "IfStatement"
-	TRUE_BRANCH = "TrueBranch"
-	CONDITION   = "Condition"
+	STMTS        = "Statements" // Super type
+	RETURN       = "Return"
+	RETURN_VALUE = "ReturnValue"
+	PRINT_STMT   = "PrintStatement"
+	ASSIGN_STMT  = "Assign"
+	IF_STMT      = "IfStatement"
+	TRUE_BRANCH  = "TrueBranch"
+	CONDITION    = "Condition"
 
 	// Expressions
 	EXPR                   = "Expression" // Super type
@@ -91,6 +92,9 @@ var indexMap = map[string]map[string]int{
 		CONDITION:   0,
 		TRUE_BRANCH: 1,
 	},
+	RETURN: {
+		RETURN_VALUE: 0,
+	},
 }
 
 func (n *Node) GetParam(key string) Node {
@@ -147,6 +151,10 @@ func (n *Node) String() string {
 	default:
 		return n.Value
 	}
+}
+
+func Ptr(n Node) *Node {
+	return &n
 }
 
 func CreateTokenNode(token tokens.Token) Node {
