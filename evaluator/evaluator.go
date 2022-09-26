@@ -21,10 +21,10 @@ func New(ast []node.Node) evaluator {
 }
 
 func (e *evaluator) Evaluate() (*[]node.Node, error) {
-	return e.evaluateStatements(e.ast)
+	return e.evaluateGlobalStatements(e.ast)
 }
 
-func (e *evaluator) evaluateStatements(stmts []node.Node) (*[]node.Node, error) {
+func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) (*[]node.Node, error) {
 	results := []node.Node{}
 	for _, stmt := range stmts {
 		result, err := e.evaluateStatement(stmt)
