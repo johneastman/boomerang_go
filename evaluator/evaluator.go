@@ -45,6 +45,28 @@ func (e *evaluator) evaluateStatements(stmts []node.Node) (*[]node.Node, error) 
 	return &results, nil
 }
 
+func (e *evaluator) evaluateBlockStatements(statements []node.Node) (*node.Node, error) {
+	var returnValue *node.Node
+	for _, statement := range statements {
+		result, err := e.evaluateStatement(statement)
+		if err != nil {
+			return nil, err
+		}
+		returnValue = result
+
+		/*
+			Stop evaluating the statements if a return statement is found.
+
+			Not all statements return a value, so check that the value is not nil before checking if the value
+			is a return node.
+		*/
+		if result != nil && result.Type == node.RETURN {
+			break
+		}
+	}
+	return returnValue, nil
+}
+
 func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 	if stmt.Type == node.ASSIGN_STMT {
 		if err := e.evaluateAssignmentStatement(stmt); err != nil {
@@ -95,25 +117,7 @@ func (e *evaluator) evaluateIfStatement(ifStatement node.Node) (*node.Node, erro
 	}
 
 	if evaluatedCondition.Value == tokens.TRUE_TOKEN.Literal {
-		var returnValue *node.Node
-		for _, statement := range trueStatements.Params {
-			result, err := e.evaluateStatement(statement)
-			if err != nil {
-				return nil, err
-			}
-
-			/*
-				Check for return statements to propogate the return value up
-
-				 Not all statements return a value, so check that the value is not nil before checking if the value
-				 is a return node.
-			*/
-			if result != nil && result.Type == node.RETURN {
-				returnValue = result
-				break
-			}
-		}
-		return returnValue, nil
+		return e.evaluateBlockStatements(trueStatements.Params)
 	}
 	return nil, nil
 }
@@ -305,18 +309,13 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		return &node, nil
 	}
 
-	var returnStatement *node.Node
-	for _, statement := range functionStatements {
-		value, err := e.evaluateStatement(statement)
-		if err != nil {
-			return nil, err
-		}
+	returnStatement, err := e.evaluateBlockStatements(functionStatements)
+	if err != nil {
+		return nil, err
+	}
 
-		if value != nil && value.Type == node.RETURN {
-			returnStatement = node.Ptr(value.GetParam(node.RETURN_VALUE))
-			break
-		}
-		returnStatement = value
+	if returnStatement != nil && returnStatement.Type == node.RETURN {
+		returnStatement = node.Ptr(returnStatement.GetParam(node.RETURN_VALUE))
 	}
 
 	// Reset environment back to original scope environment
