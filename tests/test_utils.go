@@ -8,9 +8,70 @@ import (
 	"testing"
 )
 
+const TEST_LINE_NUM = 1
+
+func CreateNumber(value string) node.Node {
+	return node.CreateNumber(TEST_LINE_NUM, value)
+}
+
+func CreateBoolean(value string) node.Node {
+	return node.CreateBoolean(value, TEST_LINE_NUM)
+}
+
+func CreateBooleanTrue() node.Node {
+	return node.CreateBooleanTrue(TEST_LINE_NUM)
+}
+
+func CreateBooleanFalse() node.Node {
+	return node.CreateBooleanFalse(TEST_LINE_NUM)
+}
+
+func CreateString(value string, params []node.Node) node.Node {
+	return node.CreateString(TEST_LINE_NUM, value, params)
+}
+
+func CreateRawString(value string) node.Node {
+	return node.CreateRawString(TEST_LINE_NUM, value)
+}
+
+func CreateIdentifier(value string) node.Node {
+	return node.CreateIdentifier(TEST_LINE_NUM, value)
+}
+
+func CreateList(values []node.Node) node.Node {
+	return node.CreateList(TEST_LINE_NUM, values)
+}
+
+func CreatePrintStatement(params []node.Node) node.Node {
+	return node.CreatePrintStatement(TEST_LINE_NUM, params)
+}
+
+func CreateAssignmentStatement(variableName string, value node.Node) node.Node {
+	return node.CreateAssignmentStatement(variableName, value, TEST_LINE_NUM)
+}
+
+func CreateReturnStatement(expression node.Node) node.Node {
+	return node.CreateReturnStatement(TEST_LINE_NUM, expression)
+}
+
+func CreateFunction(parameters []node.Node, statements []node.Node) node.Node {
+	return node.CreateFunction(parameters, statements, TEST_LINE_NUM)
+}
+
+func CreateFunctionCall(function node.Node, callParams []node.Node) node.Node {
+	return node.CreateFunctionCall(TEST_LINE_NUM, function, callParams)
+}
+
+func CreateIfStatement(condition node.Node, trueBranch []node.Node) node.Node {
+	return node.CreateIfStatement(TEST_LINE_NUM, condition, trueBranch)
+}
+
+func CreateFunctionReturnValue(statement *node.Node) node.Node {
+	return node.CreateFunctionReturnValue(TEST_LINE_NUM, statement)
+}
+
 func CreateTokenFromToken(token tokens.Token) tokens.Token {
-	token.LineNumber = 1
-	return token
+	return tokens.Token{Type: token.Type, Literal: token.Literal, LineNumber: TEST_LINE_NUM}
 }
 
 func CreateTokenFromValues(type_ string, literal string, lineNum int) tokens.Token {
@@ -62,6 +123,10 @@ func AssertNodeEqual(t *testing.T, expected node.Node, actual node.Node) {
 
 	if expected.Value != actual.Value {
 		t.Fatalf("Expected value: %s, Actual value: %s\n", expected.Value, actual.Value)
+	}
+
+	if expected.LineNum != actual.LineNum {
+		t.Fatalf("Expected LineNum: %d, Actual LineNum: %d", expected.LineNum, actual.LineNum)
 	}
 
 	if len(expected.Params) != len(actual.Params) {

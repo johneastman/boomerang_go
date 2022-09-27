@@ -203,7 +203,7 @@ func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, erro
 		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), value.Value, 1)
 	}
 
-	node := node.CreateRawString(stringExpression.Value)
+	node := node.CreateRawString(stringExpression.LineNum, stringExpression.Value)
 	return &node, nil
 }
 
@@ -216,7 +216,7 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 	if operator.Type == tokens.MINUS {
 		expressionValue := -e.toFloat(expression.Value)
 
-		node := e.createNumberNode(expressionValue)
+		node := e.createNumberNode(expressionValue, unaryExpression.LineNum)
 		return &node, nil
 	}
 
@@ -303,7 +303,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 	functionStatements := function.GetParam(node.STMTS).Params
 	if len(functionStatements) == 0 {
-		node := node.CreateReturnValue(nil)
+		node := node.CreateFunctionReturnValue(callParams.LineNum, nil)
 		return &node, nil
 	}
 
@@ -319,7 +319,8 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	// Reset environment back to original scope environment
 	e.env = tmpEnv
 
-	return node.Ptr(node.CreateReturnValue(returnStatement)), nil
+	node := node.CreateFunctionReturnValue(returnStatement.LineNum, returnStatement)
+	return &node, nil
 }
 
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
@@ -342,7 +343,7 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) + e.toFloat(right.Value)
 
-		return node.Ptr(e.createNumberNode(result)), nil
+		return node.Ptr(e.createNumberNode(result, left.LineNum)), nil
 	}
 	return nil, fmt.Errorf("cannot add types %s and %s", left.Type, right.Type)
 }
@@ -351,7 +352,7 @@ func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) - e.toFloat(right.Value)
 
-		node := e.createNumberNode(result)
+		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
 	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
@@ -361,7 +362,7 @@ func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) * e.toFloat(right.Value)
 
-		node := e.createNumberNode(result)
+		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
 	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
@@ -375,7 +376,7 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 		}
 		result := e.toFloat(left.Value) / e.toFloat(right.Value)
 
-		node := e.createNumberNode(result)
+		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
 	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
@@ -383,25 +384,30 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 
 func (e *evaluator) leftPointer(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.FUNCTION && right.Type == node.LIST {
-		functionCall := node.CreateFunctionCall(left, right.Params)
+		functionCall := node.CreateFunctionCall(left.LineNum, left, right.Params)
 
 		return e.evaluateExpression(functionCall)
 
 	} else if left.Type == node.BUILTIN_FUNC && right.Type == node.LIST {
 		// For builtin functions, Node.Value stores the builtin-function
-		return e.evaluateBuiltinFunction(left.Value, right)
+		return e.evaluateBuiltinFunction(left, right)
 	}
 
 	return nil, fmt.Errorf("cannot use left pointer on types %s and %s", left.Type, right.Type)
 }
 
-func (e *evaluator) evaluateBuiltinFunction(builtinFunctionType string, parameters node.Node) (*node.Node, error) {
+func (e *evaluator) evaluateBuiltinFunction(builtinFunction node.Node, parameters node.Node) (*node.Node, error) {
+
+	builtinFunctionType := builtinFunction.Value // The specific builtin function is stored in Node.Value
 
 	switch builtinFunctionType {
 	case node.BUILTIN_LEN:
 		value := len(parameters.Params)
 
-		node := node.CreateNumber(fmt.Sprint(value))
+		node := node.CreateNumber(
+			builtinFunction.LineNum,
+			fmt.Sprint(value),
+		)
 		return &node, nil
 
 	case node.BUILTIN_UNWRAP:
@@ -438,6 +444,6 @@ func (e *evaluator) toFloat(s string) float64 {
 	return floatVal
 }
 
-func (e *evaluator) createNumberNode(value float64) node.Node {
-	return node.CreateNumber(fmt.Sprint(value))
+func (e *evaluator) createNumberNode(value float64, lineNum int) node.Node {
+	return node.CreateNumber(lineNum, fmt.Sprint(value))
 }

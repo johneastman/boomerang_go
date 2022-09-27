@@ -113,6 +113,9 @@ func (p *Parser) parseStatement() (stmt *node.Node, stmtErr error) {
 }
 
 func (p *Parser) parseIfStatement() (*node.Node, error) {
+
+	lineNumber := p.current.LineNumber
+
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
@@ -131,11 +134,14 @@ func (p *Parser) parseIfStatement() (*node.Node, error) {
 		return nil, err
 	}
 
-	node := node.CreateIfStatement(*condition, *statements)
+	node := node.CreateIfStatement(lineNumber, *condition, *statements)
 	return &node, nil
 }
 
 func (p *Parser) parseReturnStatement() (*node.Node, error) {
+
+	lineNumber := p.current.LineNumber
+
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
@@ -144,12 +150,12 @@ func (p *Parser) parseReturnStatement() (*node.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	returnNode := node.CreateReturnStatement(*expression)
+	returnNode := node.CreateReturnStatement(lineNumber, *expression)
 	return &returnNode, nil
 }
 
 func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
-	variableName := p.current.Literal
+	identifierToken := p.current
 
 	if err := p.advance(); err != nil {
 		return nil, err
@@ -164,11 +170,14 @@ func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
 		return nil, err
 	}
 
-	assignmentNode := node.CreateAssignmentStatement(variableName, *variableExpression)
+	assignmentNode := node.CreateAssignmentStatement(identifierToken.Literal, *variableExpression, identifierToken.LineNumber)
 	return &assignmentNode, nil
 }
 
 func (p *Parser) parsePrintStatement() (*node.Node, error) {
+
+	lineNumber := p.current.LineNumber
+
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
@@ -182,7 +191,7 @@ func (p *Parser) parsePrintStatement() (*node.Node, error) {
 		return nil, err
 	}
 
-	printNode := node.CreatePrintStatement(parameters.Params)
+	printNode := node.CreatePrintStatement(lineNumber, parameters.Params)
 	return &printNode, nil
 }
 
@@ -263,37 +272,41 @@ func (p *Parser) getPrecedenceLevel(operator tokens.Token) int {
 }
 
 func (p *Parser) parseIdentifier() (*node.Node, error) {
-	identifier := p.current
+	identifierToken := p.current
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
 
-	identifierNode := node.CreateIdentifier(identifier.Literal)
+	identifierNode := node.CreateIdentifier(identifierToken.LineNumber, identifierToken.Literal)
 	return &identifierNode, nil
 }
 
 func (p *Parser) parseNumber() (*node.Node, error) {
-	value := p.current.Literal
+	numberToken := p.current
+
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
 
-	numberNode := node.CreateNumber(value)
+	numberNode := node.CreateNumber(numberToken.LineNumber, numberToken.Literal)
 	return &numberNode, nil
 }
 
 func (p *Parser) parseBoolean() (*node.Node, error) {
-	value := p.current.Literal
+	booleanToken := p.current
+
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
 
-	booleanNode := node.CreateBoolean(value)
+	booleanNode := node.CreateBoolean(booleanToken.Literal, booleanToken.LineNumber)
 	return &booleanNode, nil
 }
 
 func (p *Parser) parseString() (*node.Node, error) {
 	stringLiteral := p.current.Literal
+	lineNumber := p.current.LineNumber
+
 	params := []node.Node{}
 	expressionIndex := 0
 
@@ -329,7 +342,7 @@ func (p *Parser) parseString() (*node.Node, error) {
 		return nil, err
 	}
 
-	stringNode := node.CreateString(stringLiteral, params)
+	stringNode := node.CreateString(lineNumber, stringLiteral, params)
 	return &stringNode, nil
 }
 
@@ -349,6 +362,8 @@ func (p *Parser) parseUnaryExpression() (*node.Node, error) {
 
 func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 
+	lineNumber := p.current.LineNumber
+
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
@@ -357,7 +372,7 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		if err := p.advance(); err != nil {
 			return nil, err
 		}
-		listNode := node.CreateList([]node.Node{})
+		listNode := node.CreateList(lineNumber, []node.Node{})
 		return &listNode, nil
 	}
 
@@ -384,7 +399,7 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		}
 
 		stmts = append(stmts, additionalParams.Params...)
-		listNode := node.CreateList(stmts)
+		listNode := node.CreateList(lineNumber, stmts)
 		return &listNode, nil
 	}
 
@@ -396,6 +411,9 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 }
 
 func (p *Parser) parseParameters() (*node.Node, error) {
+
+	lineNumber := p.current.LineNumber
+
 	params := []node.Node{}
 	for {
 		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
@@ -420,11 +438,14 @@ func (p *Parser) parseParameters() (*node.Node, error) {
 		}
 	}
 
-	paramNode := node.CreateList(params)
+	paramNode := node.CreateList(lineNumber, params)
 	return &paramNode, nil
 }
 
 func (p *Parser) parseFunction() (*node.Node, error) {
+
+	lineNumber := p.current.LineNumber
+
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
@@ -447,7 +468,7 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 		return nil, err
 	}
 
-	functionNode := node.CreateFunction(parameters.Params, *statements)
+	functionNode := node.CreateFunction(parameters.Params, *statements, lineNumber)
 	return &functionNode, nil
 }
 

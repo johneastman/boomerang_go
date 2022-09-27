@@ -163,52 +163,54 @@ func CreateTokenNode(token tokens.Token) Node {
 	return Node{Type: token.Type, Value: token.Literal}
 }
 
-func CreateNumber(value string) Node {
-	return Node{Type: NUMBER, Value: value}
+func CreateNumber(lineNum int, value string) Node {
+	return Node{Type: NUMBER, Value: value, LineNum: lineNum}
 }
 
-func CreateBoolean(value string) Node {
-	return Node{Type: BOOLEAN, Value: value}
+func CreateBoolean(value string, lineNum int) Node {
+	return Node{Type: BOOLEAN, Value: value, LineNum: lineNum}
 }
 
-func CreateBooleanTrue() Node {
-	return CreateBoolean(tokens.TRUE_TOKEN.Literal)
+func CreateBooleanTrue(lineNum int) Node {
+	return CreateBoolean(tokens.TRUE_TOKEN.Literal, lineNum)
 }
 
-func CreateBooleanFalse() Node {
-	return CreateBoolean(tokens.FALSE_TOKEN.Literal)
+func CreateBooleanFalse(lineNum int) Node {
+	return CreateBoolean(tokens.FALSE_TOKEN.Literal, lineNum)
 }
 
-func CreateString(literal string, parameters []Node) Node {
-	// Strings that may contain interpolation
-	return Node{Type: STRING, Value: literal, Params: parameters}
+func CreateString(lineNum int, literal string, parameters []Node) Node {
+	// Strings that contain interpolation
+	return Node{Type: STRING, Value: literal, Params: parameters, LineNum: lineNum}
 }
 
-func CreateRawString(literal string) Node {
+func CreateRawString(lineNum int, literal string) Node {
 	// Strings with no interpolation
-	return CreateString(literal, []Node{})
+	return CreateString(lineNum, literal, []Node{})
 }
 
-func CreateIdentifier(name string) Node {
-	return Node{Type: IDENTIFIER, Value: name}
+func CreateIdentifier(lineNum int, name string) Node {
+	return Node{Type: IDENTIFIER, Value: name, LineNum: lineNum}
 }
 
-func CreateList(parameters []Node) Node {
-	return Node{Type: LIST, Params: parameters}
+func CreateList(lineNum int, parameters []Node) Node {
+	return Node{Type: LIST, Params: parameters, LineNum: lineNum}
 }
 
-func CreatePrintStatement(params []Node) Node {
+func CreatePrintStatement(lineNum int, params []Node) Node {
 	return Node{
-		Type:   PRINT_STMT,
-		Params: params,
+		Type:    PRINT_STMT,
+		Params:  params,
+		LineNum: lineNum,
 	}
 }
 
 func CreateUnaryExpression(operator tokens.Token, expression Node) Node {
 	return Node{
-		Type: UNARY_EXPR,
+		Type:    UNARY_EXPR,
+		LineNum: operator.LineNumber,
 		Params: []Node{
-			{Type: operator.Type, Value: operator.Literal}, // Operator
+			{Type: operator.Type, Value: operator.Literal, LineNum: operator.LineNumber}, // Operator
 			expression, // Expression
 		},
 	}
@@ -216,18 +218,20 @@ func CreateUnaryExpression(operator tokens.Token, expression Node) Node {
 
 func CreateBinaryExpression(left Node, op tokens.Token, right Node) Node {
 	return Node{
-		Type: BIN_EXPR,
+		Type:    BIN_EXPR,
+		LineNum: left.LineNum,
 		Params: []Node{
-			left,                               // Left Expression
-			{Type: op.Type, Value: op.Literal}, // Operator
-			right,                              // Right Expression
+			left, // Left Expression
+			{Type: op.Type, Value: op.Literal, LineNum: op.LineNumber}, // Operator
+			right, // Right Expression
 		},
 	}
 }
 
-func CreateAssignmentStatement(variableName string, value Node) Node {
+func CreateAssignmentStatement(variableName string, value Node, lineNum int) Node {
 	return Node{
-		Type: ASSIGN_STMT,
+		Type:    ASSIGN_STMT,
+		LineNum: lineNum,
 		Params: []Node{
 			{Type: IDENTIFIER, Value: variableName},
 			value,
@@ -235,57 +239,64 @@ func CreateAssignmentStatement(variableName string, value Node) Node {
 	}
 }
 
-func CreateReturnStatement(expression Node) Node {
-	return Node{Type: RETURN, Params: []Node{expression}}
+func CreateReturnStatement(lineNum int, expression Node) Node {
+	return Node{
+		Type:    RETURN,
+		Params:  []Node{expression},
+		LineNum: lineNum,
+	}
 }
 
-func CreateFunction(parameters []Node, statements []Node) Node {
+func CreateFunction(parameters []Node, statements []Node, lineNum int) Node {
 	return Node{
-		Type: FUNCTION,
+		Type:    FUNCTION,
+		LineNum: lineNum,
 		Params: []Node{
-			{Type: LIST, Params: parameters},
-			{Type: STMTS, Params: statements},
+			{Type: LIST, Params: parameters, LineNum: lineNum},
+			{Type: STMTS, Params: statements, LineNum: lineNum},
 		},
 	}
 }
 
-func CreateBuiltinFunction(functionType string) Node {
-	return Node{Type: BUILTIN_FUNC, Value: functionType}
+func CreateBuiltinFunction(functionType string, linenum int) Node {
+	return Node{Type: BUILTIN_FUNC, Value: functionType, LineNum: linenum}
 }
 
-func CreateFunctionCall(function Node, callParams []Node) Node {
+func CreateFunctionCall(lineNum int, function Node, callParams []Node) Node {
 	return Node{
-		Type: FUNCTION_CALL,
+		Type:    FUNCTION_CALL,
+		LineNum: lineNum,
 		Params: []Node{
-			{Type: CALL_PARAMS, Params: callParams},
+			{Type: CALL_PARAMS, Params: callParams, LineNum: lineNum},
 			function,
 		},
 	}
 }
 
-func CreateIfStatement(condition Node, trueBranch []Node) Node {
+func CreateIfStatement(lineNum int, condition Node, trueBranch []Node) Node {
 	return Node{
-		Type: IF_STMT,
+		Type:    IF_STMT,
+		LineNum: lineNum,
 		Params: []Node{
 			condition,
-			{Type: TRUE_BRANCH, Params: trueBranch},
+			{Type: TRUE_BRANCH, Params: trueBranch, LineNum: lineNum},
 		},
 	}
 }
 
-func CreateReturnValue(statement *Node) Node {
+func CreateFunctionReturnValue(linenum int, statement *Node) Node {
 
 	var parameters []Node
 
 	if statement == nil {
 		parameters = []Node{
-			CreateBooleanFalse(),
+			CreateBooleanFalse(linenum), // TODO: add real line number
 		}
 	} else {
 		parameters = []Node{
-			CreateBooleanTrue(),
+			CreateBooleanTrue(linenum), // TODO: add real line number
 			*statement,
 		}
 	}
-	return CreateList(parameters)
+	return CreateList(linenum, parameters) // TODO: add real line number
 }
