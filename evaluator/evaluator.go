@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+const (
+	BUILTIN_LEN    = "len"
+	BUILTIN_UNWRAP = "unwrap"
+)
+
 type evaluator struct {
 	ast []node.Node
 	env environment
@@ -189,8 +194,8 @@ func (e *evaluator) evaluateIdentifier(identifierExpression node.Node) (*node.No
 		node := node.CreateNumber(identifierExpression.LineNum, fmt.Sprintf("%v", math.Pi))
 		return &node, nil
 
-	case "len":
-	case "unwrap":
+	case BUILTIN_LEN:
+	case BUILTIN_UNWRAP:
 		// Builtin functions
 		return &identifierExpression, nil
 	}
@@ -283,10 +288,10 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 	if function.Type == node.IDENTIFIER {
 		switch function.Value {
-		case "len":
+		case BUILTIN_LEN:
 			return e.evaluateBuiltinLen(function.LineNum, callParams.Params)
 
-		case "unwrap":
+		case BUILTIN_UNWRAP:
 			return e.evaluateBuiltinUnwrap(callParams.Params)
 
 		default:
