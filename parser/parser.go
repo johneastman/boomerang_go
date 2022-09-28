@@ -424,10 +424,13 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		return &listNode, nil
 	}
 
-	return nil, utils.CreateError(p.current.LineNumber, "error at line %d: expected %s or %s, got %s",
-		tokens.CLOSED_PAREN_TOKEN.Type,
-		tokens.COMMA_TOKEN.Type,
-		p.current.Type,
+	return nil, expectedMultipleTokens(
+		p.current.LineNumber,
+		p.current,
+		[]tokens.Token{
+			tokens.CLOSED_PAREN_TOKEN,
+			tokens.COMMA_TOKEN,
+		},
 	)
 }
 
@@ -507,4 +510,18 @@ func (p *Parser) expectToken(token tokens.Token) error {
 	}
 
 	return p.advance()
+}
+
+func expectedMultipleTokens(lineNum int, actualToken tokens.Token, expectedTokens []tokens.Token) error {
+	errorMessage := "expected "
+
+	expectedTokenStrings := []string{}
+	for _, expectedToken := range expectedTokens {
+		message := fmt.Sprintf("%s (%#v)", expectedToken.Type, expectedToken.Literal)
+		expectedTokenStrings = append(expectedTokenStrings, message)
+	}
+	errorMessage += strings.Join(expectedTokenStrings, " or ")
+	errorMessage += fmt.Sprintf(", got %s (%#v)", actualToken.Type, actualToken.Literal)
+
+	return utils.CreateError(lineNum, errorMessage)
 }

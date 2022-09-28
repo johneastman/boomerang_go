@@ -432,6 +432,9 @@ func TestParser_UnexpectedTokenError(t *testing.T) {
 	}
 
 	_, err = p.Parse()
+	if err == nil {
+		t.Fatalf("Expected error to not be nil")
+	}
 
 	actualError := err.Error()
 	expectedError := "error at line 1: expected token type SEMICOLON (\";\"), got EOF (\"\")"
@@ -449,9 +452,32 @@ func TestParser_InvalidPrefixError(t *testing.T) {
 	}
 
 	_, err = p.Parse()
+	if err == nil {
+		t.Fatalf("Expected error to not be nil")
+	}
 
 	actualError := err.Error()
 	expectedError := "error at line 1: invalid prefix: PLUS (\"+\")"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %#v, Actual Error: %#v", expectedError, actualError)
+	}
+}
+
+func TestParser_InvalidPrefixForGroupedExpressionError(t *testing.T) {
+	tokenizer := tokens.New("(1];")
+	p, err := parser.New(tokenizer)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = p.Parse()
+	if err == nil {
+		t.Fatalf("Expected error to not be nil")
+	}
+
+	actualError := err.Error()
+	expectedError := "error at line 1: expected CLOSED_PAREN (\")\") or COMMA (\",\"), got CLOSED_BRACKET (\"]\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %#v, Actual Error: %#v", expectedError, actualError)
