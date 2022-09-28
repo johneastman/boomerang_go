@@ -28,6 +28,7 @@ EXPRESSION:
 - MULTIPLY('*')
 - DIVIDE('/')
 - LEFT_POINTER('<-')
+- AT('@')
 - FACTOR
 FACTOR:
 - NUMBER('float64')
@@ -57,7 +58,8 @@ FACTOR:
 |minus|-|NUMBER|
 |multiply|*|NUMBER|
 |divide|/|NUMBER|
-|left pointer|<-|left expression: FUNCTION, BUILTIN_FUNCTION, right expression: LIST|
+|left pointer|<-|left: FUNCTION, BUILTIN_FUNCTION; right: LIST|
+|at|@|left: LIST; right: NUMBER (needs to be an integer)|
 
 #### Unary (Prefix) Operators
 |Name|Literal|Valid Types|
@@ -103,7 +105,42 @@ return "hello, world!";
 return (1, 2 + 3, 5);
 ```
 
+#### If Statements
+Syntax: `if EXPRESSION { STATEMENT; STATEMENT; ...; STATEMENT; };`
+
+
+Examples:
+```
+number = 1;
+if true {
+  number = 2;
+};
+print(number);  # number: 2
+
+number = 1;
+if false {
+  number = 2;
+}
+print(number)  # number: 1
+```
+
 ### Expressions
+
+#### Lists
+Syntax: `(EXPRESSION, EXPRESSION, ..., EXPRESSION)`
+
+
+To access an element in a list, use the `@` symbol, with the list on the left side and the index on the right side. The index for the first element is 0. Values outside the range 0 to (len(LIST) - 1) will cause an index-out-of-range error.
+
+
+Examples:
+```
+numbers = (5, 10, 15, 20);
+value = numbers @ 0;  # value: 5
+value = numbers @ 1;  # value: 10
+value = numbers @ 2;  # value: 15
+value = numbers @ 3;  # value: 20
+```
 
 #### Functions
 Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
