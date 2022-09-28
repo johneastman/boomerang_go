@@ -43,11 +43,6 @@ const (
 	BOOLEAN    = "Boolean"
 	IDENTIFIER = "Identifier"
 	LIST       = "List"
-
-	// Builtin functions
-	BUILTIN_FUNC   = "BuiltinFunction" // Builtin function node type
-	BUILTIN_LEN    = "BuiltinLen"
-	BUILTIN_UNWRAP = "BuiltinUnwrap"
 )
 
 /*
@@ -256,10 +251,6 @@ func CreateFunction(parameters []Node, statements []Node, lineNum int) Node {
 			{Type: STMTS, Params: statements, LineNum: lineNum},
 		},
 	}
-}
-
-func CreateBuiltinFunction(functionType string, linenum int) Node {
-	return Node{Type: BUILTIN_FUNC, Value: functionType, LineNum: linenum}
 }
 
 func CreateFunctionCall(lineNum int, function Node, callParams []Node) Node {

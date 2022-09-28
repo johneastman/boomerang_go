@@ -3,8 +3,6 @@ package evaluator
 import (
 	"boomerang/node"
 	"boomerang/utils"
-	"fmt"
-	"math"
 )
 
 type environment struct {
@@ -13,20 +11,6 @@ type environment struct {
 
 func CreateEnvironment() environment {
 	env := map[string]node.Node{}
-
-	// Builtin variables
-	env["pi"] = node.CreateNumber(0, fmt.Sprintf("%v", math.Pi))
-
-	// Builtin functions
-	env["len"] = node.CreateBuiltinFunction(node.BUILTIN_LEN, 0)
-
-	/*
-		I originally wanted "unwrap" to be implemented in pure Boomerang code, but because custom functions
-		return a list and the purpose of unwrap is to extract the return value from that list, this implementation
-		needs to be a builtin method.
-	*/
-	env["unwrap"] = node.CreateBuiltinFunction(node.BUILTIN_UNWRAP, 0)
-
 	return environment{env: env}
 }
 

@@ -447,14 +447,13 @@ func TestEvaluator_FunctionCallNoReturn(t *testing.T) {
 
 func TestEvaluator_BuiltinLen(t *testing.T) {
 	ast := []node.Node{
-		node.CreateBinaryExpression(
+		CreateFunctionCall(
 			CreateIdentifier("len"),
-			CreateTokenFromToken(tokens.PTR_TOKEN),
-			CreateList([]node.Node{
+			[]node.Node{
 				CreateNumber("1"),
 				CreateNumber("2"),
 				CreateNumber("3"),
-			}),
+			},
 		),
 	}
 
@@ -505,15 +504,12 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 			),
 		)
 
-		unwrapFunctionCall := node.CreateBinaryExpression(
+		unwrapFunctionCall := CreateFunctionCall(
 			CreateIdentifier("unwrap"),
-			tokens.PTR_TOKEN,
-			CreateList(
-				[]node.Node{
-					CreateIdentifier(resultVariableName),
-					CreateRawString("hello, world!"),
-				},
-			),
+			[]node.Node{
+				CreateIdentifier(resultVariableName),
+				CreateRawString("hello, world!"),
+			},
 		)
 
 		ast := []node.Node{
@@ -702,13 +698,12 @@ func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {
 	actualValue := CreateAssignmentStatement(
 		"value",
 		node.CreateBinaryExpression(
-			node.CreateBinaryExpression(
+			CreateFunctionCall(
 				CreateIdentifier("unwrap"),
-				CreateTokenFromToken(tokens.PTR_TOKEN),
-				CreateList([]node.Node{
+				[]node.Node{
 					CreateIdentifier("sum"),
 					CreateNumber("0"),
-				}),
+				},
 			),
 			CreateTokenFromToken(tokens.PLUS_TOKEN),
 			CreateNumber("3"),

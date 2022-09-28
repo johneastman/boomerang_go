@@ -382,12 +382,6 @@ func TestNode_ReturnStatement(t *testing.T) {
 	AssertNodeEqual(t, expectedNode, actualNode)
 }
 
-func TestNode_BuiltinFunction(t *testing.T) {
-	actualNode := node.CreateBuiltinFunction(node.BUILTIN_LEN, 13)
-	expectedNode := node.Node{Type: node.BUILTIN_FUNC, Value: node.BUILTIN_LEN, LineNum: 13}
-	AssertNodeEqual(t, expectedNode, actualNode)
-}
-
 func TestNode_CreateReturnValueNoParams(t *testing.T) {
 	actualNode := node.CreateFunctionReturnValue(TEST_LINE_NUM, nil)
 	expectedNode := node.Node{

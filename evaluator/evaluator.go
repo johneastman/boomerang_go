@@ -4,6 +4,7 @@ import (
 	"boomerang/node"
 	"boomerang/tokens"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -166,7 +167,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 		return e.evaluateParameter(expr)
 
 	case node.IDENTIFIER:
-		return e.env.GetIdentifier(expr)
+		return e.evaluateIdentifier(expr)
 
 	case node.UNARY_EXPR:
 		return e.evaluateUnaryExpression(expr)
@@ -180,6 +181,20 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 	default:
 		return nil, fmt.Errorf("invalid type %#v", expr.Type)
 	}
+}
+
+func (e *evaluator) evaluateIdentifier(identifierExpression node.Node) (*node.Node, error) {
+	switch identifierExpression.Value {
+	case "pi":
+		node := node.CreateNumber(identifierExpression.LineNum, fmt.Sprintf("%v", math.Pi))
+		return &node, nil
+
+	case "len":
+	case "unwrap":
+		// Builtin functions
+		return &identifierExpression, nil
+	}
+	return e.env.GetIdentifier(identifierExpression)
 }
 
 func (e *evaluator) evaluateParameter(parameterExpression node.Node) (*node.Node, error) {
@@ -251,7 +266,7 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 		return e.divide(*left, *right)
 
 	case tokens.PTR_TOKEN.Type:
-		return e.leftPointer(*left, *right)
+		return e.pointer(*left, *right)
 
 	case tokens.OPEN_BRACKET_TOKEN.Type:
 		return e.index(*left, *right)
@@ -267,12 +282,21 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	function := functionCallExpression.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
 
 	if function.Type == node.IDENTIFIER {
-		// If the function object is an identifier, retireve the actual function object from the environment
-		identifierFunction, err := e.env.GetIdentifier(function)
-		if err != nil {
-			return nil, err
+		switch function.Value {
+		case "len":
+			return e.evaluateBuiltinLen(function.LineNum, callParams.Params)
+
+		case "unwrap":
+			return e.evaluateBuiltinUnwrap(callParams.Params)
+
+		default:
+			// If the function object is an identifier, retireve the actual function object from the environment
+			identifierFunction, err := e.env.GetIdentifier(function)
+			if err != nil {
+				return nil, err
+			}
+			function = *identifierFunction
 		}
-		function = *identifierFunction
 	}
 
 	// Assert that the function object is, in fact, a callable function
@@ -320,6 +344,41 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	e.env = tmpEnv
 
 	node := node.CreateFunctionReturnValue(returnStatement.LineNum, returnStatement)
+	return &node, nil
+}
+
+func (e *evaluator) evaluateBuiltinUnwrap(callParameters []node.Node) (*node.Node, error) {
+	/*
+		I originally wanted "unwrap" to be implemented in pure Boomerang code, but because custom functions
+		return a list and the purpose of unwrap is to extract the return value from that list, this implementation
+		needs to be a builtin method.
+	*/
+	returnValueList, err := e.evaluateExpression(callParameters[0]) // Params[0] contains the boolean value
+	if err != nil {
+		return nil, err
+	}
+
+	returnValueListFirst, err := e.evaluateExpression(returnValueList.Params[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// If the boolean value in the first element of the list is "true", return the function's actual return value
+	if returnValueListFirst.Value == tokens.TRUE_TOKEN.Literal {
+		return e.evaluateExpression(returnValueList.Params[1]) // Params[1] contains the actual return value, if Params[0] is true
+	}
+
+	// Otherwise, return the provided default value
+	return e.evaluateExpression(callParameters[1])
+}
+
+func (e *evaluator) evaluateBuiltinLen(lineNum int, callParameters []node.Node) (*node.Node, error) {
+	value := len(callParameters)
+
+	node := node.CreateNumber(
+		lineNum,
+		fmt.Sprint(value),
+	)
 	return &node, nil
 }
 
@@ -382,57 +441,12 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
 }
 
-func (e *evaluator) leftPointer(left node.Node, right node.Node) (*node.Node, error) {
-	if left.Type == node.FUNCTION && right.Type == node.LIST {
+func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error) {
+	if (left.Type == node.FUNCTION || left.Type == node.IDENTIFIER) && right.Type == node.LIST {
 		functionCall := node.CreateFunctionCall(left.LineNum, left, right.Params)
-
 		return e.evaluateExpression(functionCall)
-
-	} else if left.Type == node.BUILTIN_FUNC && right.Type == node.LIST {
-		// For builtin functions, Node.Value stores the builtin-function
-		return e.evaluateBuiltinFunction(left, right)
 	}
-
 	return nil, fmt.Errorf("cannot use left pointer on types %s and %s", left.Type, right.Type)
-}
-
-func (e *evaluator) evaluateBuiltinFunction(builtinFunction node.Node, parameters node.Node) (*node.Node, error) {
-
-	builtinFunctionType := builtinFunction.Value // The specific builtin function is stored in Node.Value
-
-	switch builtinFunctionType {
-	case node.BUILTIN_LEN:
-		value := len(parameters.Params)
-
-		node := node.CreateNumber(
-			builtinFunction.LineNum,
-			fmt.Sprint(value),
-		)
-		return &node, nil
-
-	case node.BUILTIN_UNWRAP:
-
-		if parameters.Type != node.LIST {
-			return nil, fmt.Errorf("invalid type for unwrap: %s. Expected %s", parameters.Type, node.LIST)
-		}
-
-		returnParam := parameters.Params[0]
-		returnParamFirst, err := e.evaluateExpression(returnParam.Params[0]) // Params[0] contains the boolean value
-		if err != nil {
-			return nil, err
-		}
-
-		// If the boolean value in the first element of the list is "true", return the function's actual return value
-		if returnParamFirst.Value == tokens.TRUE_TOKEN.Literal {
-			return e.evaluateExpression(returnParam.Params[1]) // Params[1] contains the actual return value, if Params[0] is true
-		}
-
-		// Otherwise, return the provided default value
-		return e.evaluateExpression(parameters.Params[1])
-
-	default:
-		return nil, fmt.Errorf("undefined builtin function: %s", builtinFunctionType)
-	}
 }
 
 func (e *evaluator) toFloat(s string) float64 {
