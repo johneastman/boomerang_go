@@ -89,27 +89,38 @@ func (p *Parser) parseBlockStatements() (*[]node.Node, error) {
 	return p.parseStatements(tokens.CLOSED_CURLY_BRACKET_TOKEN)
 }
 
-func (p *Parser) parseStatement() (stmt *node.Node, stmtErr error) {
-	defer func() {
-		if err := p.expectToken(tokens.SEMICOLON_TOKEN); err != nil {
-			stmtErr = err
-			stmt = nil
-		}
-	}()
+func (p *Parser) parseStatement() (*node.Node, error) {
+	var returnNode *node.Node
+	var err error
 
 	if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER_TOKEN) && tokens.TokenTypesEqual(p.peek, tokens.ASSIGN_TOKEN) {
-		return p.parseAssignmentStatement()
+		returnNode, err = p.parseAssignmentStatement()
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT_TOKEN) {
-		return p.parsePrintStatement()
+		returnNode, err = p.parsePrintStatement()
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.RETURN_TOKEN) {
-		return p.parseReturnStatement()
+		returnNode, err = p.parseReturnStatement()
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.IF_TOKEN) {
-		return p.parseIfStatement()
+		returnNode, err = p.parseIfStatement()
+
+	} else {
+		returnNode, err = p.parseExpression(LOWEST)
 	}
-	return p.parseExpression(LOWEST)
+
+	if err != nil {
+		// This error check needs to return so the below expected-token error does not overwrite this error
+		return nil, err
+	}
+
+	// Check that token at end of statement is a semicolon
+	if expectedTokenErr := p.expectToken(tokens.SEMICOLON_TOKEN); expectedTokenErr != nil {
+		returnNode = nil
+		err = expectedTokenErr
+	}
+
+	return returnNode, err
 }
 
 func (p *Parser) parseIfStatement() (*node.Node, error) {
@@ -236,9 +247,19 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 		return p.parseIdentifier()
 
 	default:
-		return nil, utils.CreateError(p.current.LineNumber, "unexpected token: %s (%#v)",
-			p.current.Type,
-			p.current.Literal,
+		current := p.current
+
+		/*
+			Advance to the next token so the statement error verifying the last token is a
+			semicolon does not overwrite this error.
+		*/
+		if err := p.advance(); err != nil {
+			return nil, err
+		}
+
+		return nil, utils.CreateError(current.LineNumber, "invalid prefix: %s (%#v)",
+			current.Type,
+			current.Literal,
 		)
 	}
 }
