@@ -724,6 +724,286 @@ func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
+func TestEvaluator_ReturnGlobalScopeError(t *testing.T) {
+	ast := []node.Node{
+		CreateReturnStatement(
+			node.CreateBinaryExpression(
+				CreateNumber("1"),
+				CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
+				CreateNumber("2"),
+			),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: return statements not allowed in the global scope"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_ReturnGlobalScopeIfStatementError(t *testing.T) {
+	// an if-statement in the global scope containing a return statement should throw an error
+	ast := []node.Node{
+		CreateIfStatement(
+			CreateBooleanTrue(),
+			[]node.Node{
+				CreateReturnStatement(
+					node.CreateBinaryExpression(
+						CreateNumber("1"),
+						CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
+						CreateNumber("2"),
+					),
+				),
+			},
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: return statements not allowed in the global scope"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_InvalidUnaryOperatorError(t *testing.T) {
+	// an if-statement in the global scope containing a return statement should throw an error
+	ast := []node.Node{
+		node.CreateUnaryExpression(
+			CreateTokenFromToken(tokens.PLUS_TOKEN),
+			CreateNumber("1"),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: invalid unary operator: PLUS"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_InvalidBinaryOperatorError(t *testing.T) {
+	// an if-statement in the global scope containing a return statement should throw an error
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateNumber("1"),
+			CreateTokenFromToken(tokens.NUMBER_TOKEN),
+			CreateNumber("1"),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: invalid binary operator: NUMBER (\"\")"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_FunctionCallError(t *testing.T) {
+	// an if-statement in the global scope containing a return statement should throw an error
+	ast := []node.Node{
+		CreateFunctionCall(
+			CreateNumber("1"),
+			[]node.Node{
+				CreateNumber("1"),
+				CreateNumber("2"),
+			},
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: cannot make function call on type Number"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_FunctionCallWrongNumberOfArgumentsError(t *testing.T) {
+	// an if-statement in the global scope containing a return statement should throw an error
+	ast := []node.Node{
+		CreateFunctionCall(
+			CreateFunction([]node.Node{
+				CreateIdentifier("a"),
+			},
+				[]node.Node{},
+			),
+			[]node.Node{
+				CreateNumber("1"),
+				CreateNumber("2"),
+			},
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: expected 1 arguments, got 2"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_IndexValueNotIntegerError(t *testing.T) {
+	// an if-statement in the global scope containing a return statement should throw an error
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateList([]node.Node{
+				CreateNumber("1"),
+			}),
+			CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
+			CreateNumber("3.4"),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: index must be an integer"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_IndexOutOfRangeError(t *testing.T) {
+	// an if-statement in the global scope containing a return statement should throw an error
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateList([]node.Node{
+				CreateNumber("1"),
+			}),
+			CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
+			CreateNumber("3"),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: index 3 out of range. Length of list: 1"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_IndexInvalidTypeError(t *testing.T) {
+	// an if-statement in the global scope containing a return statement should throw an error
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateNumber("3"),
+			CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
+			CreateNumber("3"),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: invalid types for index: Number and Number"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_AddInvalidTypesError(t *testing.T) {
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateRawString("hello"),
+			CreateTokenFromToken(tokens.PLUS_TOKEN),
+			CreateRawString(" world!"),
+		),
+	}
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: cannot add types String and String"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_SubtractInvalidTypesError(t *testing.T) {
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateRawString("hello"),
+			CreateTokenFromToken(tokens.MINUS_TOKEN),
+			CreateRawString(" world!"),
+		),
+	}
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: cannot subtract types String and String"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_MultiplyInvalidTypesError(t *testing.T) {
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateRawString("hello"),
+			CreateTokenFromToken(tokens.ASTERISK_TOKEN),
+			CreateRawString(" world!"),
+		),
+	}
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: cannot multiply types String and String"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_DivideInvalidTypesError(t *testing.T) {
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateBooleanTrue(),
+			CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
+			CreateBooleanFalse(),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: cannot divide types Boolean and Boolean"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_DivideZeroError(t *testing.T) {
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateNumber("1"),
+			CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
+			CreateNumber("0"),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: cannot divide by zero"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_PointerInvalidTypesError(t *testing.T) {
+	ast := []node.Node{
+		node.CreateBinaryExpression(
+			CreateBooleanTrue(),
+			CreateTokenFromToken(tokens.PTR_TOKEN),
+			CreateBooleanFalse(),
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: cannot use pointer on types Boolean and Boolean"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
 func getResults(ast []node.Node) []node.Node {
 	evaluatorObj := evaluator.New(ast)
 	actualResults, err := evaluatorObj.Evaluate()
@@ -731,4 +1011,14 @@ func getResults(ast []node.Node) []node.Node {
 		panic(err.Error())
 	}
 	return *actualResults
+}
+
+func getError(t *testing.T, ast []node.Node) string {
+	evaluatorObj := evaluator.New(ast)
+	_, err := evaluatorObj.Evaluate()
+
+	if err == nil {
+		t.Fatal("error is nil")
+	}
+	return err.Error()
 }

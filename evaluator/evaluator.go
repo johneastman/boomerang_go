@@ -3,6 +3,7 @@ package evaluator
 import (
 	"boomerang/node"
 	"boomerang/tokens"
+	"boomerang/utils"
 	"fmt"
 	"math"
 	"strconv"
@@ -67,7 +68,11 @@ func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) (*[]node.Node, e
 		if result != nil {
 			results = append(results, *result)
 			if result.Type == node.RETURN {
-				return nil, fmt.Errorf("%s statements not allowed in the global scope", tokens.RETURN_TOKEN.Literal)
+				return nil, utils.CreateError(
+					result.LineNum,
+					"%s statements not allowed in the global scope",
+					tokens.RETURN_TOKEN.Literal,
+				)
 			}
 		}
 	}
@@ -209,7 +214,8 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 		return e.evaluateFunctionCall(expr)
 
 	default:
-		return nil, fmt.Errorf("invalid type %#v", expr.Type)
+		// This error will only happen if the developer has not implemented an expression type
+		panic(fmt.Sprintf("invalid type %#v", expr.Type))
 	}
 }
 
@@ -270,7 +276,7 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		return &node, nil
 	}
 
-	return nil, fmt.Errorf("invalid unary operator: %s", unaryExpression.Type)
+	return nil, utils.CreateError(unaryExpression.LineNum, "invalid unary operator: %s", operator.Type)
 }
 
 func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.Node, error) {
@@ -307,7 +313,7 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 		return e.index(*left, *right)
 
 	default:
-		return nil, fmt.Errorf("invalid Operator: %s (%s)", op.Type, op.Value)
+		return nil, utils.CreateError(op.LineNum, "invalid binary operator: %s (%#v)", op.Type, op.Value)
 	}
 }
 
@@ -336,13 +342,18 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 	// Assert that the function object is, in fact, a callable function
 	if function.Type != node.FUNCTION {
-		return nil, fmt.Errorf("cannot make function call on type %s", function.Type)
+		return nil, utils.CreateError(function.LineNum, "cannot make function call on type %s", function.Type)
 	}
 
 	// Check that the number of arguments passed to the function matches the number of arguments in the function definition
 	functionParams := function.GetParam(node.LIST) // Parameters included in function definition
 	if len(callParams.Params) != len(functionParams.Params) {
-		return nil, fmt.Errorf("expected %d arguments, got %d", len(functionParams.Params), len(callParams.Params))
+		return nil, utils.CreateError(
+			function.LineNum,
+			"expected %d arguments, got %d",
+			len(functionParams.Params),
+			len(callParams.Params),
+		)
 	}
 
 	tmpEnv := e.env
@@ -422,15 +433,15 @@ func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 
 		index, err := strconv.Atoi(right.Value)
 		if err != nil {
-			return nil, fmt.Errorf("index must be an integer")
+			return nil, utils.CreateError(left.LineNum, "index must be an integer")
 		}
 
 		if index >= len(left.Params) {
-			return nil, fmt.Errorf("index out of range: %d. Length of list: %d", index, len(left.Params))
+			return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of list: %d", index, len(left.Params))
 		}
 		return node.Ptr(left.Params[index]), nil
 	}
-	return nil, fmt.Errorf("invalid types for index: %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(left.LineNum, "invalid types for index: %s and %s", left.Type, right.Type)
 }
 
 func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
@@ -439,7 +450,7 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 
 		return node.Ptr(e.createNumberNode(result, left.LineNum)), nil
 	}
-	return nil, fmt.Errorf("cannot add types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(left.LineNum, "cannot add types %s and %s", left.Type, right.Type)
 }
 
 func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error) {
@@ -449,7 +460,7 @@ func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error
 		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
-	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(left.LineNum, "cannot subtract types %s and %s", left.Type, right.Type)
 }
 
 func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error) {
@@ -459,21 +470,21 @@ func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error
 		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
-	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(left.LineNum, "cannot multiply types %s and %s", left.Type, right.Type)
 }
 
 func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 
 		if right.Value == "0" {
-			return nil, fmt.Errorf("cannot divide by zero")
+			return nil, utils.CreateError(left.LineNum, "cannot divide by zero")
 		}
 		result := e.toFloat(left.Value) / e.toFloat(right.Value)
 
 		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
-	return nil, fmt.Errorf("cannot subtract types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(left.LineNum, "cannot divide types %s and %s", left.Type, right.Type)
 }
 
 func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error) {
@@ -481,7 +492,7 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 		functionCall := node.CreateFunctionCall(left.LineNum, left, right.Params)
 		return e.evaluateExpression(functionCall)
 	}
-	return nil, fmt.Errorf("cannot use left pointer on types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(left.LineNum, "cannot use pointer on types %s and %s", left.Type, right.Type)
 }
 
 func (e *evaluator) toFloat(s string) float64 {

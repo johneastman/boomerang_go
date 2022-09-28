@@ -257,9 +257,8 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 			return nil, err
 		}
 
-		return nil, utils.CreateError(current.LineNumber, "invalid prefix: %s (%#v)",
-			current.Type,
-			current.Literal,
+		return nil, utils.CreateError(current.LineNumber, "invalid prefix: %s",
+			current.ErrorDisplay(),
 		)
 	}
 }
@@ -500,11 +499,9 @@ func (p *Parser) expectToken(token tokens.Token) error {
 	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
 	// the next token.
 	if !(tokens.TokenTypesEqual(p.current, token)) {
-		err := utils.CreateError(p.current.LineNumber, "expected token type %s (%#v), got %s (%#v)",
-			token.Type,
-			token.Literal,
-			p.current.Type,
-			p.current.Literal,
+		err := utils.CreateError(p.current.LineNumber, "expected token type %s, got %s",
+			token.ErrorDisplay(),
+			p.current.ErrorDisplay(),
 		)
 		return err
 	}
@@ -517,11 +514,11 @@ func expectedMultipleTokens(lineNum int, actualToken tokens.Token, expectedToken
 
 	expectedTokenStrings := []string{}
 	for _, expectedToken := range expectedTokens {
-		message := fmt.Sprintf("%s (%#v)", expectedToken.Type, expectedToken.Literal)
+		message := expectedToken.ErrorDisplay()
 		expectedTokenStrings = append(expectedTokenStrings, message)
 	}
 	errorMessage += strings.Join(expectedTokenStrings, " or ")
-	errorMessage += fmt.Sprintf(", got %s (%#v)", actualToken.Type, actualToken.Literal)
+	errorMessage += fmt.Sprintf(", got %s", actualToken.ErrorDisplay())
 
 	return utils.CreateError(lineNum, errorMessage)
 }

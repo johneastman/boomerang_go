@@ -139,3 +139,8 @@ func GetKeywordToken(literal string) Token {
 func TokenTypesEqual(first Token, second Token) bool {
 	return first.Type == second.Type
 }
+
+func (t *Token) ErrorDisplay() string {
+	// How tokens should be displayed in error messages
+	return fmt.Sprintf("%s (%#v)", t.Type, t.Literal)
+}
