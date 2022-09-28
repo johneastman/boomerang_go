@@ -19,7 +19,7 @@ const (
 
 var precedenceLevels = map[string]int{
 	tokens.PTR_TOKEN.Type:           FUNC_CALL,
-	tokens.OPEN_BRACKET_TOKEN.Type:  INDEX,
+	tokens.AT_TOKEN.Type:            INDEX,
 	tokens.PLUS_TOKEN.Type:          SUM,
 	tokens.MINUS_TOKEN.Type:         SUM,
 	tokens.ASTERISK_TOKEN.Type:      PRODUCT,
@@ -271,12 +271,6 @@ func (p *Parser) parseInfix(left node.Node) (*node.Node, error) {
 	right, err := p.parseExpression(p.getPrecedenceLevel(op))
 	if err != nil {
 		return nil, err
-	}
-
-	if p.current.Type == tokens.CLOSED_BRACKET_TOKEN.Type {
-		if err := p.advance(); err != nil {
-			return nil, err
-		}
 	}
 
 	binaryNode := node.CreateBinaryExpression(left, op, *right)

@@ -309,7 +309,7 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 	case tokens.PTR_TOKEN.Type:
 		return e.pointer(*left, *right)
 
-	case tokens.OPEN_BRACKET_TOKEN.Type:
+	case tokens.AT_TOKEN.Type:
 		return e.index(*left, *right)
 
 	default:

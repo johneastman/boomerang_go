@@ -538,7 +538,7 @@ func TestEvaluator_ListIndex(t *testing.T) {
 		),
 		node.CreateBinaryExpression(
 			CreateIdentifier("numbers"),
-			tokens.OPEN_BRACKET_TOKEN,
+			tokens.AT_TOKEN,
 			CreateNumber("1"),
 		),
 	}
@@ -854,7 +854,7 @@ func TestEvaluator_IndexValueNotIntegerError(t *testing.T) {
 			CreateList([]node.Node{
 				CreateNumber("1"),
 			}),
-			CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
+			CreateTokenFromToken(tokens.AT_TOKEN),
 			CreateNumber("3.4"),
 		),
 	}
@@ -874,7 +874,7 @@ func TestEvaluator_IndexOutOfRangeError(t *testing.T) {
 			CreateList([]node.Node{
 				CreateNumber("1"),
 			}),
-			CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
+			CreateTokenFromToken(tokens.AT_TOKEN),
 			CreateNumber("3"),
 		),
 	}
@@ -892,7 +892,7 @@ func TestEvaluator_IndexInvalidTypeError(t *testing.T) {
 	ast := []node.Node{
 		node.CreateBinaryExpression(
 			CreateNumber("3"),
-			CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
+			CreateTokenFromToken(tokens.AT_TOKEN),
 			CreateNumber("3"),
 		),
 	}

@@ -379,11 +379,11 @@ func TestParser_ReturnStatements(t *testing.T) {
 }
 
 func TestParser_ListIndex(t *testing.T) {
-	actualAST := getAST("numbers[1];")
+	actualAST := getAST("numbers @ 1;")
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			CreateIdentifier("numbers"),
-			CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
+			CreateTokenFromToken(tokens.AT_TOKEN),
 			CreateNumber("1"),
 		),
 	}
