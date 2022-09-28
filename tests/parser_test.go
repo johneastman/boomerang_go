@@ -405,6 +405,25 @@ func TestParser_IfStatement(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
+func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
+	actualAST := getAST("add <- (3, 4) + 3;")
+	expectedAST := []node.Node{
+		node.CreateBinaryExpression(
+			node.CreateBinaryExpression(
+				CreateIdentifier("add"),
+				CreateTokenFromToken(tokens.PTR_TOKEN),
+				CreateList([]node.Node{
+					CreateNumber("3"),
+					CreateNumber("4"),
+				}),
+			),
+			CreateTokenFromToken(tokens.PLUS_TOKEN),
+			CreateNumber("3"),
+		),
+	}
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
 func TestParser_UnexpectedTokenError(t *testing.T) {
 	tokenizer := tokens.New("1")
 	p, err := parser.New(tokenizer)

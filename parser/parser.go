@@ -12,9 +12,9 @@ import (
 const (
 	LOWEST int = iota
 	INDEX
-	FUNC_CALL
 	SUM
 	PRODUCT
+	FUNC_CALL
 )
 
 var precedenceLevels = map[string]int{

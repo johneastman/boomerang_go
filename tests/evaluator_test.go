@@ -553,15 +553,6 @@ func TestEvaluator_ListIndex(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
-func getResults(ast []node.Node) []node.Node {
-	evaluatorObj := evaluator.New(ast)
-	actualResults, err := evaluatorObj.Evaluate()
-	if err != nil {
-		panic(err.Error())
-	}
-	return *actualResults
-}
-
 func TestEvaluator_IfStatement(t *testing.T) {
 
 	variableName := "variable"
@@ -665,4 +656,84 @@ func TestEvaluator_FunctionReturnIfStatement(t *testing.T) {
 		}
 		AssertNodesEqual(t, expectedResults, actualResults)
 	}
+}
+
+func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {
+	/*
+		Source:
+			add = func(a, b) {
+				return a + b;
+			};
+
+			sum = add <- (3, 4);
+			value = unwrap <- (sum, 0) + 7;
+			value;
+	*/
+	addFunction := CreateAssignmentStatement(
+		"add",
+		CreateFunction(
+			[]node.Node{
+				CreateIdentifier("a"),
+				CreateIdentifier("b"),
+			},
+			[]node.Node{
+				CreateReturnStatement(
+					node.CreateBinaryExpression(
+						CreateIdentifier("a"),
+						CreateTokenFromToken(tokens.PLUS_TOKEN),
+						CreateIdentifier("b"),
+					),
+				),
+			},
+		),
+	)
+
+	addFunctionReturnValue := CreateAssignmentStatement(
+		"sum",
+		CreateFunctionCall(
+			CreateIdentifier("add"),
+			[]node.Node{
+				CreateNumber("3"),
+				CreateNumber("4"),
+			},
+		),
+	)
+
+	actualValue := CreateAssignmentStatement(
+		"value",
+		node.CreateBinaryExpression(
+			node.CreateBinaryExpression(
+				CreateIdentifier("unwrap"),
+				CreateTokenFromToken(tokens.PTR_TOKEN),
+				CreateList([]node.Node{
+					CreateIdentifier("sum"),
+					CreateNumber("0"),
+				}),
+			),
+			CreateTokenFromToken(tokens.PLUS_TOKEN),
+			CreateNumber("3"),
+		),
+	)
+
+	ast := []node.Node{
+		addFunction,
+		addFunctionReturnValue,
+		actualValue,
+		CreateIdentifier("value"),
+	}
+
+	actualResults := getResults(ast)
+	expectedResults := []node.Node{
+		CreateNumber("10"),
+	}
+	AssertNodesEqual(t, expectedResults, actualResults)
+}
+
+func getResults(ast []node.Node) []node.Node {
+	evaluatorObj := evaluator.New(ast)
+	actualResults, err := evaluatorObj.Evaluate()
+	if err != nil {
+		panic(err.Error())
+	}
+	return *actualResults
 }
