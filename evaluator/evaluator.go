@@ -14,6 +14,31 @@ const (
 	BUILTIN_UNWRAP = "unwrap"
 )
 
+var builtinFunctions = []string{
+	BUILTIN_LEN,
+	BUILTIN_UNWRAP,
+}
+
+var builtinVariables = map[string]string{
+	"pi": fmt.Sprintf("%v", math.Pi),
+}
+
+func isBuiltinFunction(value string) bool {
+	for _, builtinFunction := range builtinFunctions {
+		if builtinFunction == value {
+			return true
+		}
+	}
+	return false
+}
+
+func getBuiltinVariable(value string) *string {
+	if value, ok := builtinVariables[value]; ok {
+		return &value
+	}
+	return nil
+}
+
 type evaluator struct {
 	ast []node.Node
 	env environment
@@ -189,16 +214,21 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 }
 
 func (e *evaluator) evaluateIdentifier(identifierExpression node.Node) (*node.Node, error) {
-	switch identifierExpression.Value {
-	case "pi":
-		node := node.CreateNumber(identifierExpression.LineNum, fmt.Sprintf("%v", math.Pi))
-		return &node, nil
 
-	case BUILTIN_LEN:
-	case BUILTIN_UNWRAP:
-		// Builtin functions
+	identifierName := identifierExpression.Value
+
+	// Check for builtin variables
+	variableValue := getBuiltinVariable(identifierName)
+	if variableValue != nil {
+		node := node.CreateNumber(identifierExpression.LineNum, *variableValue)
+		return &node, nil
+	}
+
+	if isBuiltinFunction(identifierName) {
 		return &identifierExpression, nil
 	}
+
+	// Variable defined in Boomerang file
 	return e.env.GetIdentifier(identifierExpression)
 }
 
