@@ -49,10 +49,13 @@ There are two types of comments:
 ```
 ##
 block comments appear between a pair of double `#`s
+and can occupy
+multiple
+lines
 ##
 i = 0;
 if true {
-  i = i + 1; # inline comments appear after a single #
+  i = i + 1; # inline comments appear after a single # and occupy a single line
 }
 print(i)
 ```
