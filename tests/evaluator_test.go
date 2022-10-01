@@ -66,6 +66,39 @@ func TestEvaluator_NegativeNumber(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
+func TestEvaluator_Bang(t *testing.T) {
+
+	tests := []struct {
+		Input          node.Node
+		ExpectedResult node.Node
+	}{
+		{
+			Input:          CreateBooleanTrue(),
+			ExpectedResult: CreateBooleanFalse(),
+		},
+		{
+			Input:          CreateBooleanFalse(),
+			ExpectedResult: CreateBooleanTrue(),
+		},
+	}
+
+	for _, test := range tests {
+		ast := []node.Node{
+			node.CreateUnaryExpression(
+				CreateTokenFromToken(tokens.NOT_TOKEN),
+				test.Input,
+			),
+		}
+
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			test.ExpectedResult,
+		}
+
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
+}
+
 func TestEvaluator_Strings(t *testing.T) {
 
 	tests := []struct {
@@ -778,7 +811,7 @@ func TestEvaluator_InvalidUnaryOperatorError(t *testing.T) {
 	}
 
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: invalid unary operator: PLUS"
+	expectedError := "error at line 1: invalid unary operator: PLUS (\"+\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
@@ -816,7 +849,7 @@ func TestEvaluator_FunctionCallError(t *testing.T) {
 	}
 
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: cannot make function call on type Number"
+	expectedError := "error at line 1: cannot make function call on type Number (\"1\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
@@ -898,7 +931,7 @@ func TestEvaluator_IndexInvalidTypeError(t *testing.T) {
 	}
 
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: invalid types for index: Number and Number"
+	expectedError := "error at line 1: invalid types for index: Number (\"3\") and Number (\"3\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
@@ -914,7 +947,7 @@ func TestEvaluator_AddInvalidTypesError(t *testing.T) {
 		),
 	}
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: cannot add types String and String"
+	expectedError := "error at line 1: cannot add types String (\"hello\") and String (\" world!\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
@@ -930,7 +963,7 @@ func TestEvaluator_SubtractInvalidTypesError(t *testing.T) {
 		),
 	}
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: cannot subtract types String and String"
+	expectedError := "error at line 1: cannot subtract types String (\"hello\") and String (\" world!\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
@@ -946,7 +979,7 @@ func TestEvaluator_MultiplyInvalidTypesError(t *testing.T) {
 		),
 	}
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: cannot multiply types String and String"
+	expectedError := "error at line 1: cannot multiply types String (\"hello\") and String (\" world!\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
@@ -963,7 +996,7 @@ func TestEvaluator_DivideInvalidTypesError(t *testing.T) {
 	}
 
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: cannot divide types Boolean and Boolean"
+	expectedError := "error at line 1: cannot divide types Boolean (\"true\") and Boolean (\"false\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
@@ -997,7 +1030,37 @@ func TestEvaluator_PointerInvalidTypesError(t *testing.T) {
 	}
 
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: cannot use pointer on types Boolean and Boolean"
+	expectedError := "error at line 1: cannot use pointer on types Boolean (\"true\") and Boolean (\"false\")"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_BangError(t *testing.T) {
+	ast := []node.Node{
+		node.CreateUnaryExpression(
+			CreateTokenFromToken(tokens.NOT_TOKEN),
+			CreateNumber("1"),
+		),
+	}
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: invalid type for bang operator: Number (\"1\")"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_MinusUnayError(t *testing.T) {
+	ast := []node.Node{
+		node.CreateUnaryExpression(
+			CreateTokenFromToken(tokens.MINUS_TOKEN),
+			CreateBooleanFalse(),
+		),
+	}
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: invalid type for minus operator: Boolean (\"false\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)

@@ -173,6 +173,18 @@ func TestParser_NegativeNumber(t *testing.T) {
 	AssertNodesEqual(t, expectedAST, actualAST)
 }
 
+func TestParser_Bang(t *testing.T) {
+	actualAST := getAST("not true;")
+	expectedAST := []node.Node{
+		node.CreateUnaryExpression(
+			CreateTokenFromToken(tokens.NOT_TOKEN),
+			CreateBooleanTrue(),
+		),
+	}
+
+	AssertNodesEqual(t, expectedAST, actualAST)
+}
+
 func TestParser_BinaryExpression(t *testing.T) {
 	actualAST := getAST("7 + 3;")
 	expectedAST := []node.Node{

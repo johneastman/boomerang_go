@@ -94,6 +94,10 @@ var indexMap = map[string]map[string]int{
 	},
 }
 
+func (n *Node) ErrorDisplay() string {
+	return fmt.Sprintf("%s (%#v)", n.Type, n.Value)
+}
+
 func (n *Node) GetParam(key string) Node {
 	node, err := n.getParam(key)
 	if err != nil {

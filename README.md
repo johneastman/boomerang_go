@@ -68,22 +68,23 @@ print(i)
 |STRING|`"hello, world!"`, `"1234567890"`, `"abcdefghijklmnopqrstuvwxyz"`, `"My number is {1 + 1}"`|
 |LIST|`(1, 2)`, `(1, 2, 3)`, `(1, 2, 3 (6, 7, 8), 4, 5)`|
 
-### Math Operators
+### Operators
 
 #### Binary (Infix) Operators
-|Name|Literal|Valid Types|
-|----|-------|-----------|
-|add|+|NUMBER|
-|minus|-|NUMBER|
-|multiply|*|NUMBER|
-|divide|/|NUMBER|
-|left pointer|<-|left: FUNCTION, BUILTIN_FUNCTION; right: LIST|
-|at|@|left: LIST; right: NUMBER (needs to be an integer)|
+|Name|Literal|Left Valid Types|Right Valid Types|
+|----|-------|----------------|-----------------|
+|add|+|NUMBER|NUMBER|
+|minus|-|NUMBER|NUMBER|
+|multiply|*|NUMBER|NUMBER|
+|divide|/|NUMBER|NUMBER|
+|left pointer|<-|IDENTIFIER (of function)|LIST|
+|at|@|LIST|NUMBER (must be an integer)|
 
 #### Unary (Prefix) Operators
 |Name|Literal|Valid Types|
 |----|-------|-----------|
 |minus|-|NUMBER|
+|not/negate|`not`|BOOLEAN|
 
 ### Statements
 
@@ -193,3 +194,10 @@ value = func() {} <- ();  # value: (false)
 
 result = unwrap <- (value, 2) # result: 2
 ```
+
+#### Boolean Operators
+* Negate a boolean expression
+  ```
+  not true;  # false
+  not false; # true
+  ```

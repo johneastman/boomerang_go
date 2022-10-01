@@ -269,14 +269,44 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		return nil, err
 	}
 	operator := unaryExpression.GetParam(node.OPERATOR)
-	if operator.Type == tokens.MINUS {
+	if operator.Type == tokens.MINUS_TOKEN.Type {
+
+		if expression.Type != node.NUMBER {
+			return nil, utils.CreateError(expression.LineNum, "invalid type for minus operator: %s", expression.ErrorDisplay())
+		}
+
 		expressionValue := -e.toFloat(expression.Value)
 
 		node := e.createNumberNode(expressionValue, unaryExpression.LineNum)
 		return &node, nil
+
+	} else if operator.Type == tokens.NOT_TOKEN.Type {
+
+		if expression.Type != node.BOOLEAN {
+			return nil, utils.CreateError(
+				expression.LineNum,
+				"invalid type for bang operator: %s",
+				expression.ErrorDisplay(),
+			)
+		}
+
+		booleanValue := expression.Value
+
+		var literal string
+		if booleanValue == tokens.TRUE_TOKEN.Literal {
+			literal = tokens.FALSE_TOKEN.Literal
+		} else {
+			literal = tokens.TRUE_TOKEN.Literal
+		}
+		node := node.CreateBoolean(literal, expression.LineNum)
+		return &node, nil
 	}
 
-	return nil, utils.CreateError(unaryExpression.LineNum, "invalid unary operator: %s", operator.Type)
+	return nil, utils.CreateError(
+		unaryExpression.LineNum,
+		"invalid unary operator: %s",
+		operator.ErrorDisplay(),
+	)
 }
 
 func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.Node, error) {
@@ -313,7 +343,11 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 		return e.index(*left, *right)
 
 	default:
-		return nil, utils.CreateError(op.LineNum, "invalid binary operator: %s (%#v)", op.Type, op.Value)
+		return nil, utils.CreateError(
+			op.LineNum,
+			"invalid binary operator: %s",
+			op.ErrorDisplay(),
+		)
 	}
 }
 
@@ -342,7 +376,11 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 	// Assert that the function object is, in fact, a callable function
 	if function.Type != node.FUNCTION {
-		return nil, utils.CreateError(function.LineNum, "cannot make function call on type %s", function.Type)
+		return nil, utils.CreateError(
+			function.LineNum,
+			"cannot make function call on type %s",
+			function.ErrorDisplay(),
+		)
 	}
 
 	// Check that the number of arguments passed to the function matches the number of arguments in the function definition
@@ -441,7 +479,12 @@ func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 		}
 		return node.Ptr(left.Params[index]), nil
 	}
-	return nil, utils.CreateError(left.LineNum, "invalid types for index: %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(
+		left.LineNum,
+		"invalid types for index: %s and %s",
+		left.ErrorDisplay(),
+		right.ErrorDisplay(),
+	)
 }
 
 func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
@@ -450,7 +493,12 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 
 		return node.Ptr(e.createNumberNode(result, left.LineNum)), nil
 	}
-	return nil, utils.CreateError(left.LineNum, "cannot add types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(
+		left.LineNum,
+		"cannot add types %s and %s",
+		left.ErrorDisplay(),
+		right.ErrorDisplay(),
+	)
 }
 
 func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error) {
@@ -460,7 +508,12 @@ func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error
 		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
-	return nil, utils.CreateError(left.LineNum, "cannot subtract types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(
+		left.LineNum,
+		"cannot subtract types %s and %s",
+		left.ErrorDisplay(),
+		right.ErrorDisplay(),
+	)
 }
 
 func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error) {
@@ -470,7 +523,12 @@ func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error
 		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
-	return nil, utils.CreateError(left.LineNum, "cannot multiply types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(
+		left.LineNum,
+		"cannot multiply types %s and %s",
+		left.ErrorDisplay(),
+		right.ErrorDisplay(),
+	)
 }
 
 func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) {
@@ -484,7 +542,12 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 		node := e.createNumberNode(result, left.LineNum)
 		return &node, nil
 	}
-	return nil, utils.CreateError(left.LineNum, "cannot divide types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(
+		left.LineNum,
+		"cannot divide types %s and %s",
+		left.ErrorDisplay(),
+		right.ErrorDisplay(),
+	)
 }
 
 func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error) {
@@ -492,7 +555,12 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 		functionCall := node.CreateFunctionCall(left.LineNum, left, right.Params)
 		return e.evaluateExpression(functionCall)
 	}
-	return nil, utils.CreateError(left.LineNum, "cannot use pointer on types %s and %s", left.Type, right.Type)
+	return nil, utils.CreateError(
+		left.LineNum,
+		"cannot use pointer on types %s and %s",
+		left.ErrorDisplay(),
+		right.ErrorDisplay(),
+	)
 }
 
 func (e *evaluator) toFloat(s string) float64 {

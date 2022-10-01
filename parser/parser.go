@@ -22,6 +22,7 @@ var precedenceLevels = map[string]int{
 	tokens.AT_TOKEN.Type:            INDEX,
 	tokens.PLUS_TOKEN.Type:          SUM,
 	tokens.MINUS_TOKEN.Type:         SUM,
+	tokens.NOT_TOKEN.Type:           SUM,
 	tokens.ASTERISK_TOKEN.Type:      PRODUCT,
 	tokens.FORWARD_SLASH_TOKEN.Type: PRODUCT,
 }
@@ -234,7 +235,7 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 	case tokens.STRING_TOKEN.Type:
 		return p.parseString()
 
-	case tokens.MINUS_TOKEN.Type:
+	case tokens.MINUS_TOKEN.Type, tokens.NOT_TOKEN.Type:
 		return p.parseUnaryExpression()
 
 	case tokens.OPEN_PAREN_TOKEN.Type:
