@@ -110,3 +110,22 @@ func TestTokenizer_Identifiers(t *testing.T) {
 		AssertTokenEqual(t, CreateTokenFromValues(tokens.IDENTIFIER_TOKEN.Type, variable, 1), *token)
 	}
 }
+
+func TestTokenizer_InlineCommentsEOF(t *testing.T) {
+	source := "# this is a comment"
+	tokenizer := tokens.New(source)
+
+	token, _ := tokenizer.Next()
+
+	AssertTokenEqual(t, CreateTokenFromToken(tokens.EOF_TOKEN), *token)
+}
+
+func TestTokenizer_InlineComments(t *testing.T) {
+	source := "# this is a comment\n1;"
+	tokenizer := tokens.New(source)
+
+	actualToken, _ := tokenizer.Next()
+	expectedToken := tokens.Token{Type: tokens.NUMBER, Literal: "1", LineNumber: 2}
+
+	AssertTokenEqual(t, expectedToken, *actualToken)
+}
