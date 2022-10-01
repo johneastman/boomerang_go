@@ -111,7 +111,7 @@ func TestTokenizer_Identifiers(t *testing.T) {
 	}
 }
 
-func TestTokenizer_InlineCommentsEOF(t *testing.T) {
+func TestTokenizer_InlineCommentEOF(t *testing.T) {
 	source := "# this is a comment"
 	tokenizer := tokens.New(source)
 
@@ -120,7 +120,7 @@ func TestTokenizer_InlineCommentsEOF(t *testing.T) {
 	AssertTokenEqual(t, CreateTokenFromToken(tokens.EOF_TOKEN), *token)
 }
 
-func TestTokenizer_InlineComments(t *testing.T) {
+func TestTokenizer_InlineComment(t *testing.T) {
 	source := "# this is a comment\n1;"
 	tokenizer := tokens.New(source)
 
@@ -128,4 +128,40 @@ func TestTokenizer_InlineComments(t *testing.T) {
 	expectedToken := tokens.Token{Type: tokens.NUMBER, Literal: "1", LineNumber: 2}
 
 	AssertTokenEqual(t, expectedToken, *actualToken)
+}
+
+func TestTokenizer_BlockCommentEOF(t *testing.T) {
+	source := "##\na = 1;\nb = a + 2\n##"
+	tokenizer := tokens.New(source)
+
+	actualToken, _ := tokenizer.Next()
+	expectedToken := tokens.Token{Type: tokens.EOF_TOKEN.Type, Literal: tokens.EOF_TOKEN.Literal, LineNumber: 4}
+
+	AssertTokenEqual(t, expectedToken, *actualToken)
+}
+
+func TestTokenizer_BlockComment(t *testing.T) {
+	source := "##\na = 1;\nb = a + 2\n##1;"
+	tokenizer := tokens.New(source)
+
+	actualToken, _ := tokenizer.Next()
+	expectedToken := tokens.Token{Type: tokens.NUMBER, Literal: "1", LineNumber: 4}
+
+	AssertTokenEqual(t, expectedToken, *actualToken)
+}
+
+func TestTokenizer_BlockCommentError(t *testing.T) {
+	source := "##"
+	tokenizer := tokens.New(source)
+
+	_, err := tokenizer.Next()
+	if err == nil {
+		t.Fatal("An error was expected, but no errors occurred")
+	}
+
+	actualError := err.Error()
+	expectedError := "error at line 1: did not find ending ## while parsing block comment"
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %#v, Actual error: %#v", expectedError, actualError)
+	}
 }

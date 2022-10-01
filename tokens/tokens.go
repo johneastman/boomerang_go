@@ -39,6 +39,8 @@ const (
 	CLOSED_BRACKET       = "CLOSED_BRACKET"
 	IF                   = "IF"
 	AT                   = "AT"
+	INLINE_COMMENT       = "INLINE_COMMENT"
+	BLOCK_COMMENT        = "BLOCK_COMMENT"
 )
 
 // Tokens
@@ -60,6 +62,8 @@ var (
 	OPEN_BRACKET_TOKEN         = getToken(OPEN_BRACKET)
 	CLOSED_BRACKET_TOKEN       = getToken(CLOSED_BRACKET)
 	AT_TOKEN                   = getToken(AT)
+	INLINE_COMMENT_TOKEN       = getToken(INLINE_COMMENT)
+	BLOCK_COMMENT_TOKEN        = getToken(BLOCK_COMMENT)
 
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
@@ -107,6 +111,8 @@ var tokenData = map[string]Token{
 	CLOSED_BRACKET:       {Type: "CLOSED_BRACKET", Literal: "]"},
 	IF:                   {Type: "IF", Literal: "if"},
 	AT:                   {Type: "AT", Literal: "@"},
+	INLINE_COMMENT:       {Type: "INLINE_COMMENT", Literal: "#"},
+	BLOCK_COMMENT:        {Type: "BLOCK_COMMENT", Literal: "##"},
 }
 
 func getToken(name string) Token {

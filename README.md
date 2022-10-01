@@ -41,6 +41,22 @@ FACTOR:
 - LIST
 ```
 
+### Comments
+There are two types of comments:
+* Inline
+* Block
+
+```
+##
+block comments appear between a pair of double `#`s
+##
+i = 0;
+if true {
+  i = i + 1; # inline comments appear after a single #
+}
+print(i)
+```
+
 ### Data Types
 |Name|Examples|
 |----|--------|

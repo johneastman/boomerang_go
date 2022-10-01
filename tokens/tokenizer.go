@@ -26,6 +26,14 @@ func (t *Tokenizer) current() byte {
 	return 0
 }
 
+func (t *Tokenizer) peek() byte {
+	nextCharIndex := t.currentPos + 1
+	if nextCharIndex < len(t.source) {
+		return t.source[nextCharIndex]
+	}
+	return 0
+}
+
 func (t *Tokenizer) advance() {
 	t.currentPos += 1
 }
@@ -37,6 +45,38 @@ func (t *Tokenizer) skipWhitespace() {
 		}
 		t.advance()
 	}
+}
+
+func (t *Tokenizer) skipBlockComment() (*Token, error) {
+	t.advance()
+	t.advance()
+
+	for {
+		if t.current() == '#' && t.peek() == '#' {
+			break
+		}
+
+		if t.peek() == 0 {
+			return nil, utils.CreateError(t.currentLineNumber, "did not find ending ## while parsing block comment")
+		}
+
+		if t.current() == '\n' {
+			t.currentLineNumber += 1
+		}
+
+		t.advance()
+	}
+
+	t.advance()
+	t.advance()
+	return t.Next()
+}
+
+func (t *Tokenizer) skipInlineComment() (*Token, error) {
+	for t.current() != '\n' && t.current() != EOF_CHAR {
+		t.advance()
+	}
+	return t.Next()
 }
 
 func (t *Tokenizer) isIdentifier(allowDigits bool) bool {
@@ -98,13 +138,6 @@ func (t *Tokenizer) Next() (*Token, error) {
 		token := EOF_TOKEN
 		token.LineNumber = t.currentLineNumber
 		return &token, nil
-	}
-
-	if t.current() == '#' {
-		for t.current() != '\n' && t.current() != EOF_CHAR {
-			t.advance()
-		}
-		return t.Next()
 	}
 
 	if t.isIdentifier(false) {
@@ -191,6 +224,14 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 		source := t.source[t.currentPos : t.currentPos+len(matchingToken.Literal)]
 		if source == matchingToken.Literal {
 
+			if matchingToken.Type == INLINE_COMMENT_TOKEN.Type {
+				return t.skipInlineComment()
+			}
+
+			if matchingToken.Type == BLOCK_COMMENT_TOKEN.Type {
+				return t.skipBlockComment()
+			}
+
 			// Advance past n characters, where n is the length of the token literal
 			for i := 0; i < len(source); i++ {
 				t.advance()
@@ -199,5 +240,5 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 			return &matchingToken, nil
 		}
 	}
-	return nil, utils.CreateError(t.currentLineNumber, "invalid symbol %c", t.current())
+	return nil, utils.CreateError(t.currentLineNumber, "invalid character %c", t.current())
 }
