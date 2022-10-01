@@ -81,16 +81,6 @@ func (t *Tokenizer) isString() bool {
 	return t.current() == DOUBLE_QUOTE_TOKEN.Literal[0]
 }
 
-func (t *Tokenizer) skipInlineComment() {
-	if t.current() == '#' {
-		for t.current() != '\n' && t.current() != EOF_CHAR {
-			t.advance()
-		}
-	}
-	// There might be whitespace after the comment, so that needs to be skipped as well
-	t.skipWhitespace()
-}
-
 func (t *Tokenizer) readString() string {
 	startPos := t.currentPos
 	endPos := startPos
@@ -103,12 +93,18 @@ func (t *Tokenizer) readString() string {
 
 func (t *Tokenizer) Next() (*Token, error) {
 	t.skipWhitespace()
-	t.skipInlineComment()
 
 	if t.current() == EOF_CHAR {
 		token := EOF_TOKEN
 		token.LineNumber = t.currentLineNumber
 		return &token, nil
+	}
+
+	if t.current() == '#' {
+		for t.current() != '\n' && t.current() != EOF_CHAR {
+			t.advance()
+		}
+		return t.Next()
 	}
 
 	if t.isIdentifier(false) {
