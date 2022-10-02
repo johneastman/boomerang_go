@@ -297,5 +297,5 @@ func CreateFunctionReturnValue(linenum int, statement *Node) Node {
 			*statement,
 		}
 	}
-	return CreateList(linenum, parameters) // TODO: add real line number
+	return CreateList(linenum, parameters)
 }
