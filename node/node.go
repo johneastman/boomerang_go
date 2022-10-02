@@ -289,11 +289,11 @@ func CreateFunctionReturnValue(linenum int, statement *Node) Node {
 
 	if statement == nil {
 		parameters = []Node{
-			CreateBooleanFalse(linenum), // TODO: add real line number
+			CreateBooleanFalse(linenum),
 		}
 	} else {
 		parameters = []Node{
-			CreateBooleanTrue(linenum), // TODO: add real line number
+			CreateBooleanTrue(linenum),
 			*statement,
 		}
 	}
