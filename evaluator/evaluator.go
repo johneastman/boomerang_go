@@ -342,6 +342,9 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 	case tokens.AT_TOKEN.Type:
 		return e.index(*left, *right)
 
+	case tokens.EQ_TOKEN.Type:
+		return e.compare(*left, *right)
+
 	default:
 		return nil, utils.CreateError(
 			op.LineNum,
@@ -464,6 +467,19 @@ func (e *evaluator) evaluateBuiltinLen(lineNum int, callParameters []node.Node) 
 		fmt.Sprint(value),
 	)
 	return &node, nil
+}
+
+func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error) {
+
+	var booleanValue string
+	if left.Value == right.Value {
+		booleanValue = tokens.TRUE_TOKEN.Literal
+	} else {
+		booleanValue = tokens.FALSE_TOKEN.Literal
+	}
+
+	booleanNode := node.CreateBoolean(booleanValue, left.LineNum)
+	return &booleanNode, nil
 }
 
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {

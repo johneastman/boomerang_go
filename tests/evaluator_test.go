@@ -757,6 +757,45 @@ func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {
 	AssertNodesEqual(t, expectedResults, actualResults)
 }
 
+func TestEvaluator_CompareOperators(t *testing.T) {
+
+	tests := []struct {
+		BinaryExpressionAST node.Node
+		ExpectedResult      node.Node
+	}{
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateNumber("7"),
+				CreateTokenFromToken(tokens.EQ_TOKEN),
+				CreateNumber("7"),
+			),
+			ExpectedResult: CreateBooleanTrue(),
+		},
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateNumber("146"),
+				CreateTokenFromToken(tokens.EQ_TOKEN),
+				CreateNumber("66"),
+			),
+			ExpectedResult: CreateBooleanFalse(),
+		},
+	}
+
+	for _, test := range tests {
+		ast := []node.Node{test.BinaryExpressionAST}
+
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			test.ExpectedResult,
+		}
+		AssertNodesEqual(t, expectedResults, actualResults)
+	}
+}
+
+/* * * * * * * *
+ * ERROR TESTS *
+ * * * * * * * */
+
 func TestEvaluator_ReturnGlobalScopeError(t *testing.T) {
 	ast := []node.Node{
 		CreateReturnStatement(

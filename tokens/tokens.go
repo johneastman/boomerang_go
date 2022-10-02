@@ -42,6 +42,7 @@ const (
 	INLINE_COMMENT       = "INLINE_COMMENT"
 	BLOCK_COMMENT        = "BLOCK_COMMENT"
 	NOT                  = "NOT"
+	EQ                   = "EQUAL"
 )
 
 // Tokens
@@ -66,6 +67,7 @@ var (
 	INLINE_COMMENT_TOKEN       = getToken(INLINE_COMMENT)
 	BLOCK_COMMENT_TOKEN        = getToken(BLOCK_COMMENT)
 	NOT_TOKEN                  = getToken(NOT)
+	EQ_TOKEN                   = getToken(EQ)
 
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
@@ -116,6 +118,7 @@ var tokenData = map[string]Token{
 	INLINE_COMMENT:       {Type: "INLINE_COMMENT", Literal: "#"},
 	BLOCK_COMMENT:        {Type: "BLOCK_COMMENT", Literal: "##"},
 	NOT:                  {Type: "NOT", Literal: "not"},
+	EQ:                   {Type: "EQUAL", Literal: "=="},
 }
 
 func getToken(name string) Token {

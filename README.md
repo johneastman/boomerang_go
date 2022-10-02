@@ -79,6 +79,7 @@ print(i)
 |divide|/|NUMBER|NUMBER|
 |left pointer|<-|IDENTIFIER (of function)|LIST|
 |at|@|LIST|NUMBER (must be an integer)|
+|equal|==|Any Type|Any Type|
 
 #### Unary (Prefix) Operators
 |Name|Literal|Valid Types|
@@ -195,9 +196,15 @@ value = func() {} <- ();  # value: (false)
 result = unwrap <- (value, 2) # result: 2
 ```
 
-#### Boolean Operators
+#### Boolean Operations
 * Negate a boolean expression
   ```
   not true;  # false
   not false; # true
+  ```
+* Compare two values. The values being compared do not have to be compatible or the same type
+  ```
+  1 == 1; # true
+  1 == 2; # false
+  true == "hello, world!"; # false
   ```

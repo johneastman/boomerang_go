@@ -186,16 +186,37 @@ func TestParser_Bang(t *testing.T) {
 }
 
 func TestParser_BinaryExpression(t *testing.T) {
-	actualAST := getAST("7 + 3;")
-	expectedAST := []node.Node{
-		node.CreateBinaryExpression(
-			CreateNumber("7"),
-			CreateTokenFromToken(tokens.PLUS_TOKEN),
-			CreateNumber("3"),
-		),
+
+	tests := []struct {
+		Source      string
+		ExpectedAST node.Node
+	}{
+		{
+			"7 + 3",
+			node.CreateBinaryExpression(
+				CreateNumber("7"),
+				CreateTokenFromToken(tokens.PLUS_TOKEN),
+				CreateNumber("3"),
+			),
+		},
+		{
+			"14 == 13",
+			node.CreateBinaryExpression(
+				CreateNumber("14"),
+				CreateTokenFromToken(tokens.EQ_TOKEN),
+				CreateNumber("13"),
+			),
+		},
 	}
 
-	AssertNodesEqual(t, expectedAST, actualAST)
+	for _, test := range tests {
+		source := fmt.Sprintf("%s;", test.Source)
+		actualAST := getAST(source)
+		expectedAST := []node.Node{
+			test.ExpectedAST,
+		}
+		AssertNodesEqual(t, expectedAST, actualAST)
+	}
 }
 
 func TestParser_Parentheses(t *testing.T) {

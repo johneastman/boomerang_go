@@ -11,6 +11,7 @@ import (
 
 const (
 	LOWEST int = iota
+	COMPARE
 	SUM
 	PRODUCT
 	FUNC_CALL
@@ -25,6 +26,7 @@ var precedenceLevels = map[string]int{
 	tokens.NOT_TOKEN.Type:           SUM,
 	tokens.ASTERISK_TOKEN.Type:      PRODUCT,
 	tokens.FORWARD_SLASH_TOKEN.Type: PRODUCT,
+	tokens.EQ_TOKEN.Type:            COMPARE,
 }
 
 type Parser struct {
