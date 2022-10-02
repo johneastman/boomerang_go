@@ -578,7 +578,20 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 	if (left.Type == node.FUNCTION || left.Type == node.IDENTIFIER) && right.Type == node.LIST {
 		functionCall := node.CreateFunctionCall(left.LineNum, left, right.Params)
 		return e.evaluateExpression(functionCall)
+
+	} else if left.Type == node.LIST {
+
+		nodes := left.Params
+		if right.Type == node.LIST {
+			nodes = append(nodes, right.Params...)
+		} else {
+			nodes = append(nodes, right)
+		}
+
+		listNode := node.CreateList(left.LineNum, nodes)
+		return &listNode, nil
 	}
+
 	return nil, utils.CreateError(
 		left.LineNum,
 		"cannot use pointer on types %s and %s",

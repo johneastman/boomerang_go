@@ -232,21 +232,68 @@ func TestEvaluator_Parameters(t *testing.T) {
 	}
 }
 
-func TestEvaluator_BinaryExpression(t *testing.T) {
-	ast := []node.Node{
-		node.CreateBinaryExpression(
-			CreateNumber("1"),
-			tokens.PLUS_TOKEN,
-			CreateNumber("1"),
-		),
+func TestEvaluator_BinaryExpressions(t *testing.T) {
+
+	tests := []struct {
+		AST    node.Node
+		Result node.Node
+	}{
+		{
+			AST: node.CreateBinaryExpression(
+				CreateNumber("1"),
+				CreateTokenFromToken(tokens.PLUS_TOKEN),
+				CreateNumber("1"),
+			),
+			Result: CreateNumber("2"),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateList([]node.Node{
+					CreateBooleanTrue(),
+					CreateBooleanFalse(),
+				}),
+				CreateTokenFromToken(tokens.PTR_TOKEN),
+				CreateBooleanTrue(),
+			),
+			Result: CreateList([]node.Node{
+				CreateBooleanTrue(),
+				CreateBooleanFalse(),
+				CreateBooleanTrue(),
+			}),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateList([]node.Node{
+					CreateBooleanTrue(),
+					CreateBooleanFalse(),
+				}),
+				CreateTokenFromToken(tokens.PTR_TOKEN),
+				CreateList([]node.Node{
+					CreateBooleanFalse(),
+					CreateBooleanTrue(),
+				}),
+			),
+			Result: CreateList([]node.Node{
+				CreateBooleanTrue(),
+				CreateBooleanFalse(),
+				CreateBooleanFalse(),
+				CreateBooleanTrue(),
+			}),
+		},
 	}
 
-	actualResults := getResults(ast)
-	expectedResults := []node.Node{
-		CreateNumber("2"),
-	}
+	for i, test := range tests {
+		ast := []node.Node{
+			test.AST,
+		}
 
-	AssertNodesEqual(t, 0, actualResults, expectedResults)
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			test.Result,
+		}
+
+		AssertNodesEqual(t, i, actualResults, expectedResults)
+	}
 }
 
 func TestEvaluator_Variable(t *testing.T) {

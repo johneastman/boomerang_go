@@ -163,6 +163,15 @@ value = numbers @ 2;  # value: 15
 value = numbers @ 3;  # value: 20
 ```
 
+To append values to a list, use the `<-` operator. On the right side of that operator, a single value can be passed, which will add that value to the end of the list, or a LIST can be passed, which combines the two lists. Be aware that this operation creates a new list, and the original list is not modified.
+```
+names = ("John", "Joe", "Jerry");
+
+names = names <- "James"; # names: ("John", "Joe", "Jerry", "James")
+
+names = names <- ("Jimmy", "Jack", "Jacob"); # names: ("John", "Joe", "Jerry", "James", "Jimmy", "Jack", "Jacob")
+```
+
 #### Functions
 Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
 
