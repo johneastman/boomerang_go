@@ -3,6 +3,7 @@ package tests
 import (
 	"boomerang/node"
 	"boomerang/tokens"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -78,66 +79,91 @@ func CreateTokenFromValues(type_ string, literal string, lineNum int) tokens.Tok
 	return tokens.Token{Type: type_, Literal: literal, LineNumber: lineNum}
 }
 
-func AssertTokensEqual(t *testing.T, expectedTokens []tokens.Token, actualTokens []tokens.Token) {
-	if len(expectedTokens) != len(actualTokens) {
-		t.Fatalf("Expected length: %d, Actual length: %d\n", len(expectedTokens), len(actualTokens))
-	}
+func AssertTokenEqual(t *testing.T, testNumber int, expected tokens.Token, actual tokens.Token) {
+	testName := fmt.Sprintf("Test #%d", testNumber)
 
-	for i := range expectedTokens {
-		expected := expectedTokens[i]
-		actual := actualTokens[i]
-
-		AssertTokenEqual(t, expected, actual)
-	}
+	t.Run(testName, func(t *testing.T) {
+		if err := assertTokenEqual(expected, actual); err != nil {
+			t.Fatal(err.Error())
+		}
+	})
 }
 
-func AssertTokenEqual(t *testing.T, expected tokens.Token, actual tokens.Token) {
+func assertTokenEqual(expected tokens.Token, actual tokens.Token) error {
 	if expected.Literal != actual.Literal {
-		t.Fatalf("Expected Literal: %s, Actual Literal: %s\n", expected.Literal, actual.Literal)
+		return fmt.Errorf("expected literal: %s, actual literal: %s", expected.Literal, actual.Literal)
 	}
 
 	if expected.Type != actual.Type {
-		t.Fatalf("Expected Type: %s, Actual Type: %s\n", expected.Type, actual.Type)
+		return fmt.Errorf("expected type: %s, actual type: %s", expected.Type, actual.Type)
 	}
 
 	if expected.LineNumber != actual.LineNumber {
-		t.Fatalf("Expected Line Number: %d, Actual Line Number: %d", expected.LineNumber, actual.LineNumber)
+		return fmt.Errorf("expected line number: %d, actual line number: %d", expected.LineNumber, actual.LineNumber)
 	}
+	return nil
 }
 
-func AssertNodesEqual(t *testing.T, expectedNodes []node.Node, actualNodes []node.Node) {
+func AssertNodesEqual(t *testing.T, testNumber int, expectedNodes []node.Node, actualNodes []node.Node) {
+	testName := fmt.Sprintf("Test #%d", testNumber)
+
+	t.Run(testName, func(t *testing.T) {
+		if err := assertNodesEqual(expectedNodes, actualNodes); err != nil {
+			t.Fatal(err.Error())
+		}
+	})
+}
+
+func assertNodesEqual(expectedNodes []node.Node, actualNodes []node.Node) error {
 	if len(expectedNodes) != len(actualNodes) {
-		t.Fatalf("Expected length: %d, Actual length: %d\n", len(expectedNodes), len(actualNodes))
+		return fmt.Errorf("expected length: %d, actual length: %d", len(expectedNodes), len(actualNodes))
 	}
 	for i := range expectedNodes {
 		expected := expectedNodes[i]
 		actual := actualNodes[i]
-		AssertNodeEqual(t, expected, actual)
+
+		if err := assertNodeEqual(expected, actual); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func AssertNodeEqual(t *testing.T, expected node.Node, actual node.Node) {
+func AssertNodeEqual(t *testing.T, testNumber int, expected node.Node, actual node.Node) {
+	testName := fmt.Sprintf("Test #%d", testNumber)
+
+	t.Run(testName, func(t *testing.T) {
+		if err := assertNodeEqual(expected, actual); err != nil {
+			t.Fatal(err.Error())
+		}
+	})
+}
+
+func assertNodeEqual(expected node.Node, actual node.Node) error {
 	if expected.Type != actual.Type {
-		t.Fatalf("Expected type: %s, Actual type: %s\n", expected.Type, actual.Type)
+		return fmt.Errorf("expected type: %s, actual type: %s", expected.Type, actual.Type)
 	}
 
 	if expected.Value != actual.Value {
-		t.Fatalf("Expected value: %s, Actual value: %s\n", expected.Value, actual.Value)
+		return fmt.Errorf("expected value: %s, actual value: %s", expected.Value, actual.Value)
 	}
 
 	if expected.LineNum != actual.LineNum {
-		t.Fatalf("Expected LineNum: %d, Actual LineNum: %d", expected.LineNum, actual.LineNum)
+		return fmt.Errorf("expected line number: %d, actual line number: %d", expected.LineNum, actual.LineNum)
 	}
 
 	if len(expected.Params) != len(actual.Params) {
-		t.Fatalf("Expected %d params, got %d", len(expected.Params), len(actual.Params))
+		return fmt.Errorf("expected %d params, got %d", len(expected.Params), len(actual.Params))
 	}
 
 	for i := 0; i < len(expected.Params); i++ {
 		expectedParamNode := expected.Params[i]
 		actualParamNode := actual.Params[i]
-		AssertNodeEqual(t, expectedParamNode, actualParamNode)
+		if err := assertNodeEqual(expectedParamNode, actualParamNode); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func AssertExpectedOutput(t *testing.T, expectedOutput string, f func()) {

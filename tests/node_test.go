@@ -3,6 +3,7 @@ package tests
 import (
 	"boomerang/node"
 	"boomerang/tokens"
+	"fmt"
 	"testing"
 )
 
@@ -14,7 +15,7 @@ func TestNode_CreateNumber(t *testing.T) {
 		LineNum: 20,
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateBoolean(t *testing.T) {
@@ -32,7 +33,7 @@ func TestNode_CreateBoolean(t *testing.T) {
 			LineNum: 1,
 		}
 
-		AssertNodeEqual(t, expectedNode, actualNode)
+		AssertNodeEqual(t, 0, expectedNode, actualNode)
 	}
 }
 
@@ -44,7 +45,7 @@ func TestNode_CreateBooleanTrue(t *testing.T) {
 		LineNum: 1,
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateBooleanFalse(t *testing.T) {
@@ -55,7 +56,7 @@ func TestNode_CreateBooleanFalse(t *testing.T) {
 		LineNum: 1,
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateString(t *testing.T) {
@@ -66,7 +67,7 @@ func TestNode_CreateString(t *testing.T) {
 		LineNum: 1,
 		Params:  []node.Node{},
 	}
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateTokenNode(t *testing.T) {
@@ -77,7 +78,7 @@ func TestNode_CreateTokenNode(t *testing.T) {
 		Value: token.Literal,
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateIdentifier(t *testing.T) {
@@ -88,7 +89,7 @@ func TestNode_CreateIdentifier(t *testing.T) {
 		LineNum: 1,
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreatePrintStatement(t *testing.T) {
@@ -119,7 +120,7 @@ func TestNode_CreatePrintStatement(t *testing.T) {
 		},
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateUnaryExpression(t *testing.T) {
@@ -139,7 +140,7 @@ func TestNode_CreateUnaryExpression(t *testing.T) {
 		},
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateBinaryExpression(t *testing.T) {
@@ -161,7 +162,7 @@ func TestNode_CreateBinaryExpression(t *testing.T) {
 		},
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateAssignmentStatement(t *testing.T) {
@@ -179,7 +180,7 @@ func TestNode_CreateAssignmentStatement(t *testing.T) {
 		},
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateFunction(t *testing.T) {
@@ -232,7 +233,7 @@ func TestNode_CreateFunction(t *testing.T) {
 		},
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateFunctionCall(t *testing.T) {
@@ -269,7 +270,7 @@ func TestNode_CreateFunctionCall(t *testing.T) {
 		},
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateParameters(t *testing.T) {
@@ -300,7 +301,7 @@ func TestNode_CreateParameters(t *testing.T) {
 		},
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_String(t *testing.T) {
@@ -343,13 +344,16 @@ func TestNode_String(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
-		actualNodeString := test.Node.String()
-		expectedNodeString := test.String
+	for i, test := range tests {
+		testName := fmt.Sprintf("Test #%d", i)
+		t.Run(testName, func(t *testing.T) {
+			actualNodeString := test.Node.String()
+			expectedNodeString := test.String
 
-		if expectedNodeString != actualNodeString {
-			t.Fatalf("Expected string: %#v, Actual string: %#v", expectedNodeString, actualNodeString)
-		}
+			if expectedNodeString != actualNodeString {
+				t.Fatalf("Expected string: %#v, Actual string: %#v", expectedNodeString, actualNodeString)
+			}
+		})
 	}
 }
 
@@ -379,7 +383,7 @@ func TestNode_ReturnStatement(t *testing.T) {
 				}},
 		}}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateReturnValueNoParams(t *testing.T) {
@@ -395,7 +399,7 @@ func TestNode_CreateReturnValueNoParams(t *testing.T) {
 			},
 		},
 	}
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateReturnValueParams(t *testing.T) {
@@ -418,7 +422,7 @@ func TestNode_CreateReturnValueParams(t *testing.T) {
 			},
 		},
 	}
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
 func TestNode_CreateIfStatement(t *testing.T) {
@@ -443,5 +447,5 @@ func TestNode_CreateIfStatement(t *testing.T) {
 		},
 	}
 
-	AssertNodeEqual(t, expectedNode, actualNode)
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }

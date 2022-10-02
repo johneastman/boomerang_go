@@ -16,13 +16,13 @@ func TestParser_Numbers(t *testing.T) {
 		"3.14159",
 	}
 
-	for _, number := range numbers {
+	for i, number := range numbers {
 		actualAST := getAST(fmt.Sprintf("%s;", number))
 		expectedAST := []node.Node{
 			CreateNumber(number),
 		}
 
-		AssertNodesEqual(t, expectedAST, actualAST)
+		AssertNodesEqual(t, i, expectedAST, actualAST)
 	}
 }
 
@@ -41,13 +41,13 @@ func TestParser_Booleans(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		actualAST := getAST(fmt.Sprintf("%s;", test.Source))
 		expectedAST := []node.Node{
 			test.ExpectedNode,
 		}
 
-		AssertNodesEqual(t, expectedAST, actualAST)
+		AssertNodesEqual(t, i, expectedAST, actualAST)
 	}
 }
 
@@ -96,12 +96,12 @@ func TestParser_Strings(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		actualAST := getAST(fmt.Sprintf("\"%s\";", test.InputSource))
 		expectedAST := []node.Node{
 			node.CreateString(1, test.OutputSource, test.Params),
 		}
-		AssertNodesEqual(t, expectedAST, actualAST)
+		AssertNodesEqual(t, i, expectedAST, actualAST)
 	}
 }
 
@@ -151,13 +151,13 @@ func TestParser_TestParameters(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		actualAST := getAST(fmt.Sprintf("%s;", test.Source))
 		expectedAST := []node.Node{
 			CreateList(test.Params),
 		}
 
-		AssertNodesEqual(t, expectedAST, actualAST)
+		AssertNodesEqual(t, i, expectedAST, actualAST)
 	}
 }
 
@@ -170,7 +170,7 @@ func TestParser_NegativeNumber(t *testing.T) {
 		),
 	}
 
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_Bang(t *testing.T) {
@@ -182,7 +182,7 @@ func TestParser_Bang(t *testing.T) {
 		),
 	}
 
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_BinaryExpression(t *testing.T) {
@@ -209,13 +209,13 @@ func TestParser_BinaryExpression(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		source := fmt.Sprintf("%s;", test.Source)
 		actualAST := getAST(source)
 		expectedAST := []node.Node{
 			test.ExpectedAST,
 		}
-		AssertNodesEqual(t, expectedAST, actualAST)
+		AssertNodesEqual(t, i, expectedAST, actualAST)
 	}
 }
 
@@ -228,7 +228,7 @@ func TestParser_Parentheses(t *testing.T) {
 			CreateNumber("3"),
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_ParenthesesBinaryExpression(t *testing.T) {
@@ -245,7 +245,7 @@ func TestParser_ParenthesesBinaryExpression(t *testing.T) {
 			),
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_VariableAssignment(t *testing.T) {
@@ -260,7 +260,7 @@ func TestParser_VariableAssignment(t *testing.T) {
 			),
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_Identifier(t *testing.T) {
@@ -269,7 +269,7 @@ func TestParser_Identifier(t *testing.T) {
 		CreateIdentifier("variable"),
 	}
 
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_PrintStatement(t *testing.T) {
@@ -283,7 +283,7 @@ func TestParser_PrintStatement(t *testing.T) {
 			},
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_PrintStatementNoArguments(t *testing.T) {
@@ -291,7 +291,7 @@ func TestParser_PrintStatementNoArguments(t *testing.T) {
 	expectedAST := []node.Node{
 		CreatePrintStatement([]node.Node{}),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_Function(t *testing.T) {
@@ -311,7 +311,7 @@ func TestParser_Function(t *testing.T) {
 			},
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_FunctionNoParameters(t *testing.T) {
@@ -328,7 +328,7 @@ func TestParser_FunctionNoParameters(t *testing.T) {
 			},
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
@@ -339,7 +339,7 @@ func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
 			[]node.Node{},
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_FunctionCallWithNoParameters(t *testing.T) {
@@ -351,7 +351,7 @@ func TestParser_FunctionCallWithNoParameters(t *testing.T) {
 			CreateList([]node.Node{}),
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
@@ -381,7 +381,7 @@ func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
 			}),
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
@@ -396,7 +396,7 @@ func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
 			}),
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_ReturnStatements(t *testing.T) {
@@ -408,7 +408,7 @@ func TestParser_ReturnStatements(t *testing.T) {
 			CreateNumber("1"),
 		)),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_ListIndex(t *testing.T) {
@@ -420,7 +420,7 @@ func TestParser_ListIndex(t *testing.T) {
 			CreateNumber("1"),
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_IfStatement(t *testing.T) {
@@ -435,7 +435,7 @@ func TestParser_IfStatement(t *testing.T) {
 			},
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
 func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
@@ -454,8 +454,12 @@ func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
 			CreateNumber("3"),
 		),
 	}
-	AssertNodesEqual(t, expectedAST, actualAST)
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
+
+/* * * * * * * *
+ * ERROR TESTS *
+ * * * * * * * */
 
 func TestParser_UnexpectedTokenError(t *testing.T) {
 	tokenizer := tokens.New("1")

@@ -26,9 +26,9 @@ func TestTokenizer_Symbols(t *testing.T) {
 		CreateTokenFromToken(tokens.SEMICOLON_TOKEN),
 	}
 
-	for _, expectedToken := range expectedTokens {
+	for i, expectedToken := range expectedTokens {
 		actualToken, _ := tokenizer.Next()
-		AssertTokenEqual(t, expectedToken, *actualToken)
+		AssertTokenEqual(t, i, expectedToken, *actualToken)
 	}
 }
 
@@ -43,10 +43,10 @@ func TestTokenizer_Keywords(t *testing.T) {
 		CreateTokenFromToken(tokens.NOT_TOKEN),
 	}
 
-	for _, expectedToken := range keywordTokens {
+	for i, expectedToken := range keywordTokens {
 		tokenizer := tokens.New(expectedToken.Literal)
 		actualToken, _ := tokenizer.Next()
-		AssertTokenEqual(t, expectedToken, *actualToken)
+		AssertTokenEqual(t, i, expectedToken, *actualToken)
 	}
 }
 
@@ -67,11 +67,11 @@ func TestTokenizer_Numbers(t *testing.T) {
 		"1234567890.0987654321",
 	}
 
-	for _, source := range numbers {
+	for i, source := range numbers {
 		tokenizer := tokens.New(source)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, CreateTokenFromValues(tokens.NUMBER_TOKEN.Type, source, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.NUMBER_TOKEN.Type, source, 1), *token)
 	}
 }
 
@@ -85,14 +85,14 @@ func TestTokenizer_Strings(t *testing.T) {
 		"1234567890",
 	}
 
-	for _, testString := range testStrings {
+	for i, testString := range testStrings {
 
 		source := fmt.Sprintf("\"%s\";", testString)
 
 		tokenizer := tokens.New(source)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, CreateTokenFromValues(tokens.STRING_TOKEN.Type, testString, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.STRING_TOKEN.Type, testString, 1), *token)
 	}
 }
 
@@ -105,11 +105,11 @@ func TestTokenizer_Identifiers(t *testing.T) {
 		"_variable_",
 	}
 
-	for _, variable := range variables {
+	for i, variable := range variables {
 		tokenizer := tokens.New(variable)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, CreateTokenFromValues(tokens.IDENTIFIER_TOKEN.Type, variable, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.IDENTIFIER_TOKEN.Type, variable, 1), *token)
 	}
 }
 
@@ -119,7 +119,7 @@ func TestTokenizer_InlineCommentEOF(t *testing.T) {
 
 	token, _ := tokenizer.Next()
 
-	AssertTokenEqual(t, CreateTokenFromToken(tokens.EOF_TOKEN), *token)
+	AssertTokenEqual(t, 0, CreateTokenFromToken(tokens.EOF_TOKEN), *token)
 }
 
 func TestTokenizer_InlineComment(t *testing.T) {
@@ -129,7 +129,7 @@ func TestTokenizer_InlineComment(t *testing.T) {
 	actualToken, _ := tokenizer.Next()
 	expectedToken := tokens.Token{Type: tokens.NUMBER, Literal: "1", LineNumber: 2}
 
-	AssertTokenEqual(t, expectedToken, *actualToken)
+	AssertTokenEqual(t, 0, expectedToken, *actualToken)
 }
 
 func TestTokenizer_BlockCommentEOF(t *testing.T) {
@@ -139,7 +139,7 @@ func TestTokenizer_BlockCommentEOF(t *testing.T) {
 	actualToken, _ := tokenizer.Next()
 	expectedToken := tokens.Token{Type: tokens.EOF_TOKEN.Type, Literal: tokens.EOF_TOKEN.Literal, LineNumber: 4}
 
-	AssertTokenEqual(t, expectedToken, *actualToken)
+	AssertTokenEqual(t, 0, expectedToken, *actualToken)
 }
 
 func TestTokenizer_BlockComment(t *testing.T) {
@@ -149,7 +149,7 @@ func TestTokenizer_BlockComment(t *testing.T) {
 	actualToken, _ := tokenizer.Next()
 	expectedToken := tokens.Token{Type: tokens.NUMBER, Literal: "1", LineNumber: 4}
 
-	AssertTokenEqual(t, expectedToken, *actualToken)
+	AssertTokenEqual(t, 0, expectedToken, *actualToken)
 }
 
 func TestTokenizer_BlockCommentError(t *testing.T) {

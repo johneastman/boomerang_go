@@ -15,7 +15,7 @@ func TestEvaluator_Numbers(t *testing.T) {
 		"44.357",
 	}
 
-	for _, number := range numbers {
+	for i, number := range numbers {
 		ast := []node.Node{
 			CreateNumber(number),
 		}
@@ -25,7 +25,7 @@ func TestEvaluator_Numbers(t *testing.T) {
 			CreateNumber(number),
 		}
 
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -36,7 +36,7 @@ func TestEvaluator_Booleans(t *testing.T) {
 		"false",
 	}
 
-	for _, boolean := range booleans {
+	for i, boolean := range booleans {
 		ast := []node.Node{
 			CreateBoolean(boolean),
 		}
@@ -46,7 +46,7 @@ func TestEvaluator_Booleans(t *testing.T) {
 			CreateBoolean(boolean),
 		}
 
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -63,7 +63,7 @@ func TestEvaluator_NegativeNumber(t *testing.T) {
 		CreateNumber("-66"),
 	}
 
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_Bang(t *testing.T) {
@@ -82,7 +82,7 @@ func TestEvaluator_Bang(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		ast := []node.Node{
 			node.CreateUnaryExpression(
 				CreateTokenFromToken(tokens.NOT_TOKEN),
@@ -95,7 +95,7 @@ func TestEvaluator_Bang(t *testing.T) {
 			test.ExpectedResult,
 		}
 
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -144,7 +144,7 @@ func TestEvaluator_Strings(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		ast := []node.Node{
 			CreateString(test.InputSource, test.Params),
 		}
@@ -153,7 +153,7 @@ func TestEvaluator_Strings(t *testing.T) {
 		expectedResults := []node.Node{
 			CreateRawString(test.OutputSource),
 		}
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -219,7 +219,7 @@ func TestEvaluator_Parameters(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		ast := []node.Node{
 			CreateList(test.Parameters),
 		}
@@ -228,7 +228,7 @@ func TestEvaluator_Parameters(t *testing.T) {
 		expectedResults := []node.Node{
 			test.ExpectedResult,
 		}
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -246,7 +246,7 @@ func TestEvaluator_BinaryExpression(t *testing.T) {
 		CreateNumber("2"),
 	}
 
-	AssertNodesEqual(t, actualResults, expectedResults)
+	AssertNodesEqual(t, 0, actualResults, expectedResults)
 }
 
 func TestEvaluator_Variable(t *testing.T) {
@@ -270,7 +270,7 @@ func TestEvaluator_Variable(t *testing.T) {
 	expectedResults := []node.Node{
 		CreateNumber("4"),
 	}
-	AssertNodesEqual(t, actualResults, expectedResults)
+	AssertNodesEqual(t, 0, actualResults, expectedResults)
 }
 
 func TestEvaluator_PrintStatement(t *testing.T) {
@@ -291,7 +291,7 @@ func TestEvaluator_PrintStatement(t *testing.T) {
 		actualResults = getResults(ast)
 	})
 
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_PrintStatementNoArguments(t *testing.T) {
@@ -306,7 +306,7 @@ func TestEvaluator_PrintStatementNoArguments(t *testing.T) {
 		actualResults = getResults(ast)
 	})
 
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_Function(t *testing.T) {
@@ -327,7 +327,7 @@ func TestEvaluator_Function(t *testing.T) {
 	}
 
 	actualResults := getResults(ast)
-	AssertNodesEqual(t, ast, actualResults)
+	AssertNodesEqual(t, 0, ast, actualResults)
 }
 
 func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
@@ -359,7 +359,7 @@ func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
 		CreateFunctionReturnValue(&expectedReturnValue),
 	}
 
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_FunctionCallReturnStatement(t *testing.T) {
@@ -395,7 +395,7 @@ func TestEvaluator_FunctionCallReturnStatement(t *testing.T) {
 		CreateFunctionReturnValue(&expectedReturnValue),
 	}
 
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
@@ -433,7 +433,7 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 		CreateFunctionReturnValue(&expectedReturnValue),
 	}
 
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_FunctionCallWithNoParameters(t *testing.T) {
@@ -458,7 +458,7 @@ func TestEvaluator_FunctionCallWithNoParameters(t *testing.T) {
 	expectedResults := []node.Node{
 		CreateFunctionReturnValue(&expectedReturnValue),
 	}
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_FunctionCallNoReturn(t *testing.T) {
@@ -475,7 +475,7 @@ func TestEvaluator_FunctionCallNoReturn(t *testing.T) {
 	expectedResults := []node.Node{
 		CreateFunctionReturnValue(nil),
 	}
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_BuiltinLen(t *testing.T) {
@@ -494,7 +494,7 @@ func TestEvaluator_BuiltinLen(t *testing.T) {
 	expectedResults := []node.Node{
 		CreateNumber("3"),
 	}
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
@@ -519,7 +519,7 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		functionName := "function"
 		functionAssignment := CreateAssignmentStatement(
 			functionName,
@@ -555,7 +555,7 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 		expectedResults := []node.Node{
 			test.ExpectedReturnValue,
 		}
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -579,7 +579,7 @@ func TestEvaluator_ListIndex(t *testing.T) {
 	expectedResults := []node.Node{
 		CreateNumber("2"),
 	}
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_IfStatement(t *testing.T) {
@@ -600,7 +600,7 @@ func TestEvaluator_IfStatement(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		ast := []node.Node{
 			CreateAssignmentStatement(variableName, CreateNumber("1")),
 			CreateIfStatement(
@@ -615,7 +615,7 @@ func TestEvaluator_IfStatement(t *testing.T) {
 		expectedResults := []node.Node{
 			test.ExpectedValue,
 		}
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -649,7 +649,7 @@ func TestEvaluator_FunctionReturnIfStatement(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		ast := []node.Node{
 			CreateFunctionCall(
 				CreateFunction(
@@ -683,7 +683,7 @@ func TestEvaluator_FunctionReturnIfStatement(t *testing.T) {
 		expectedResults := []node.Node{
 			test.ReturnValue,
 		}
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -754,7 +754,7 @@ func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {
 	expectedResults := []node.Node{
 		CreateNumber("10"),
 	}
-	AssertNodesEqual(t, expectedResults, actualResults)
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_CompareOperators(t *testing.T) {
@@ -781,14 +781,14 @@ func TestEvaluator_CompareOperators(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
 		ast := []node.Node{test.BinaryExpressionAST}
 
 		actualResults := getResults(ast)
 		expectedResults := []node.Node{
 			test.ExpectedResult,
 		}
-		AssertNodesEqual(t, expectedResults, actualResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
