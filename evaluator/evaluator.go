@@ -150,7 +150,15 @@ func (e *evaluator) evaluateIfStatement(ifStatement node.Node) (*node.Node, erro
 		return nil, err
 	}
 
-	if evaluatedCondition.Value == tokens.TRUE_TOKEN.Literal {
+	if evaluatedCondition.Type != node.BOOLEAN {
+		return nil, utils.CreateError(
+			evaluatedCondition.LineNum,
+			"invalid type for if-statement condition: %s",
+			evaluatedCondition.ErrorDisplay(),
+		)
+	}
+
+	if evaluatedCondition.String() == tokens.TRUE_TOKEN.Literal {
 		return e.evaluateBlockStatements(trueStatements.Params)
 	}
 	return nil, nil
@@ -472,7 +480,7 @@ func (e *evaluator) evaluateBuiltinLen(lineNum int, callParameters []node.Node) 
 func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error) {
 
 	var booleanValue string
-	if left.Value == right.Value {
+	if left.String() == right.String() {
 		booleanValue = tokens.TRUE_TOKEN.Literal
 	} else {
 		booleanValue = tokens.FALSE_TOKEN.Literal

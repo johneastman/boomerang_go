@@ -136,6 +136,7 @@ func (n *Node) getParam(key string) (*Node, error) {
 func (n *Node) String() string {
 
 	switch n.Type {
+
 	case LIST:
 		var s string
 		for i, param := range n.Params {
@@ -146,10 +147,13 @@ func (n *Node) String() string {
 			}
 		}
 		return fmt.Sprintf("(%s)", s)
+
 	case STRING:
 		doubleQuoteLiteral := tokens.DOUBLE_QUOTE_TOKEN.Literal
 		return fmt.Sprintf("%s%s%s", doubleQuoteLiteral, n.Value, doubleQuoteLiteral)
+
 	default:
+		// NUMBER, BOOLEAN
 		return n.Value
 	}
 }

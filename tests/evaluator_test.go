@@ -779,6 +779,14 @@ func TestEvaluator_CompareOperators(t *testing.T) {
 			),
 			ExpectedResult: CreateBooleanFalse(),
 		},
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateBooleanTrue(),
+				CreateTokenFromToken(tokens.EQ_TOKEN),
+				CreateRawString("true"),
+			),
+			ExpectedResult: CreateBooleanFalse(),
+		},
 	}
 
 	for i, test := range tests {
@@ -1105,6 +1113,25 @@ func TestEvaluator_MinusUnayError(t *testing.T) {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
 	}
 }
+
+func TestEvaluator_IfStatementConditionTypeError(t *testing.T) {
+	ast := []node.Node{
+		CreateIfStatement(
+			CreateRawString("true"),
+			[]node.Node{},
+		),
+	}
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: invalid type for if-statement condition: String (\"true\")"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+/* * * * * * * * * * * * *
+ * EVALUATOR TEST UTILS  *
+ * * * * * * * * * * * * */
 
 func getResults(ast []node.Node) []node.Node {
 	evaluatorObj := evaluator.New(ast)
