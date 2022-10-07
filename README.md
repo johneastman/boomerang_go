@@ -30,6 +30,7 @@ EXPRESSION:
 - LEFT_POINTER('<-')
 - AT('@')
 - FACTOR
+- IF
 FACTOR:
 - NUMBER('float64')
 - STRING
@@ -126,25 +127,6 @@ return "hello, world!";
 return (1, 2 + 3, 5);
 ```
 
-#### If Statements
-Syntax: `if EXPRESSION { STATEMENT; STATEMENT; ...; STATEMENT; };`
-
-
-Examples:
-```
-number = 1;
-if true {
-  number = 2;
-};
-print(number);  # number: 2
-
-number = 1;
-if false {
-  number = 2;
-}
-print(number)  # number: 1
-```
-
 ### Expressions
 
 #### Lists
@@ -217,3 +199,48 @@ result = unwrap <- (value, 2) # result: 2
   1 == 2; # false
   true == "hello, world!"; # false
   ```
+
+#### If Expressions
+Syntax: `if EXPRESSION { STATEMENT; STATEMENT; ...; STATEMENT; } else { STATEMENT; STATEMENT; ...; STATEMENT; };`
+
+
+In Boomerang, if-else statements are actually expressions that return a value. They behave exactly like functions, returning `(true, <VALUE>)` if successful, and `(false)` if there are no statements/an error occurred. The only difference is that the condition after 'if` determines which block is executed.
+
+To get the actual return value, use the builtin `unwrap` method, similar to function return values.
+
+Below are some examples.
+
+
+Examples:
+```
+# The condition after `if` returns `true`, so the value of `number` is `(true, 5)`
+number = if true {
+  5;
+} else {
+  10;
+};
+print(unwrap <- (number, 0));  # prints 5
+
+
+# The condition after `if` returns `false`, so the value of `number` is `(true, 10)`
+number = if false {
+  5;
+} else {
+  10;
+};
+print(unwrap <- (number, 0));  # prints 10
+
+
+# There are no statements in the `else` block, but the condition after `if` returns `false`, so the value of `number` is `(false)`
+number = if false {
+  5;
+} else {};
+print(unwrap <- (number, 0));  # prints 0, the default value passed to unwrap
+
+
+# The condition after `if` is true, but the if-block has no statements, so the value of `number` is `(false)`
+number = if true {} else {
+  5;
+};
+print(unwrap <- (number, 0));  # prints 0, the default value passed to unwrap
+```
