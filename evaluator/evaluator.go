@@ -127,8 +127,7 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		stmt.Params[0] = *returnValue
-		return &stmt, nil
+		return node.CreateReturnStatement(returnValue.LineNum, *returnValue).Ptr(), nil
 
 	} else if stmt.Type == node.IF_STMT {
 		ifStatement, err := e.evaluateIfStatement(stmt)
@@ -280,7 +279,15 @@ func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, erro
 		if err != nil {
 			return nil, err
 		}
-		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), value.Value, 1)
+
+		// With string interpolation, the quotes around strings should not be included in the final string
+		var replacementString string
+		if value.Type == node.STRING {
+			replacementString = value.Value
+		} else {
+			replacementString = value.String()
+		}
+		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), replacementString, 1)
 	}
 
 	node := node.CreateRawString(stringExpression.LineNum, stringExpression.Value)

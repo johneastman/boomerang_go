@@ -142,6 +142,18 @@ func TestEvaluator_Strings(t *testing.T) {
 				),
 			},
 		},
+		{
+			InputSource:  "My numbers are <0>!",
+			OutputSource: "My numbers are (1, 2, 3, 4)!",
+			Params: []node.Node{
+				CreateList([]node.Node{
+					CreateNumber("1"),
+					CreateNumber("2"),
+					CreateNumber("3"),
+					CreateNumber("4"),
+				}),
+			},
+		},
 	}
 
 	for i, test := range tests {
@@ -464,6 +476,7 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 				},
 			),
 		),
+		// Call the same function multiple times with different parameters to ensure a different result is returned each time
 		CreateFunctionCall(
 			CreateIdentifier("divide"),
 			[]node.Node{
@@ -471,13 +484,20 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 				CreateNumber("2"),
 			},
 		),
+		CreateFunctionCall(
+			CreateIdentifier("divide"),
+			[]node.Node{
+				CreateNumber("6"),
+				CreateNumber("3"),
+			},
+		),
 	}
 
 	actualResults := getResults(ast)
 
-	expectedReturnValue := CreateNumber("5")
 	expectedResults := []node.Node{
-		CreateFunctionReturnValue(&expectedReturnValue),
+		CreateFunctionReturnValue(CreateNumber("5").Ptr()),
+		CreateFunctionReturnValue(CreateNumber("2").Ptr()),
 	}
 
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
