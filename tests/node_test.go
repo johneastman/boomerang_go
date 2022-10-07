@@ -359,35 +359,6 @@ func TestNode_String(t *testing.T) {
 	}
 }
 
-func TestNode_ReturnStatement(t *testing.T) {
-
-	token := tokens.FORWARD_SLASH_TOKEN
-	token.LineNumber = TEST_LINE_NUM
-
-	actualNode := node.CreateReturnStatement(TEST_LINE_NUM,
-		node.CreateBinaryExpression(
-			node.CreateNumber(TEST_LINE_NUM, "1"),
-			token,
-			node.CreateNumber(TEST_LINE_NUM, "2"),
-		),
-	)
-	expectedNode := node.Node{
-		Type:    node.RETURN,
-		LineNum: TEST_LINE_NUM,
-		Params: []node.Node{
-			{
-				Type:    node.BIN_EXPR,
-				LineNum: TEST_LINE_NUM,
-				Params: []node.Node{
-					{Type: node.NUMBER, Value: "1", LineNum: TEST_LINE_NUM},
-					{Type: token.Type, Value: token.Literal, LineNum: token.LineNumber},
-					{Type: node.NUMBER, Value: "2", LineNum: TEST_LINE_NUM},
-				}},
-		}}
-
-	AssertNodeEqual(t, 0, expectedNode, actualNode)
-}
-
 func TestNode_CreateReturnValueNoParams(t *testing.T) {
 	actualNode := node.CreateFunctionReturnValue(TEST_LINE_NUM, nil)
 	expectedNode := node.Node{

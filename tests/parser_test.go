@@ -399,18 +399,6 @@ func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
-func TestParser_ReturnStatements(t *testing.T) {
-	actualAST := getAST("return 1 + 1;")
-	expectedAST := []node.Node{
-		CreateReturnStatement(node.CreateBinaryExpression(
-			CreateNumber("1"),
-			CreateTokenFromToken(tokens.PLUS_TOKEN),
-			CreateNumber("1"),
-		)),
-	}
-	AssertNodesEqual(t, 0, expectedAST, actualAST)
-}
-
 func TestParser_ListIndex(t *testing.T) {
 	actualAST := getAST("numbers @ 1;")
 	expectedAST := []node.Node{

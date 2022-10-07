@@ -17,7 +17,6 @@ const (
 
 	// Statements
 	STMTS            = "Statements" // Super type
-	RETURN           = "Return"
 	RETURN_VALUE     = "ReturnValue"
 	PRINT_STMT       = "PrintStatement"
 	ASSIGN_STMT      = "Assign"
@@ -91,9 +90,6 @@ var indexMap = map[string]map[string]int{
 		CONDITION:    0,
 		TRUE_BRANCH:  1,
 		FALSE_BRANCH: 2,
-	},
-	RETURN: {
-		RETURN_VALUE: 0,
 	},
 }
 
@@ -246,14 +242,6 @@ func CreateAssignmentStatement(variableName string, value Node, lineNum int) Nod
 			{Type: IDENTIFIER, Value: variableName},
 			value,
 		},
-	}
-}
-
-func CreateReturnStatement(lineNum int, expression Node) Node {
-	return Node{
-		Type:    RETURN,
-		Params:  []Node{expression},
-		LineNum: lineNum,
 	}
 }
 

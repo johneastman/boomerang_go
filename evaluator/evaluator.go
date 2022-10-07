@@ -67,13 +67,6 @@ func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) (*[]node.Node, e
 		// If 'result' is not nil, then the statement returned a value (likely an expression statement)
 		if result != nil {
 			results = append(results, *result)
-			if result.Type == node.RETURN {
-				return nil, utils.CreateError(
-					result.LineNum,
-					"%s statements not allowed in the global scope",
-					tokens.RETURN_TOKEN.Literal,
-				)
-			}
 		}
 	}
 	return &results, nil
@@ -89,20 +82,6 @@ func (e *evaluator) evaluateBlockStatements(statements node.Node) (*node.Node, e
 			return nil, err
 		}
 		returnValue = result
-
-		/*
-			Stop evaluating the statements if a return statement is found.
-
-			Not all statements return a value, so check that the value is not nil before checking if the value
-			is a return node.
-		*/
-		if result != nil && result.Type == node.RETURN {
-			break
-		}
-	}
-
-	if returnValue != nil && returnValue.Type == node.RETURN {
-		returnValue = returnValue.GetParam(node.RETURN_VALUE).Ptr()
 	}
 
 	returnValue = node.CreateFunctionReturnValue(lineNum, returnValue).Ptr()
@@ -110,42 +89,24 @@ func (e *evaluator) evaluateBlockStatements(statements node.Node) (*node.Node, e
 }
 
 func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
-	if stmt.Type == node.ASSIGN_STMT {
+
+	switch stmt.Type {
+
+	case node.ASSIGN_STMT:
 		if err := e.evaluateAssignmentStatement(stmt); err != nil {
 			return nil, err
 		}
 		return nil, nil
 
-	} else if stmt.Type == node.PRINT_STMT {
+	case node.PRINT_STMT:
 		if err := e.evaluatePrintStatement(stmt); err != nil {
 			return nil, err
 		}
 		return nil, nil
 
-	} else if stmt.Type == node.RETURN {
-		returnValue, err := e.evaluateExpression(stmt.GetParam(node.RETURN_VALUE))
-		if err != nil {
-			return nil, err
-		}
-		return node.CreateReturnStatement(returnValue.LineNum, *returnValue).Ptr(), nil
-
-	} else if stmt.Type == node.IF_STMT {
-		ifStatement, err := e.evaluateIfStatement(stmt)
-		if err != nil {
-			return nil, err
-		}
-
-		if ifStatement != nil {
-			return ifStatement, nil
-		}
-		return nil, nil
+	default:
+		return e.evaluateExpression(stmt)
 	}
-
-	statementExpression, err := e.evaluateExpression(stmt)
-	if err != nil {
-		return nil, err
-	}
-	return statementExpression, nil
 }
 
 func (e *evaluator) evaluateIfStatement(ifStatement node.Node) (*node.Node, error) {

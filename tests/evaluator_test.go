@@ -433,10 +433,7 @@ func TestEvaluator_FunctionCallReturnStatement(t *testing.T) {
 				tokens.MINUS_TOKEN,
 				CreateIdentifier("d"),
 			),
-			CreateReturnStatement(
-				CreateNumber("777"),
-			),
-			CreateNumber("369"),
+			CreateNumber("777"),
 		},
 	)
 
@@ -745,20 +742,18 @@ func TestEvaluator_FunctionReturnIfStatement(t *testing.T) {
 						CreateIdentifier("b"),
 					},
 					[]node.Node{
-						CreateReturnStatement(
-							CreateIfStatement(
-								test.Condition,
-								[]node.Node{
-									node.CreateBinaryExpression(
-										CreateIdentifier("a"),
-										tokens.PLUS_TOKEN,
-										CreateIdentifier("b"),
-									),
-								},
-								[]node.Node{
-									CreateNumber("0"),
-								},
-							),
+						CreateIfStatement(
+							test.Condition,
+							[]node.Node{
+								node.CreateBinaryExpression(
+									CreateIdentifier("a"),
+									tokens.PLUS_TOKEN,
+									CreateIdentifier("b"),
+								),
+							},
+							[]node.Node{
+								CreateNumber("0"),
+							},
 						),
 					},
 				),
@@ -795,12 +790,10 @@ func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {
 				CreateIdentifier("b"),
 			},
 			[]node.Node{
-				CreateReturnStatement(
-					node.CreateBinaryExpression(
-						CreateIdentifier("a"),
-						CreateTokenFromToken(tokens.PLUS_TOKEN),
-						CreateIdentifier("b"),
-					),
+				node.CreateBinaryExpression(
+					CreateIdentifier("a"),
+					CreateTokenFromToken(tokens.PLUS_TOKEN),
+					CreateIdentifier("b"),
 				),
 			},
 		),
@@ -892,50 +885,6 @@ func TestEvaluator_CompareOperators(t *testing.T) {
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */
-
-func TestEvaluator_ReturnGlobalScopeError(t *testing.T) {
-	ast := []node.Node{
-		CreateReturnStatement(
-			node.CreateBinaryExpression(
-				CreateNumber("1"),
-				CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
-				CreateNumber("2"),
-			),
-		),
-	}
-
-	actualError := getError(t, ast)
-	expectedError := "error at line 1: return statements not allowed in the global scope"
-
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
-}
-
-// func TestEvaluator_ReturnGlobalScopeIfStatementError(t *testing.T) {
-// 	// an if-statement in the global scope containing a return statement should throw an error
-// 	ast := []node.Node{
-// 		CreateIfStatement(
-// 			CreateBooleanTrue(),
-// 			[]node.Node{
-// 				CreateReturnStatement(
-// 					node.CreateBinaryExpression(
-// 						CreateNumber("1"),
-// 						CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
-// 						CreateNumber("2"),
-// 					),
-// 				),
-// 			},
-// 		),
-// 	}
-
-// 	actualError := getError(t, ast)
-// 	expectedError := "error at line 1: return statements not allowed in the global scope"
-
-// 	if expectedError != actualError {
-// 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-// 	}
-// }
 
 func TestEvaluator_InvalidUnaryOperatorError(t *testing.T) {
 	// an if-statement in the global scope containing a return statement should throw an error

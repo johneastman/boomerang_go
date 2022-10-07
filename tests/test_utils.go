@@ -51,10 +51,6 @@ func CreateAssignmentStatement(variableName string, value node.Node) node.Node {
 	return node.CreateAssignmentStatement(variableName, value, TEST_LINE_NUM)
 }
 
-func CreateReturnStatement(expression node.Node) node.Node {
-	return node.CreateReturnStatement(TEST_LINE_NUM, expression)
-}
-
 func CreateFunction(parameters []node.Node, statements []node.Node) node.Node {
 	blockStatements := node.CreateBlockStatements(TEST_LINE_NUM, statements)
 	return node.CreateFunction(parameters, blockStatements, TEST_LINE_NUM)

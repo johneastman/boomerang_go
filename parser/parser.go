@@ -109,9 +109,6 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT_TOKEN) {
 		returnNode, err = p.parsePrintStatement()
 
-	} else if tokens.TokenTypesEqual(p.current, tokens.RETURN_TOKEN) {
-		returnNode, err = p.parseReturnStatement()
-
 	} else {
 		returnNode, err = p.parseExpression(LOWEST)
 	}
@@ -169,22 +166,6 @@ func (p *Parser) parseIfExpression() (*node.Node, error) {
 
 	node := node.CreateIfStatement(lineNumber, *condition, *trueStatements, *falseStatements)
 	return &node, nil
-}
-
-func (p *Parser) parseReturnStatement() (*node.Node, error) {
-
-	lineNumber := p.current.LineNumber
-
-	if err := p.advance(); err != nil {
-		return nil, err
-	}
-
-	expression, err := p.parseExpression(LOWEST)
-	if err != nil {
-		return nil, err
-	}
-	returnNode := node.CreateReturnStatement(lineNumber, *expression)
-	return &returnNode, nil
 }
 
 func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
