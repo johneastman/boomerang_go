@@ -33,7 +33,6 @@ func TestTokenizer_Symbols(t *testing.T) {
 }
 
 func TestTokenizer_Keywords(t *testing.T) {
-
 	keywordTokens := []tokens.Token{
 		CreateTokenFromToken(tokens.PRINT_TOKEN),
 		CreateTokenFromToken(tokens.FUNCTION_TOKEN),

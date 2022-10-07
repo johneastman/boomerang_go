@@ -21,7 +21,6 @@ STATEMENT:
 - ASSIGN
 - PRINT
 - EXPRESSION
-- RETURN('return')
 EXPRESSION:
 - ADD('+')
 - SUBTRACT('-')
@@ -115,18 +114,6 @@ print(number, number * 2);
 print(); # Does nothing
 ```
 
-#### Return
-Syntax: `return EXPRESSION`
-
-
-Examples:
-```
-return 1;
-return 1 + 1;
-return "hello, world!";
-return (1, 2 + 3, 5);
-```
-
 ### Expressions
 
 #### Lists
@@ -158,7 +145,7 @@ names = names <- ("Jimmy", "Jack", "Jacob"); # names: ("John", "Joe", "Jerry", "
 Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
 
 
-If a `return` statement is not present, the last statement in a function's body is returned. All custom functions (those defined in boomerang files) return a LIST object. If nothing is returned from the function or an error occurrs, `(false)` is returned. If the function does return successfully, `(true, <RETURN_VALUE>)` is returned, where `RETURN_VALUE` is what the function is expected to return.
+The last statement in a function's body is returned. All custom functions (those defined in boomerang files) return a LIST object. If nothing is returned from the function or an error occurrs, `(false)` is returned. If the function does return successfully, `(true, <RETURN_VALUE>)` is returned, where `RETURN_VALUE` is what the function is expected to return.
 
 To get the actual return value from a function, call `unwrap` on the function's return value. That method takes a LIST object and a default value to return. If the function successfully returns a value, the actual value will be returned. Otherwise, the provided default value is returned.
 

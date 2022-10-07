@@ -32,7 +32,6 @@ const (
 	EOF                  = "EOF"
 	PTR                  = "POINTER"
 	DOUBLE_QUOTE         = "DOUBLE_QUOTE"
-	RETURN               = "RETURN"
 	TRUE                 = "TRUE"
 	FALSE                = "FALSE"
 	OPEN_BRACKET         = "OPEN_BRACKET"
@@ -73,7 +72,6 @@ var (
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
 	FUNCTION_TOKEN = getToken(FUNCTION)
-	RETURN_TOKEN   = getToken(RETURN)
 	TRUE_TOKEN     = getToken(TRUE)
 	FALSE_TOKEN    = getToken(FALSE)
 	IF_TOKEN       = getToken(IF)
@@ -110,7 +108,6 @@ var tokenData = map[string]Token{
 	DOUBLE_QUOTE:         {Type: "DOUBLE_QUOTE", Literal: "\""},
 	STRING:               {Type: "STRING", Literal: ""},
 	BOOLEAN:              {Type: "BOOLEAN", Literal: ""},
-	RETURN:               {Type: "RETURN", Literal: "return"},
 	TRUE:                 {Type: "BOOLEAN", Literal: "true"},
 	FALSE:                {Type: "BOOLEAN", Literal: "false"},
 	OPEN_BRACKET:         {Type: "OPEN_BRACKET", Literal: "["},
@@ -137,14 +134,13 @@ func GetTokenType(name string) string {
 }
 
 var keywords = map[string]Token{
-	"print":  PRINT_TOKEN,
-	"func":   FUNCTION_TOKEN,
-	"return": RETURN_TOKEN,
-	"true":   TRUE_TOKEN,
-	"false":  FALSE_TOKEN,
-	"if":     IF_TOKEN,
-	"else":   ELSE_TOKEN,
-	"not":    NOT_TOKEN,
+	"print": PRINT_TOKEN,
+	"func":  FUNCTION_TOKEN,
+	"true":  TRUE_TOKEN,
+	"false": FALSE_TOKEN,
+	"if":    IF_TOKEN,
+	"else":  ELSE_TOKEN,
+	"not":   NOT_TOKEN,
 }
 
 func GetKeywordToken(literal string) Token {
