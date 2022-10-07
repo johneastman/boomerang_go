@@ -161,10 +161,6 @@ func (n Node) Ptr() *Node {
 	return &n
 }
 
-func Ptr(n Node) *Node {
-	return &n
-}
-
 func CreateTokenNode(token tokens.Token) Node {
 	return Node{Type: token.Type, Value: token.Literal}
 }

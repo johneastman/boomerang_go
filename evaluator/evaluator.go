@@ -210,8 +210,7 @@ func (e *evaluator) evaluateIdentifier(identifierExpression node.Node) (*node.No
 	// Check for builtin variables
 	variableValue := getBuiltinVariable(identifierName)
 	if variableValue != nil {
-		node := node.CreateNumber(identifierExpression.LineNum, *variableValue)
-		return &node, nil
+		return node.CreateNumber(identifierExpression.LineNum, *variableValue).Ptr(), nil
 	}
 
 	if isBuiltinFunction(identifierName) {
@@ -251,8 +250,7 @@ func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, erro
 		stringExpression.Value = strings.Replace(stringExpression.Value, fmt.Sprintf("<%d>", i), replacementString, 1)
 	}
 
-	node := node.CreateRawString(stringExpression.LineNum, stringExpression.Value)
-	return &node, nil
+	return node.CreateRawString(stringExpression.LineNum, stringExpression.Value).Ptr(), nil
 }
 
 func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.Node, error) {
@@ -266,11 +264,8 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		if expression.Type != node.NUMBER {
 			return nil, utils.CreateError(expression.LineNum, "invalid type for minus operator: %s", expression.ErrorDisplay())
 		}
-
 		expressionValue := -e.toFloat(expression.Value)
-
-		node := e.createNumberNode(expressionValue, unaryExpression.LineNum)
-		return &node, nil
+		return e.createNumberNode(expressionValue, unaryExpression.LineNum).Ptr(), nil
 
 	} else if operator.Type == tokens.NOT_TOKEN.Type {
 
@@ -290,8 +285,7 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		} else {
 			literal = tokens.TRUE_TOKEN.Literal
 		}
-		node := node.CreateBoolean(literal, expression.LineNum)
-		return &node, nil
+		return node.CreateBoolean(literal, expression.LineNum).Ptr(), nil
 	}
 
 	return nil, utils.CreateError(
@@ -447,12 +441,7 @@ func (e *evaluator) evaluateBuiltinUnwrap(callParameters []node.Node) (*node.Nod
 
 func (e *evaluator) evaluateBuiltinLen(lineNum int, callParameters []node.Node) (*node.Node, error) {
 	value := len(callParameters)
-
-	node := node.CreateNumber(
-		lineNum,
-		fmt.Sprint(value),
-	)
-	return &node, nil
+	return node.CreateNumber(lineNum, fmt.Sprint(value)).Ptr(), nil
 }
 
 func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error) {
@@ -464,8 +453,7 @@ func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error)
 		booleanValue = tokens.FALSE_TOKEN.Literal
 	}
 
-	booleanNode := node.CreateBoolean(booleanValue, left.LineNum)
-	return &booleanNode, nil
+	return node.CreateBoolean(booleanValue, left.LineNum).Ptr(), nil
 }
 
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
@@ -479,7 +467,7 @@ func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 		if index >= len(left.Params) {
 			return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of list: %d", index, len(left.Params))
 		}
-		return node.Ptr(left.Params[index]), nil
+		return left.Params[index].Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -493,7 +481,7 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) + e.toFloat(right.Value)
 
-		return node.Ptr(e.createNumberNode(result, left.LineNum)), nil
+		return e.createNumberNode(result, left.LineNum).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -506,9 +494,7 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) - e.toFloat(right.Value)
-
-		node := e.createNumberNode(result, left.LineNum)
-		return &node, nil
+		return e.createNumberNode(result, left.LineNum).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -522,8 +508,7 @@ func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) * e.toFloat(right.Value)
 
-		node := e.createNumberNode(result, left.LineNum)
-		return &node, nil
+		return e.createNumberNode(result, left.LineNum).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -540,9 +525,7 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 			return nil, utils.CreateError(left.LineNum, "cannot divide by zero")
 		}
 		result := e.toFloat(left.Value) / e.toFloat(right.Value)
-
-		node := e.createNumberNode(result, left.LineNum)
-		return &node, nil
+		return e.createNumberNode(result, left.LineNum).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -566,8 +549,7 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 			nodes = append(nodes, right)
 		}
 
-		listNode := node.CreateList(left.LineNum, nodes)
-		return &listNode, nil
+		return node.CreateList(left.LineNum, nodes).Ptr(), nil
 	}
 
 	return nil, utils.CreateError(
