@@ -88,8 +88,15 @@ func (p *Parser) parseGlobalStatements() (*[]node.Node, error) {
 	return p.parseStatements(tokens.EOF_TOKEN)
 }
 
-func (p *Parser) parseBlockStatements() (*[]node.Node, error) {
-	return p.parseStatements(tokens.CLOSED_CURLY_BRACKET_TOKEN)
+func (p *Parser) parseBlockStatements() (*node.Node, error) {
+	lineNum := p.current.LineNumber
+	statements, err := p.parseStatements(tokens.CLOSED_CURLY_BRACKET_TOKEN)
+	if err != nil {
+		return nil, err
+	}
+
+	blockStatementsNode := node.CreateBlockStatements(lineNum, *statements)
+	return &blockStatementsNode, nil
 }
 
 func (p *Parser) parseStatement() (*node.Node, error) {
@@ -104,9 +111,6 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.RETURN_TOKEN) {
 		returnNode, err = p.parseReturnStatement()
-
-	} else if tokens.TokenTypesEqual(p.current, tokens.IF_TOKEN) {
-		returnNode, err = p.parseIfStatement()
 
 	} else {
 		returnNode, err = p.parseExpression(LOWEST)
@@ -126,7 +130,7 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	return returnNode, err
 }
 
-func (p *Parser) parseIfStatement() (*node.Node, error) {
+func (p *Parser) parseIfExpression() (*node.Node, error) {
 
 	lineNumber := p.current.LineNumber
 
@@ -143,12 +147,27 @@ func (p *Parser) parseIfStatement() (*node.Node, error) {
 		return nil, err
 	}
 
-	statements, err := p.parseBlockStatements()
+	// Statements if condition is true
+	trueStatements, err := p.parseBlockStatements()
 	if err != nil {
 		return nil, err
 	}
 
-	node := node.CreateIfStatement(lineNumber, *condition, *statements)
+	// Statements if condition is false
+	if err := p.expectToken(tokens.ELSE_TOKEN); err != nil {
+		return nil, err
+	}
+
+	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
+
+	falseStatements, err := p.parseBlockStatements()
+	if err != nil {
+		return nil, err
+	}
+
+	node := node.CreateIfStatement(lineNumber, *condition, *trueStatements, *falseStatements)
 	return &node, nil
 }
 
@@ -248,6 +267,9 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 
 	case tokens.IDENTIFIER_TOKEN.Type:
 		return p.parseIdentifier()
+
+	case tokens.IF_TOKEN.Type:
+		return p.parseIfExpression()
 
 	default:
 		current := p.current

@@ -197,17 +197,19 @@ func TestNode_CreateFunction(t *testing.T) {
 			node.CreateIdentifier(TEST_LINE_NUM, "y"),
 			node.CreateIdentifier(TEST_LINE_NUM, "z"),
 		},
-		[]node.Node{
-			node.CreateBinaryExpression(
-				node.CreateIdentifier(TEST_LINE_NUM, "x"),
-				multiplyToken,
+		node.CreateBlockStatements(TEST_LINE_NUM,
+			[]node.Node{
 				node.CreateBinaryExpression(
-					node.CreateIdentifier(TEST_LINE_NUM, "y"),
-					divideToken,
-					node.CreateIdentifier(TEST_LINE_NUM, "z"),
+					node.CreateIdentifier(TEST_LINE_NUM, "x"),
+					multiplyToken,
+					node.CreateBinaryExpression(
+						node.CreateIdentifier(TEST_LINE_NUM, "y"),
+						divideToken,
+						node.CreateIdentifier(TEST_LINE_NUM, "z"),
+					),
 				),
-			),
-		},
+			},
+		),
 		TEST_LINE_NUM,
 	)
 	expectedNode := node.Node{
@@ -219,7 +221,7 @@ func TestNode_CreateFunction(t *testing.T) {
 				{Type: node.IDENTIFIER, Value: "y", LineNum: TEST_LINE_NUM},
 				{Type: node.IDENTIFIER, Value: "z", LineNum: TEST_LINE_NUM},
 			}},
-			{Type: node.STMTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
 				{Type: node.BIN_EXPR, LineNum: TEST_LINE_NUM, Params: []node.Node{
 					{Type: node.IDENTIFIER, Value: "x", LineNum: TEST_LINE_NUM},
 					{Type: multiplyToken.Type, Value: multiplyToken.Literal, LineNum: multiplyToken.LineNumber},
@@ -428,22 +430,26 @@ func TestNode_CreateReturnValueParams(t *testing.T) {
 func TestNode_CreateIfStatement(t *testing.T) {
 	actualNode := node.CreateIfStatement(TEST_LINE_NUM,
 		node.CreateBooleanTrue(TEST_LINE_NUM),
-		[]node.Node{
-			node.CreatePrintStatement(TEST_LINE_NUM, []node.Node{
-				node.CreateRawString(TEST_LINE_NUM, "true!!!"),
-			}),
-		},
+		node.CreateBlockStatements(TEST_LINE_NUM,
+			[]node.Node{
+				node.CreatePrintStatement(TEST_LINE_NUM, []node.Node{
+					node.CreateRawString(TEST_LINE_NUM, "true!!!"),
+				}),
+			},
+		),
+		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{}),
 	)
 	expectedNode := node.Node{
 		Type:    node.IF_STMT,
 		LineNum: TEST_LINE_NUM,
 		Params: []node.Node{
 			{Type: node.BOOLEAN, Value: tokens.TRUE_TOKEN.Literal, LineNum: TEST_LINE_NUM},
-			{Type: node.TRUE_BRANCH, LineNum: TEST_LINE_NUM, Params: []node.Node{
+			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
 				{Type: node.PRINT_STMT, LineNum: TEST_LINE_NUM, Params: []node.Node{
 					{Type: node.STRING, Value: "true!!!", LineNum: TEST_LINE_NUM},
 				}},
 			}},
+			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{}},
 		},
 	}
 

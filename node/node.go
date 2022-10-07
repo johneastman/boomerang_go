@@ -16,14 +16,16 @@ type Node struct {
 const (
 
 	// Statements
-	STMTS        = "Statements" // Super type
-	RETURN       = "Return"
-	RETURN_VALUE = "ReturnValue"
-	PRINT_STMT   = "PrintStatement"
-	ASSIGN_STMT  = "Assign"
-	IF_STMT      = "IfStatement"
-	TRUE_BRANCH  = "TrueBranch"
-	CONDITION    = "Condition"
+	STMTS            = "Statements" // Super type
+	RETURN           = "Return"
+	RETURN_VALUE     = "ReturnValue"
+	PRINT_STMT       = "PrintStatement"
+	ASSIGN_STMT      = "Assign"
+	IF_STMT          = "IfStatement"
+	TRUE_BRANCH      = "TrueBranch"
+	FALSE_BRANCH     = "FalseBranch"
+	CONDITION        = "Condition"
+	BLOCK_STATEMENTS = "BlockStatements"
 
 	// Expressions
 	EXPR                   = "Expression" // Super type
@@ -86,8 +88,9 @@ var indexMap = map[string]map[string]int{
 		IDENTIFIER:  1,
 	},
 	IF_STMT: {
-		CONDITION:   0,
-		TRUE_BRANCH: 1,
+		CONDITION:    0,
+		TRUE_BRANCH:  1,
+		FALSE_BRANCH: 2,
 	},
 	RETURN: {
 		RETURN_VALUE: 0,
@@ -156,6 +159,10 @@ func (n *Node) String() string {
 		// NUMBER, BOOLEAN
 		return n.Value
 	}
+}
+
+func (n Node) Ptr() *Node {
+	return &n
 }
 
 func Ptr(n Node) *Node {
@@ -250,13 +257,13 @@ func CreateReturnStatement(lineNum int, expression Node) Node {
 	}
 }
 
-func CreateFunction(parameters []Node, statements []Node, lineNum int) Node {
+func CreateFunction(parameters []Node, statements Node, lineNum int) Node {
 	return Node{
 		Type:    FUNCTION,
 		LineNum: lineNum,
 		Params: []Node{
 			{Type: LIST, Params: parameters, LineNum: lineNum},
-			{Type: STMTS, Params: statements, LineNum: lineNum},
+			statements,
 		},
 	}
 }
@@ -272,13 +279,14 @@ func CreateFunctionCall(lineNum int, function Node, callParams []Node) Node {
 	}
 }
 
-func CreateIfStatement(lineNum int, condition Node, trueBranch []Node) Node {
+func CreateIfStatement(lineNum int, condition Node, trueStatements Node, falseStatements Node) Node {
 	return Node{
 		Type:    IF_STMT,
 		LineNum: lineNum,
 		Params: []Node{
 			condition,
-			{Type: TRUE_BRANCH, Params: trueBranch, LineNum: lineNum},
+			trueStatements,
+			falseStatements,
 		},
 	}
 }
@@ -298,4 +306,12 @@ func CreateFunctionReturnValue(linenum int, statement *Node) Node {
 		}
 	}
 	return CreateList(linenum, parameters)
+}
+
+func CreateBlockStatements(lineNum int, statements []Node) Node {
+	return Node{
+		Type:    BLOCK_STATEMENTS,
+		LineNum: lineNum,
+		Params:  statements,
+	}
 }

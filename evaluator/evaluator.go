@@ -79,9 +79,11 @@ func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) (*[]node.Node, e
 	return &results, nil
 }
 
-func (e *evaluator) evaluateBlockStatements(statements []node.Node) (*node.Node, error) {
+func (e *evaluator) evaluateBlockStatements(statements node.Node) (*node.Node, error) {
 	var returnValue *node.Node
-	for _, statement := range statements {
+	lineNum := statements.LineNum
+	for _, statement := range statements.Params {
+		lineNum = statement.LineNum
 		result, err := e.evaluateStatement(statement)
 		if err != nil {
 			return nil, err
@@ -98,6 +100,12 @@ func (e *evaluator) evaluateBlockStatements(statements []node.Node) (*node.Node,
 			break
 		}
 	}
+
+	if returnValue != nil && returnValue.Type == node.RETURN {
+		returnValue = returnValue.GetParam(node.RETURN_VALUE).Ptr()
+	}
+
+	returnValue = node.CreateFunctionReturnValue(lineNum, returnValue).Ptr()
 	return returnValue, nil
 }
 
@@ -144,10 +152,11 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 func (e *evaluator) evaluateIfStatement(ifStatement node.Node) (*node.Node, error) {
 	condition := ifStatement.GetParam(node.CONDITION)
 	trueStatements := ifStatement.GetParam(node.TRUE_BRANCH)
+	falseStatements := ifStatement.GetParam(node.FALSE_BRANCH)
 
-	evaluatedCondition, err := e.evaluateExpression(condition)
-	if err != nil {
-		return nil, err
+	evaluatedCondition, conditionErr := e.evaluateExpression(condition)
+	if conditionErr != nil {
+		return nil, conditionErr
 	}
 
 	if evaluatedCondition.Type != node.BOOLEAN {
@@ -158,10 +167,14 @@ func (e *evaluator) evaluateIfStatement(ifStatement node.Node) (*node.Node, erro
 		)
 	}
 
+	var returnValue *node.Node
+	var statementsErr error
 	if evaluatedCondition.String() == tokens.TRUE_TOKEN.Literal {
-		return e.evaluateBlockStatements(trueStatements.Params)
+		returnValue, statementsErr = e.evaluateBlockStatements(trueStatements)
+	} else {
+		returnValue, statementsErr = e.evaluateBlockStatements(falseStatements)
 	}
-	return nil, nil
+	return returnValue, statementsErr
 }
 
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
@@ -220,6 +233,9 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 	case node.FUNCTION_CALL:
 		return e.evaluateFunctionCall(expr)
+
+	case node.IF_STMT:
+		return e.evaluateIfStatement(expr)
 
 	default:
 		// This error will only happen if the developer has not implemented an expression type
@@ -420,26 +436,20 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		e.env.SetIdentifier(functionParam.Value, *value)
 	}
 
-	functionStatements := function.GetParam(node.STMTS).Params
-	if len(functionStatements) == 0 {
-		node := node.CreateFunctionReturnValue(callParams.LineNum, nil)
-		return &node, nil
+	functionStatements := function.GetParam(node.STMTS)
+	if len(functionStatements.Params) == 0 {
+		return node.CreateFunctionReturnValue(callParams.LineNum, nil).Ptr(), nil
 	}
 
-	returnStatement, err := e.evaluateBlockStatements(functionStatements)
+	returnValue, err := e.evaluateBlockStatements(functionStatements)
 	if err != nil {
 		return nil, err
-	}
-
-	if returnStatement != nil && returnStatement.Type == node.RETURN {
-		returnStatement = node.Ptr(returnStatement.GetParam(node.RETURN_VALUE))
 	}
 
 	// Reset environment back to original scope environment
 	e.env = tmpEnv
 
-	node := node.CreateFunctionReturnValue(returnStatement.LineNum, returnStatement)
-	return &node, nil
+	return returnValue, nil
 }
 
 func (e *evaluator) evaluateBuiltinUnwrap(callParameters []node.Node) (*node.Node, error) {

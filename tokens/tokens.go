@@ -38,6 +38,7 @@ const (
 	OPEN_BRACKET         = "OPEN_BRACKET"
 	CLOSED_BRACKET       = "CLOSED_BRACKET"
 	IF                   = "IF"
+	ELSE                 = "ELSE"
 	AT                   = "AT"
 	INLINE_COMMENT       = "INLINE_COMMENT"
 	BLOCK_COMMENT        = "BLOCK_COMMENT"
@@ -76,6 +77,7 @@ var (
 	TRUE_TOKEN     = getToken(TRUE)
 	FALSE_TOKEN    = getToken(FALSE)
 	IF_TOKEN       = getToken(IF)
+	ELSE_TOKEN     = getToken(ELSE)
 
 	// Data Types
 	NUMBER_TOKEN  = getToken(NUMBER)
@@ -114,6 +116,7 @@ var tokenData = map[string]Token{
 	OPEN_BRACKET:         {Type: "OPEN_BRACKET", Literal: "["},
 	CLOSED_BRACKET:       {Type: "CLOSED_BRACKET", Literal: "]"},
 	IF:                   {Type: "IF", Literal: "if"},
+	ELSE:                 {Type: "ELSE", Literal: "else"},
 	AT:                   {Type: "AT", Literal: "@"},
 	INLINE_COMMENT:       {Type: "INLINE_COMMENT", Literal: "#"},
 	BLOCK_COMMENT:        {Type: "BLOCK_COMMENT", Literal: "##"},
@@ -140,6 +143,7 @@ var keywords = map[string]Token{
 	"true":   TRUE_TOKEN,
 	"false":  FALSE_TOKEN,
 	"if":     IF_TOKEN,
+	"else":   ELSE_TOKEN,
 	"not":    NOT_TOKEN,
 }
 

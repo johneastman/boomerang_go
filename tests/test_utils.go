@@ -56,15 +56,18 @@ func CreateReturnStatement(expression node.Node) node.Node {
 }
 
 func CreateFunction(parameters []node.Node, statements []node.Node) node.Node {
-	return node.CreateFunction(parameters, statements, TEST_LINE_NUM)
+	blockStatements := node.CreateBlockStatements(TEST_LINE_NUM, statements)
+	return node.CreateFunction(parameters, blockStatements, TEST_LINE_NUM)
 }
 
 func CreateFunctionCall(function node.Node, callParams []node.Node) node.Node {
 	return node.CreateFunctionCall(TEST_LINE_NUM, function, callParams)
 }
 
-func CreateIfStatement(condition node.Node, trueBranch []node.Node) node.Node {
-	return node.CreateIfStatement(TEST_LINE_NUM, condition, trueBranch)
+func CreateIfStatement(condition node.Node, trueStatements []node.Node, falseStatements []node.Node) node.Node {
+	trueBlockStatements := node.CreateBlockStatements(TEST_LINE_NUM, trueStatements)
+	falseBlockStatements := node.CreateBlockStatements(TEST_LINE_NUM, falseStatements)
+	return node.CreateIfStatement(TEST_LINE_NUM, condition, trueBlockStatements, falseBlockStatements)
 }
 
 func CreateFunctionReturnValue(statement *node.Node) node.Node {

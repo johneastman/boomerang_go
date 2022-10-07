@@ -424,13 +424,18 @@ func TestParser_ListIndex(t *testing.T) {
 }
 
 func TestParser_IfStatement(t *testing.T) {
-	actualAST := getAST("if true { print(\"true!!!\"); };")
+	actualAST := getAST("if true { print(\"true!!!\"); } else { print(\"false!!!\"); };")
 	expectedAST := []node.Node{
 		CreateIfStatement(
 			CreateBooleanTrue(),
 			[]node.Node{
 				CreatePrintStatement([]node.Node{
 					CreateRawString("true!!!"),
+				}),
+			},
+			[]node.Node{
+				CreatePrintStatement([]node.Node{
+					CreateRawString("false!!!"),
 				}),
 			},
 		),
