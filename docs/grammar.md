@@ -21,6 +21,6 @@ FACTOR:
 - MINUS('-')  # unary operator
 - OPEN_PAREN('(')
 - FUNCTION('func')
-- IDENTIFIER  # variable
+- IDENTIFIER  # variable, function calls
 - LIST
 ```
