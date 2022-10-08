@@ -1,7 +1,5 @@
 package tests
 
-// TODO: switch expression tests
-
 import (
 	"boomerang/node"
 	"boomerang/parser"
@@ -447,6 +445,33 @@ func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
 			),
 			CreateTokenFromToken(tokens.PLUS_TOKEN),
 			CreateNumber("3"),
+		),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
+func TestParser_SwitchExpression(t *testing.T) {
+	actualAST := getAST("when pos { is 0 { 5; } is 1 { 10; } else { 15; } };")
+	expectedAST := []node.Node{
+		CreateSwitchNode(
+			CreateIdentifier("pos"),
+			[]node.Node{
+				CreateSwitchCaseNode(
+					CreateNumber("0"),
+					CreateBlockStatements([]node.Node{
+						CreateNumber("5"),
+					}),
+				),
+				CreateSwitchCaseNode(
+					CreateNumber("1"),
+					CreateBlockStatements([]node.Node{
+						CreateNumber("10"),
+					}),
+				),
+			},
+			CreateBlockStatements([]node.Node{
+				CreateNumber("15"),
+			}),
 		),
 	}
 	AssertNodesEqual(t, 0, expectedAST, actualAST)

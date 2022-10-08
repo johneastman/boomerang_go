@@ -1,6 +1,18 @@
 # Syntax
-* TODO: add table of contents to each section
-* TODO: add section on switch statements
+* [Comments](#comments)
+* [Data Types](#data-types)
+* [Operators](#operators)
+    * [Binary (Infix) Operators](#binary-infix-operators)
+    * [Unary (Prefix) Operators](#unary-prefix-operators)
+* [Statements](#statements)
+    * [Variable Assignment](#variable-assignment)
+    * [Print](#print)
+    * [Block Statements](#block-statements)
+* [Expressions](#expressions)
+    * [Lists](#lists)
+    * [Functions](#functions)
+    * [If Expressions](#if-expressions)
+    * [Switch Expressions](#switch-expressions)
 
 ## Comments
 There are two types of comments:
@@ -75,6 +87,30 @@ print(number, number * 2);
 print(); # Does nothing
 ```
 
+### Block Statements
+Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (if expressions, functions, switch expressions, etc.). Block statements return the result of the last statement/expression wrapped in a list.
+
+If the block statement returns a value, the block statement will return `(true, <VALUE>)`, where `<VALUE>` is the returned value, and `true` indicates that a value was returned. For example, the below function utilizes a block statement that returns `a + b`, and because that statement/expression returns a value, the function will return `(true, a + b)`.
+```
+add = func(a, b) {
+  a + b;
+};
+
+value = add <- (2, 3); # value: (true, 5)
+```
+
+However, block statements that return nothing simply return `(false)`, indicating that the block statement returned no value. For example, the below function takes a value and prints it to the output stream. But but because `print`, the last statement in the block statement, returns no value, the function returns `(false)`.
+```
+printVal = func(v) {
+  print("The value is {v}");
+};
+
+# "The value is 2" is printed to output stream, and value equals (false)
+value = printVal <- (2);
+```
+
+To extract the actual return value of a block statement, use the builtin `unwrap` method. See [builtin functions](../docs/builtins.md) for more information.
+
 ## Expressions
 
 ### Lists
@@ -106,9 +142,7 @@ names = names <- ("Jimmy", "Jack", "Jacob"); # names: ("John", "Joe", "Jerry", "
 Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
 
 
-The last statement in a function's body is returned. All custom functions (those defined in boomerang files) return a LIST object. If nothing is returned from the function or an error occurrs, `(false)` is returned. If the function does return successfully, `(true, <RETURN_VALUE>)` is returned, where `RETURN_VALUE` is what the function is expected to return.
-
-To get the actual return value from a function, call `unwrap` on the function's return value. That method takes a LIST object and a default value to return. If the function successfully returns a value, the actual value will be returned. Otherwise, the provided default value is returned.
+Functions return the result of their associated block statement (see [Block Statements](#block-statements) for more information).
 
 
 Examples:
@@ -135,26 +169,12 @@ value = func() {} <- ();  # value: (false)
 result = unwrap <- (value, 2) # result: 2
 ```
 
-### Boolean Operations
-* Negate a boolean expression
-  ```
-  not true;  # false
-  not false; # true
-  ```
-* Compare two values. The values being compared do not have to be compatible or the same type
-  ```
-  1 == 1; # true
-  1 == 2; # false
-  true == "hello, world!"; # false
-  ```
-
 ### If Expressions
 Syntax: `if EXPRESSION { STATEMENT; STATEMENT; ...; STATEMENT; } else { STATEMENT; STATEMENT; ...; STATEMENT; };`
 
 
-In Boomerang, if-else statements are actually expressions that return a value. They behave exactly like functions, returning `(true, <VALUE>)` if successful, and `(false)` if there are no statements/an error occurred. The only difference is that the condition after 'if` determines which block is executed.
+If expressions return the result of the block statement associated with the condition that evaluates to true at runtime (see [Block Statements](#block-statements) for more information).
 
-To get the actual return value, use the builtin `unwrap` method, similar to function return values.
 
 Below are some examples.
 
@@ -192,3 +212,32 @@ number = if true {} else {
 };
 print(unwrap <- (number, 0));  # prints 0, the default value passed to unwrap
 ```
+
+### Switch Expressions
+Syntax:
+```
+when EXPRESSION { 
+  is EXPRESSION { 
+    STATEMENT;
+    STATEMENT;
+    ...
+    STATEMENT;
+  }
+  is EXPRESSION { 
+    STATEMENT;
+    STATEMENT;
+    ...;
+    STATEMENT
+  }
+  ...
+  else {
+    STATEMENT;
+    STATEMENT;
+    ...;
+    STATEMENT;
+  }
+};
+```
+
+
+The block statement associated with the case matching the `when` expression is returned (see [Block Statements](#block-statements) for more information).

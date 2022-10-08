@@ -1,7 +1,5 @@
 package tests
 
-// TODO: switch and case node tests
-
 import (
 	"boomerang/node"
 	"boomerang/tokens"
@@ -423,6 +421,88 @@ func TestNode_CreateIfStatement(t *testing.T) {
 				}},
 			}},
 			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{}},
+		},
+	}
+
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
+func TestNode_CreateSwitchNode(t *testing.T) {
+	actualNode := node.CreateSwitchNode(
+		TEST_LINE_NUM,
+		node.CreateNumber(TEST_LINE_NUM, "3"),
+		[]node.Node{
+			node.CreateCaseNode(
+				TEST_LINE_NUM,
+				node.CreateNumber(TEST_LINE_NUM, "1"),
+				node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+					CreateNumber("1"),
+				}),
+			),
+			node.CreateCaseNode(
+				TEST_LINE_NUM,
+				node.CreateNumber(TEST_LINE_NUM, "2"),
+				node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+					CreateNumber("2"),
+				}),
+			),
+		},
+		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+			CreateNumber("0"),
+		}),
+	)
+
+	expectedNode := node.Node{
+		Type:    node.SWITCH,
+		LineNum: TEST_LINE_NUM,
+		Params: []node.Node{
+			{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "3"},
+			{Type: node.SWITCH_CASES, LineNum: TEST_LINE_NUM, Params: []node.Node{
+				{Type: node.CASE, LineNum: TEST_LINE_NUM, Params: []node.Node{
+					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
+					{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+						{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
+					}},
+				}},
+				{Type: node.CASE, LineNum: TEST_LINE_NUM, Params: []node.Node{
+					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "2"},
+					{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+						{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "2"},
+					}},
+				}},
+			}},
+			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "0"},
+			}},
+		},
+	}
+
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
+func TestNode_CreateCaseNode(t *testing.T) {
+	actualNode := node.CreateCaseNode(
+		TEST_LINE_NUM,
+		node.CreateNumber(TEST_LINE_NUM, "1"),
+		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+			node.CreateUnaryExpression(
+				CreateTokenFromToken(tokens.MINUS_TOKEN),
+				node.CreateNumber(TEST_LINE_NUM, "1"),
+			),
+		}),
+	)
+
+	expectedNode := node.Node{
+		Type:    node.CASE,
+		LineNum: TEST_LINE_NUM,
+		Params: []node.Node{
+			{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
+			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+				{Type: node.UNARY_EXPR, LineNum: TEST_LINE_NUM, Params: []node.Node{
+					{Type: tokens.MINUS_TOKEN.Type, LineNum: TEST_LINE_NUM, Value: tokens.MINUS_TOKEN.Literal},
+					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
+				}},
+			}},
 		},
 	}
 

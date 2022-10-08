@@ -200,7 +200,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 		return e.evaluateIfStatement(expr)
 
 	case node.SWITCH:
-		return e.evaluateSwitch(expr)
+		return e.evaluateSwitchExpression(expr)
 
 	default:
 		// This error will only happen if the developer has not implemented an expression type
@@ -467,6 +467,10 @@ func (e *evaluator) evaluateBuiltinSlice(lineNum int, callParam []node.Node) (*n
 		return nil, err
 	}
 
+	if startLiteral > endLiteral {
+		return nil, utils.CreateError(lineNum, "start index cannot be greater than end index")
+	}
+
 	slicedList := listValues[startLiteral : endLiteral+1]
 	return node.CreateList(list.LineNum, slicedList).Ptr(), nil
 }
@@ -618,7 +622,7 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 	)
 }
 
-func (e *evaluator) evaluateSwitch(switchExpression node.Node) (*node.Node, error) {
+func (e *evaluator) evaluateSwitchExpression(switchExpression node.Node) (*node.Node, error) {
 
 	expression, err := e.evaluateExpression(switchExpression.GetParam(node.SWITCH_VALUE))
 	if err != nil {
@@ -645,7 +649,7 @@ func (e *evaluator) evaluateSwitch(switchExpression node.Node) (*node.Node, erro
 func (e *evaluator) toFloat(s string) float64 {
 	floatVal, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		// TODO: May need to change return type to (*float64, error) if type conversion is introduced
+		// TODO: in this error message, may need to replace "number" with "float" if type conversion is introduced
 		panic(fmt.Sprintf("Cannot convert string to number: %s", s))
 	}
 	return floatVal

@@ -74,6 +74,18 @@ func CreateTokenFromToken(token tokens.Token) tokens.Token {
 	return tokens.Token{Type: token.Type, Literal: token.Literal, LineNumber: TEST_LINE_NUM}
 }
 
+func CreateBlockStatements(statements []node.Node) node.Node {
+	return node.CreateBlockStatements(TEST_LINE_NUM, statements)
+}
+
+func CreateSwitchNode(whenExpression node.Node, cases []node.Node, defaultStatements node.Node) node.Node {
+	return node.CreateSwitchNode(TEST_LINE_NUM, whenExpression, cases, defaultStatements)
+}
+
+func CreateSwitchCaseNode(expression node.Node, statements node.Node) node.Node {
+	return node.CreateCaseNode(TEST_LINE_NUM, expression, statements)
+}
+
 func CreateTokenFromValues(type_ string, literal string, lineNum int) tokens.Token {
 	return tokens.Token{Type: type_, Literal: literal, LineNumber: lineNum}
 }

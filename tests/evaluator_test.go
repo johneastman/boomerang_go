@@ -1,7 +1,5 @@
 package tests
 
-// TODO: switch expression tests
-
 import (
 	"boomerang/evaluator"
 	"boomerang/node"
@@ -916,6 +914,52 @@ func TestEvaluator_CompareOperators(t *testing.T) {
 	}
 }
 
+func TestEvaluator_SwitchExpression(t *testing.T) {
+
+	tests := []struct {
+		SwitchCondition string
+		ExpectedValue   string
+	}{
+		{"0", "5"},
+		{"1", "10"},
+		{"2", "15"},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateSwitchNode(
+				CreateNumber(test.SwitchCondition),
+				[]node.Node{
+					CreateSwitchCaseNode(
+						CreateNumber("0"),
+						CreateBlockStatements([]node.Node{
+							CreateNumber("5"),
+						}),
+					),
+					CreateSwitchCaseNode(
+						CreateNumber("1"),
+						CreateBlockStatements([]node.Node{
+							CreateNumber("10"),
+						}),
+					),
+				},
+				CreateBlockStatements([]node.Node{
+					CreateNumber("15"),
+				}),
+			),
+		}
+
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			CreateList([]node.Node{
+				CreateBooleanTrue(),
+				CreateNumber(test.ExpectedValue),
+			}),
+		}
+		AssertNodesEqual(t, i, expectedResults, actualResults)
+	}
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */
@@ -1238,6 +1282,11 @@ func TestEvaluator_BuiltinSliceIndexErrors(t *testing.T) {
 			StartIndex: CreateNumber("4"),
 			EndIndex:   CreateBooleanTrue(),
 			Error:      "error at line 1: expected Number, got Boolean (\"true\")",
+		},
+		{
+			StartIndex: CreateNumber("4"),
+			EndIndex:   CreateNumber("2"),
+			Error:      "error at line 1: start index cannot be greater than end index",
 		},
 	}
 
