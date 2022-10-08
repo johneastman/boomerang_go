@@ -12,15 +12,14 @@ EXPRESSION:
 - DIVIDE('/')
 - LEFT_POINTER('<-')
 - AT('@')
+- IF-ELSE('if'/'else')
+- SWITCH('when')
 - FACTOR
-- IF
 FACTOR:
 - NUMBER('float64')
 - STRING
 - BOOLEAN('true' | 'false')
-- MINUS('-')  # unary operator
-- OPEN_PAREN('(')
+- LIST
 - FUNCTION('func')
 - IDENTIFIER  # variable, function calls
-- LIST
 ```
