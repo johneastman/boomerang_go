@@ -14,7 +14,7 @@ lines
 ##
 i = 0;
 if true {
-  i = i + 1; # inline comments appear after a single # and occupy a single line
+  i = i + 1; # inline comments appear after a single `#` and occupy a single line
 }
 print(i)
 ```
