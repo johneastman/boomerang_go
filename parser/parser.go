@@ -252,6 +252,9 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 	case tokens.IF_TOKEN.Type:
 		return p.parseIfExpression()
 
+	case tokens.WHEN_TOKEN.Type:
+		return p.parseSwitchExpression()
+
 	default:
 		current := p.current
 
@@ -493,6 +496,72 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 
 	functionNode := node.CreateFunction(parameters.Params, *statements, lineNumber)
 	return &functionNode, nil
+}
+
+func (p *Parser) parseSwitchExpression() (*node.Node, error) {
+	lineNumber := p.current.LineNumber
+
+	// Skip over "when"
+	if err := p.advance(); err != nil {
+		return nil, err
+	}
+
+	// parse expression after "when"
+	whenExpression, err := p.parseExpression(LOWEST)
+	if err != nil {
+		return nil, err
+	}
+
+	// expect open curly bracket
+	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
+
+	// Parse is/case expressions
+	caseNodes := []node.Node{}
+	for p.current.Type != tokens.ELSE_TOKEN.Type {
+
+		if err := p.expectToken(tokens.IS_TOKEN); err != nil {
+			return nil, err
+		}
+
+		caseExpression, err := p.parseExpression(LOWEST)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+			return nil, err
+		}
+
+		caseStatements, err := p.parseBlockStatements()
+		if err != nil {
+			return nil, err
+		}
+
+		caseNode := node.CreateCaseNode(caseExpression.LineNum, *caseExpression, *caseStatements)
+		caseNodes = append(caseNodes, caseNode)
+	}
+
+	// Parse else/default case
+	if err := p.expectToken(tokens.ELSE_TOKEN); err != nil {
+		return nil, err
+	}
+
+	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
+
+	elseStatements, err := p.parseBlockStatements()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
+
+	return node.CreateSwitchNode(lineNumber, *whenExpression, caseNodes, *elseStatements).Ptr(), nil
 }
 
 func (p *Parser) expectToken(token tokens.Token) error {

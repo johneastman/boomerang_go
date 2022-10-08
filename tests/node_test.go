@@ -1,5 +1,7 @@
 package tests
 
+// TODO: switch and case node tests
+
 import (
 	"boomerang/node"
 	"boomerang/tokens"

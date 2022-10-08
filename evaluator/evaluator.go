@@ -199,6 +199,9 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 	case node.IF_STMT:
 		return e.evaluateIfStatement(expr)
 
+	case node.SWITCH:
+		return e.evaluateSwitch(expr)
+
 	default:
 		// This error will only happen if the developer has not implemented an expression type
 		panic(fmt.Sprintf("invalid type %#v", expr.Type))
@@ -224,15 +227,18 @@ func (e *evaluator) evaluateIdentifier(identifierExpression node.Node) (*node.No
 }
 
 func (e *evaluator) evaluateParameter(parameterExpression node.Node) (*node.Node, error) {
+
+	evaluatedParameters := []node.Node{}
+
 	for i := range parameterExpression.Params {
 
 		parameter, err := e.evaluateExpression(parameterExpression.Params[i])
 		if err != nil {
 			return nil, err
 		}
-		parameterExpression.Params[i] = *parameter
+		evaluatedParameters = append(evaluatedParameters, *parameter)
 	}
-	return &parameterExpression, nil
+	return node.CreateList(parameterExpression.LineNum, evaluatedParameters).Ptr(), nil
 }
 
 func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, error) {
@@ -610,6 +616,30 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 		left.ErrorDisplay(),
 		right.ErrorDisplay(),
 	)
+}
+
+func (e *evaluator) evaluateSwitch(switchExpression node.Node) (*node.Node, error) {
+
+	expression, err := e.evaluateExpression(switchExpression.GetParam(node.SWITCH_VALUE))
+	if err != nil {
+		return nil, err
+	}
+
+	cases := switchExpression.GetParam(node.SWITCH_CASES)
+
+	for _, _case := range cases.Params {
+		caseValue, err := e.evaluateExpression(_case.GetParam(node.CASE_VALUE))
+		if err != nil {
+			return nil, err
+		}
+
+		if caseValue.Value == expression.Value {
+			return e.evaluateBlockStatements(_case.GetParam(node.CASE_STMTS))
+		}
+	}
+
+	// If none of the cases match, the else/default case will be returned.
+	return e.evaluateBlockStatements(switchExpression.GetParam(node.SWITCH_CASES_DEFAULT))
 }
 
 func (e *evaluator) toFloat(s string) float64 {

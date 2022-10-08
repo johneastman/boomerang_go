@@ -1,4 +1,6 @@
 # Syntax
+* TODO: add table of contents to each section
+* TODO: add section on switch statements
 
 ## Comments
 There are two types of comments:

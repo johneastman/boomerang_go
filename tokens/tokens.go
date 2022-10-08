@@ -43,6 +43,8 @@ const (
 	BLOCK_COMMENT        = "BLOCK_COMMENT"
 	NOT                  = "NOT"
 	EQ                   = "EQUAL"
+	WHEN                 = "WHEN"
+	IS                   = "IS"
 )
 
 // Tokens
@@ -76,6 +78,8 @@ var (
 	FALSE_TOKEN    = getToken(FALSE)
 	IF_TOKEN       = getToken(IF)
 	ELSE_TOKEN     = getToken(ELSE)
+	WHEN_TOKEN     = getToken(WHEN)
+	IS_TOKEN       = getToken(IS)
 
 	// Data Types
 	NUMBER_TOKEN  = getToken(NUMBER)
@@ -119,6 +123,8 @@ var tokenData = map[string]Token{
 	BLOCK_COMMENT:        {Type: "BLOCK_COMMENT", Literal: "##"},
 	NOT:                  {Type: "NOT", Literal: "not"},
 	EQ:                   {Type: "EQUAL", Literal: "=="},
+	WHEN:                 {Type: "WHEN", Literal: "when"},
+	IS:                   {Type: "IS", Literal: "is"},
 }
 
 func getToken(name string) Token {
@@ -141,6 +147,8 @@ var keywords = map[string]Token{
 	"if":    IF_TOKEN,
 	"else":  ELSE_TOKEN,
 	"not":   NOT_TOKEN,
+	"when":  WHEN_TOKEN,
+	"is":    IS_TOKEN,
 }
 
 func GetKeywordToken(literal string) Token {

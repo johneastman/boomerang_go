@@ -37,6 +37,13 @@ const (
 	LEFT                   = "Left"
 	RIGHT                  = "Right"
 	ASSIGN_STMT_IDENTIFIER = "Identifier"
+	SWITCH                 = "Switch"
+	SWITCH_VALUE           = "SwitchValue"
+	SWITCH_CASES           = "SwitchCases"
+	SWITCH_CASES_DEFAULT   = "SwitchCasesDefault"
+	CASE                   = "Case"
+	CASE_VALUE             = "CaseValue"
+	CASE_STMTS             = "CaseStatements"
 
 	// Factors
 	NUMBER     = "Number"
@@ -90,6 +97,15 @@ var indexMap = map[string]map[string]int{
 		CONDITION:    0,
 		TRUE_BRANCH:  1,
 		FALSE_BRANCH: 2,
+	},
+	SWITCH: {
+		SWITCH_VALUE:         0,
+		SWITCH_CASES:         1,
+		SWITCH_CASES_DEFAULT: 2,
+	},
+	CASE: {
+		CASE_VALUE: 0,
+		CASE_STMTS: 1,
 	},
 }
 
@@ -297,5 +313,28 @@ func CreateBlockStatements(lineNum int, statements []Node) Node {
 		Type:    BLOCK_STATEMENTS,
 		LineNum: lineNum,
 		Params:  statements,
+	}
+}
+
+func CreateSwitchNode(lineNum int, expression Node, caseNodes []Node, elseStatements Node) Node {
+	return Node{
+		Type:    SWITCH,
+		LineNum: lineNum,
+		Params: []Node{
+			expression,
+			{Type: SWITCH_CASES, LineNum: lineNum, Params: caseNodes},
+			elseStatements,
+		},
+	}
+}
+
+func CreateCaseNode(lineNum int, expression Node, statements Node) Node {
+	return Node{
+		Type:    CASE,
+		LineNum: lineNum,
+		Params: []Node{
+			expression,
+			statements,
+		},
 	}
 }

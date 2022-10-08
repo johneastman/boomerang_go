@@ -1,5 +1,7 @@
 package tests
 
+// TODO: switch expression tests
+
 import (
 	"boomerang/evaluator"
 	"boomerang/node"
