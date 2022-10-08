@@ -4,6 +4,7 @@ import (
 	"boomerang/evaluator"
 	"boomerang/node"
 	"boomerang/tokens"
+	"fmt"
 	"testing"
 )
 
@@ -623,6 +624,37 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 	}
 }
 
+func TestEvaluator_Slice(t *testing.T) {
+	ast := []node.Node{
+		CreateFunctionCall(
+			CreateIdentifier("slice"),
+			[]node.Node{
+				CreateList([]node.Node{
+					CreateNumber("0"),
+					CreateNumber("1"),
+					CreateNumber("2"),
+					CreateNumber("3"),
+					CreateNumber("4"),
+					CreateNumber("5"),
+				}),
+				CreateNumber("1"),
+				CreateNumber("4"),
+			},
+		),
+	}
+
+	actualResults := getResults(ast)
+	expectedResults := []node.Node{
+		CreateList([]node.Node{
+			CreateNumber("1"),
+			CreateNumber("2"),
+			CreateNumber("3"),
+			CreateNumber("4"),
+		}),
+	}
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
 func TestEvaluator_ListIndex(t *testing.T) {
 	ast := []node.Node{
 		CreateAssignmentStatement(
@@ -978,7 +1010,7 @@ func TestEvaluator_IndexValueNotIntegerError(t *testing.T) {
 	}
 
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: index must be an integer"
+	expectedError := "error at line 1: list index must be an integer"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
@@ -1165,6 +1197,143 @@ func TestEvaluator_IfStatementConditionTypeError(t *testing.T) {
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_BuiltinSliceIndexErrors(t *testing.T) {
+
+	tests := []struct {
+		StartIndex node.Node
+		EndIndex   node.Node
+		Error      string
+	}{
+		{
+			StartIndex: CreateNumber("-1"),
+			EndIndex:   CreateNumber("4"),
+			Error:      "error at line 1: index of -1 out of range (0 to 5)",
+		},
+		{
+			StartIndex: CreateNumber("0"),
+			EndIndex:   CreateNumber("6"),
+			Error:      "error at line 1: index of 6 out of range (0 to 5)",
+		},
+		{
+			StartIndex: CreateNumber("4.5"),
+			EndIndex:   CreateNumber("6"),
+			Error:      "error at line 1: list index must be an integer",
+		},
+		{
+			StartIndex: CreateNumber("4"),
+			EndIndex:   CreateNumber("6.6"),
+			Error:      "error at line 1: list index must be an integer",
+		},
+		{
+			StartIndex: CreateRawString("hello!"),
+			EndIndex:   CreateNumber("6.6"),
+			Error:      "error at line 1: expected Number, got String (\"hello!\")",
+		},
+		{
+			StartIndex: CreateNumber("4"),
+			EndIndex:   CreateBooleanTrue(),
+			Error:      "error at line 1: expected Number, got Boolean (\"true\")",
+		},
+	}
+
+	list := CreateList([]node.Node{
+		CreateNumber("0"),
+		CreateNumber("1"),
+		CreateNumber("2"),
+		CreateNumber("3"),
+		CreateNumber("4"),
+		CreateNumber("5"),
+	})
+
+	for i, test := range tests {
+
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateIdentifier("slice"),
+				[]node.Node{
+					list,
+					test.StartIndex,
+					test.EndIndex,
+				},
+			),
+		}
+
+		actualError := getError(t, ast)
+		expectedError := test.Error
+
+		if expectedError != actualError {
+			t.Fatalf("Test #%d - Expected error: %s, Actual Error: %s", i, expectedError, actualError)
+		}
+	}
+}
+
+func TestEvaluator_SliceInvalidTypeError(t *testing.T) {
+	ast := []node.Node{
+		CreateFunctionCall(
+			CreateIdentifier("slice"),
+			[]node.Node{
+				CreateBooleanTrue(),
+				CreateNumber("0"),
+				CreateNumber("2"),
+			},
+		),
+	}
+
+	actualError := getError(t, ast)
+	expectedError := "error at line 1: expected List, got Boolean (\"true\")"
+
+	if expectedError != actualError {
+		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	}
+}
+
+func TestEvaluator_SliceInvalidNumberOfArgumentsError(t *testing.T) {
+
+	tests := []struct {
+		Args []node.Node
+	}{
+		{
+			Args: []node.Node{},
+		},
+		{
+			Args: []node.Node{
+				CreateList([]node.Node{}),
+			},
+		},
+		{
+			Args: []node.Node{
+				CreateList([]node.Node{}),
+				CreateNumber("3"),
+			},
+		},
+		{
+			Args: []node.Node{
+				CreateList([]node.Node{}),
+				CreateNumber("3"),
+				CreateNumber("3"),
+				CreateNumber("3"),
+			},
+		},
+	}
+
+	for i, test := range tests {
+
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateIdentifier("slice"),
+				test.Args,
+			),
+		}
+
+		actualError := getError(t, ast)
+		expectedError := fmt.Sprintf("error at line 1: incorrect number of arguments. expected 3, got %d", len(test.Args))
+
+		if expectedError != actualError {
+			t.Fatalf("Test #%d - Expected error: %s, Actual Error: %s", i, expectedError, actualError)
+		}
 	}
 }
 

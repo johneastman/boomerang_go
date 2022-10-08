@@ -13,11 +13,13 @@ import (
 const (
 	BUILTIN_LEN    = "len"
 	BUILTIN_UNWRAP = "unwrap"
+	BUILTIN_SLICE  = "slice"
 )
 
 var builtinFunctions = []string{
 	BUILTIN_LEN,
 	BUILTIN_UNWRAP,
+	BUILTIN_SLICE,
 }
 
 var builtinVariables = map[string]string{
@@ -353,6 +355,9 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		case BUILTIN_UNWRAP:
 			return e.evaluateBuiltinUnwrap(callParams.Params)
 
+		case BUILTIN_SLICE:
+			return e.evaluateBuiltinSlice(function.LineNum, callParams.Params)
+
 		default:
 			// If the function object is an identifier, retireve the actual function object from the environment
 			identifierFunction, err := e.env.GetIdentifier(function)
@@ -414,6 +419,52 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	return returnValue, nil
 }
 
+func (e *evaluator) evaluateBuiltinSlice(lineNum int, callParam []node.Node) (*node.Node, error) {
+
+	if len(callParam) != 3 {
+		return nil, utils.CreateError(lineNum, "incorrect number of arguments. expected 3, got %d", len(callParam))
+	}
+
+	list, err := e.evaluateAndCheckType(callParam[0], node.LIST)
+	if err != nil {
+		return nil, err
+	}
+	listValues := list.Params
+
+	startIndex, err := e.evaluateAndCheckType(callParam[1], node.NUMBER)
+	if err != nil {
+		return nil, err
+	}
+
+	endIndex, err := e.evaluateAndCheckType(callParam[2], node.NUMBER)
+	if err != nil {
+		return nil, err
+	}
+
+	start, err := utils.ConvertStringToInteger(startIndex.LineNum, startIndex.Value)
+	if err != nil {
+		return nil, err
+	}
+	startLiteral := *start
+
+	if err := utils.CheckOutOfRange(startIndex.LineNum, startLiteral, len(listValues)); err != nil {
+		return nil, err
+	}
+
+	end, err := utils.ConvertStringToInteger(endIndex.LineNum, endIndex.Value)
+	if err != nil {
+		return nil, err
+	}
+	endLiteral := *end
+
+	if err := utils.CheckOutOfRange(endIndex.LineNum, endLiteral, len(listValues)); err != nil {
+		return nil, err
+	}
+
+	slicedList := listValues[startLiteral : endLiteral+1]
+	return node.CreateList(list.LineNum, slicedList).Ptr(), nil
+}
+
 func (e *evaluator) evaluateBuiltinUnwrap(callParameters []node.Node) (*node.Node, error) {
 	/*
 		I originally wanted "unwrap" to be implemented in pure Boomerang code, but because custom functions
@@ -459,15 +510,16 @@ func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error)
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.LIST && right.Type == node.NUMBER {
 
-		index, err := strconv.Atoi(right.Value)
+		index, err := utils.ConvertStringToInteger(right.LineNum, right.Value)
 		if err != nil {
-			return nil, utils.CreateError(left.LineNum, "index must be an integer")
+			return nil, err
 		}
+		indexLiteral := *index
 
-		if index >= len(left.Params) {
-			return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of list: %d", index, len(left.Params))
+		if indexLiteral >= len(left.Params) {
+			return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of list: %d", indexLiteral, len(left.Params))
 		}
-		return left.Params[index].Ptr(), nil
+		return left.Params[indexLiteral].Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -571,4 +623,21 @@ func (e *evaluator) toFloat(s string) float64 {
 
 func (e *evaluator) createNumberNode(value float64, lineNum int) node.Node {
 	return node.CreateNumber(lineNum, fmt.Sprint(value))
+}
+
+func (e *evaluator) evaluateAndCheckType(expression node.Node, expectedType string) (*node.Node, error) {
+	evaluatedExpression, err := e.evaluateExpression(expression)
+	if err != nil {
+		return nil, err
+	}
+
+	if evaluatedExpression.Type != expectedType {
+		return nil, utils.CreateError(
+			evaluatedExpression.LineNum,
+			"expected %s, got %s",
+			expectedType,
+			evaluatedExpression.ErrorDisplay(),
+		)
+	}
+	return evaluatedExpression, nil
 }
