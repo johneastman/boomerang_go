@@ -87,6 +87,9 @@ print(i)
 |minus|-|NUMBER|
 |not/negate|`not`|BOOLEAN|
 
+#### Builtin Functions
+See [docs/builtins.md](docs/builtins.md)
+
 ### Statements
 
 #### Variable Assignment
@@ -120,7 +123,7 @@ print(); # Does nothing
 Syntax: `(EXPRESSION, EXPRESSION, ..., EXPRESSION)`
 
 
-To access an element in a list, use the `@` symbol, with the list on the left side and the index on the right side. The index for the first element is 0. Values outside the range 0 to (len(LIST) - 1) will cause an index-out-of-range error.
+To access an element in a list, use the `@` symbol, with the list on the left side and the index on the right side. The index for the first element is 0. Values outside the range 0 to (len <- (LIST)) - 1) will cause an index-out-of-range error.
 
 
 Examples:
