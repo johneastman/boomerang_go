@@ -178,23 +178,23 @@ func (n Node) Ptr() *Node {
 }
 
 func CreateTokenNode(token tokens.Token) Node {
-	return Node{Type: token.Type, Value: token.Literal}
+	return Node{Type: token.Type, Value: token.Literal, LineNum: token.LineNumber}
 }
 
 func CreateNumber(lineNum int, value string) Node {
 	return Node{Type: NUMBER, Value: value, LineNum: lineNum}
 }
 
-func CreateBoolean(value string, lineNum int) Node {
+func CreateBoolean(lineNum int, value string) Node {
 	return Node{Type: BOOLEAN, Value: value, LineNum: lineNum}
 }
 
 func CreateBooleanTrue(lineNum int) Node {
-	return CreateBoolean(tokens.TRUE_TOKEN.Literal, lineNum)
+	return CreateBoolean(lineNum, tokens.TRUE_TOKEN.Literal)
 }
 
 func CreateBooleanFalse(lineNum int) Node {
-	return CreateBoolean(tokens.FALSE_TOKEN.Literal, lineNum)
+	return CreateBoolean(lineNum, tokens.FALSE_TOKEN.Literal)
 }
 
 func CreateString(lineNum int, literal string, parameters []Node) Node {
@@ -228,8 +228,8 @@ func CreateUnaryExpression(operator tokens.Token, expression Node) Node {
 		Type:    UNARY_EXPR,
 		LineNum: operator.LineNumber,
 		Params: []Node{
-			{Type: operator.Type, Value: operator.Literal, LineNum: operator.LineNumber}, // Operator
-			expression, // Expression
+			CreateTokenNode(operator), // Operator
+			expression,                // Expression
 		},
 	}
 }
@@ -239,14 +239,14 @@ func CreateBinaryExpression(left Node, op tokens.Token, right Node) Node {
 		Type:    BIN_EXPR,
 		LineNum: left.LineNum,
 		Params: []Node{
-			left, // Left Expression
-			{Type: op.Type, Value: op.Literal, LineNum: op.LineNumber}, // Operator
-			right, // Right Expression
+			left,                // Left Expression
+			CreateTokenNode(op), // Operator
+			right,               // Right Expression
 		},
 	}
 }
 
-func CreateAssignmentStatement(variableName string, value Node, lineNum int) Node {
+func CreateAssignmentStatement(lineNum int, variableName string, value Node) Node {
 	return Node{
 		Type:    ASSIGN_STMT,
 		LineNum: lineNum,
@@ -257,7 +257,7 @@ func CreateAssignmentStatement(variableName string, value Node, lineNum int) Nod
 	}
 }
 
-func CreateFunction(parameters []Node, statements Node, lineNum int) Node {
+func CreateFunction(lineNum int, parameters []Node, statements Node) Node {
 	return Node{
 		Type:    FUNCTION,
 		LineNum: lineNum,

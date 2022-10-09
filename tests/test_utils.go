@@ -16,7 +16,7 @@ func CreateNumber(value string) node.Node {
 }
 
 func CreateBoolean(value string) node.Node {
-	return node.CreateBoolean(value, TEST_LINE_NUM)
+	return node.CreateBoolean(TEST_LINE_NUM, value)
 }
 
 func CreateBooleanTrue() node.Node {
@@ -48,12 +48,12 @@ func CreatePrintStatement(params []node.Node) node.Node {
 }
 
 func CreateAssignmentStatement(variableName string, value node.Node) node.Node {
-	return node.CreateAssignmentStatement(variableName, value, TEST_LINE_NUM)
+	return node.CreateAssignmentStatement(TEST_LINE_NUM, variableName, value)
 }
 
 func CreateFunction(parameters []node.Node, statements []node.Node) node.Node {
 	blockStatements := node.CreateBlockStatements(TEST_LINE_NUM, statements)
-	return node.CreateFunction(parameters, blockStatements, TEST_LINE_NUM)
+	return node.CreateFunction(TEST_LINE_NUM, parameters, blockStatements)
 }
 
 func CreateFunctionCall(function node.Node, callParams []node.Node) node.Node {

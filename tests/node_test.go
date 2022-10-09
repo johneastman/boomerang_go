@@ -26,7 +26,7 @@ func TestNode_CreateBoolean(t *testing.T) {
 	}
 
 	for _, booleanLiteral := range booleanLiterals {
-		actualNode := node.CreateBoolean(booleanLiteral, 1)
+		actualNode := node.CreateBoolean(TEST_LINE_NUM, booleanLiteral)
 		expectedNode := node.Node{
 			Type:    node.BOOLEAN,
 			Value:   booleanLiteral,
@@ -167,9 +167,9 @@ func TestNode_CreateBinaryExpression(t *testing.T) {
 
 func TestNode_CreateAssignmentStatement(t *testing.T) {
 	actualNode := node.CreateAssignmentStatement(
+		10,
 		"my_number",
 		node.CreateNumber(20, "789"),
-		10,
 	)
 	expectedNode := node.Node{
 		Type:    node.ASSIGN_STMT,
@@ -192,6 +192,7 @@ func TestNode_CreateFunction(t *testing.T) {
 	divideToken.LineNumber = TEST_LINE_NUM
 
 	actualNode := node.CreateFunction(
+		TEST_LINE_NUM,
 		[]node.Node{
 			node.CreateIdentifier(TEST_LINE_NUM, "x"),
 			node.CreateIdentifier(TEST_LINE_NUM, "y"),
@@ -210,7 +211,6 @@ func TestNode_CreateFunction(t *testing.T) {
 				),
 			},
 		),
-		TEST_LINE_NUM,
 	)
 	expectedNode := node.Node{
 		Type:    node.FUNCTION,

@@ -293,7 +293,7 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		} else {
 			literal = tokens.TRUE_TOKEN.Literal
 		}
-		return node.CreateBoolean(literal, expression.LineNum).Ptr(), nil
+		return node.CreateBoolean(expression.LineNum, literal).Ptr(), nil
 	}
 
 	return nil, utils.CreateError(
@@ -514,7 +514,7 @@ func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error)
 		booleanValue = tokens.FALSE_TOKEN.Literal
 	}
 
-	return node.CreateBoolean(booleanValue, left.LineNum).Ptr(), nil
+	return node.CreateBoolean(left.LineNum, booleanValue).Ptr(), nil
 }
 
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {

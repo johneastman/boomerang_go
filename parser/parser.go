@@ -184,7 +184,7 @@ func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
 		return nil, err
 	}
 
-	assignmentNode := node.CreateAssignmentStatement(identifierToken.Literal, *variableExpression, identifierToken.LineNumber)
+	assignmentNode := node.CreateAssignmentStatement(identifierToken.LineNumber, identifierToken.Literal, *variableExpression)
 	return &assignmentNode, nil
 }
 
@@ -322,7 +322,7 @@ func (p *Parser) parseBoolean() (*node.Node, error) {
 		return nil, err
 	}
 
-	booleanNode := node.CreateBoolean(booleanToken.Literal, booleanToken.LineNumber)
+	booleanNode := node.CreateBoolean(booleanToken.LineNumber, booleanToken.Literal)
 	return &booleanNode, nil
 }
 
@@ -494,7 +494,7 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 		return nil, err
 	}
 
-	functionNode := node.CreateFunction(parameters.Params, *statements, lineNumber)
+	functionNode := node.CreateFunction(lineNumber, parameters.Params, *statements)
 	return &functionNode, nil
 }
 
