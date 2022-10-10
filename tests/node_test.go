@@ -501,7 +501,7 @@ func TestNode_CreateCaseNode(t *testing.T) {
 			{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
 			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
 				{Type: node.UNARY_EXPR, LineNum: TEST_LINE_NUM, Params: []node.Node{
-					{Type: tokens.MINUS_TOKEN.Type, LineNum: TEST_LINE_NUM, Value: tokens.MINUS_TOKEN.Literal},
+					{Type: tokens.MINUS, LineNum: TEST_LINE_NUM, Value: tokens.MINUS_TOKEN.Literal},
 					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
 				}},
 			}},

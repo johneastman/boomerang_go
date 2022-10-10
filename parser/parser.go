@@ -19,14 +19,14 @@ const (
 )
 
 var precedenceLevels = map[string]int{
-	tokens.PTR_TOKEN.Type:           FUNC_CALL,
-	tokens.AT_TOKEN.Type:            INDEX,
-	tokens.PLUS_TOKEN.Type:          SUM,
-	tokens.MINUS_TOKEN.Type:         SUM,
-	tokens.NOT_TOKEN.Type:           SUM,
-	tokens.ASTERISK_TOKEN.Type:      PRODUCT,
-	tokens.FORWARD_SLASH_TOKEN.Type: PRODUCT,
-	tokens.EQ_TOKEN.Type:            COMPARE,
+	tokens.PTR:           FUNC_CALL,
+	tokens.AT:            INDEX,
+	tokens.PLUS:          SUM,
+	tokens.MINUS:         SUM,
+	tokens.NOT:           SUM,
+	tokens.ASTERISK:      PRODUCT,
+	tokens.FORWARD_SLASH: PRODUCT,
+	tokens.EQ:            COMPARE,
 }
 
 type Parser struct {
@@ -103,10 +103,10 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	var returnNode *node.Node
 	var err error
 
-	if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER_TOKEN) && tokens.TokenTypesEqual(p.peek, tokens.ASSIGN_TOKEN) {
+	if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER) && tokens.TokenTypesEqual(p.peek, tokens.ASSIGN) {
 		returnNode, err = p.parseAssignmentStatement()
 
-	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT_TOKEN) {
+	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT) {
 		returnNode, err = p.parsePrintStatement()
 
 	} else {
@@ -187,28 +187,28 @@ func (p *Parser) parseExpression(precedenceLevel int) (*node.Node, error) {
 func (p *Parser) parsePrefix() (*node.Node, error) {
 	switch p.current.Type {
 
-	case tokens.NUMBER_TOKEN.Type:
+	case tokens.NUMBER:
 		return p.parseNumber()
 
-	case tokens.BOOLEAN_TOKEN.Type:
+	case tokens.BOOLEAN:
 		return p.parseBoolean()
 
-	case tokens.STRING_TOKEN.Type:
+	case tokens.STRING:
 		return p.parseString()
 
-	case tokens.MINUS_TOKEN.Type, tokens.NOT_TOKEN.Type:
+	case tokens.MINUS, tokens.NOT:
 		return p.parseUnaryExpression()
 
-	case tokens.OPEN_PAREN_TOKEN.Type:
+	case tokens.OPEN_PAREN:
 		return p.parseGroupedExpression()
 
-	case tokens.FUNCTION_TOKEN.Type:
+	case tokens.FUNCTION:
 		return p.parseFunction()
 
-	case tokens.IDENTIFIER_TOKEN.Type:
+	case tokens.IDENTIFIER:
 		return p.parseIdentifier()
 
-	case tokens.WHEN_TOKEN.Type:
+	case tokens.WHEN:
 		return p.parseWhenExpression()
 
 	default:
@@ -347,7 +347,7 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		return nil, err
 	}
 
-	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
+	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
 		if err := p.advance(); err != nil {
 			return nil, err
 		}
@@ -360,13 +360,13 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		return nil, err
 	}
 
-	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
+	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
 		if err := p.advance(); err != nil {
 			return nil, err
 		}
 		return expression, nil
 
-	} else if tokens.TokenTypesEqual(p.current, tokens.COMMA_TOKEN) {
+	} else if tokens.TokenTypesEqual(p.current, tokens.COMMA) {
 		if err := p.advance(); err != nil {
 			return nil, err
 		}
@@ -398,7 +398,7 @@ func (p *Parser) parseParameters() (*node.Node, error) {
 
 	params := []node.Node{}
 	for {
-		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN_TOKEN) {
+		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
 			if err := p.advance(); err != nil {
 				return nil, err
 			}
@@ -412,7 +412,7 @@ func (p *Parser) parseParameters() (*node.Node, error) {
 
 		params = append(params, *expression)
 
-		if tokens.TokenTypesEqual(p.current, tokens.COMMA_TOKEN) {
+		if tokens.TokenTypesEqual(p.current, tokens.COMMA) {
 			if err := p.advance(); err != nil {
 				return nil, err
 			}
@@ -475,7 +475,7 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 
 	// Parse is/case expressions
 	caseNodes := []node.Node{}
-	for p.current.Type != tokens.ELSE_TOKEN.Type {
+	for p.current.Type != tokens.ELSE {
 
 		if err := p.expectToken(tokens.IS_TOKEN); err != nil {
 			return nil, err
@@ -523,7 +523,7 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 func (p *Parser) expectToken(token tokens.Token) error {
 	// Check if the current token's type is the same as the expected token type. If not, throw an error; otherwise, advance to
 	// the next token.
-	if !(tokens.TokenTypesEqual(p.current, token)) {
+	if !(tokens.TokenTypesEqual(p.current, token.Type)) {
 		err := utils.CreateError(p.current.LineNumber, "expected token type %s, got %s",
 			token.ErrorDisplay(),
 			p.current.ErrorDisplay(),

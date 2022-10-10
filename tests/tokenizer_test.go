@@ -71,7 +71,7 @@ func TestTokenizer_Numbers(t *testing.T) {
 		tokenizer := tokens.New(source)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.NUMBER_TOKEN.Type, source, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.NUMBER, source, 1), *token)
 	}
 }
 
@@ -92,7 +92,7 @@ func TestTokenizer_Strings(t *testing.T) {
 		tokenizer := tokens.New(source)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.STRING_TOKEN.Type, testString, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.STRING, testString, 1), *token)
 	}
 }
 
@@ -108,7 +108,7 @@ func TestTokenizer_Identifiers(t *testing.T) {
 		tokenizer := tokens.New(variable)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.IDENTIFIER_TOKEN.Type, variable, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.IDENTIFIER, variable, 1), *token)
 	}
 }
 
@@ -136,7 +136,7 @@ func TestTokenizer_BlockCommentEOF(t *testing.T) {
 	tokenizer := tokens.New(source)
 
 	actualToken, _ := tokenizer.Next()
-	expectedToken := tokens.Token{Type: tokens.EOF_TOKEN.Type, Literal: tokens.EOF_TOKEN.Literal, LineNumber: 4}
+	expectedToken := tokens.Token{Type: tokens.EOF, Literal: tokens.EOF_TOKEN.Literal, LineNumber: 4}
 
 	AssertTokenEqual(t, 0, expectedToken, *actualToken)
 }

@@ -2,18 +2,35 @@ package tokens
 
 import (
 	"fmt"
+	"regexp"
 )
 
 type TokenMetaData struct {
-	Literal string
-	Type    string
-	IsRegex bool
+	Literal     string
+	Type        string
+	IsRegexChar bool // Any characters in Boomerang that are the same as regex characters need to be escaped.
+}
+
+func (tmd *TokenMetaData) RegexPattern() string {
+	if tmd.IsRegexChar {
+		return regexp.QuoteMeta(tmd.Literal)
+	}
+	return tmd.Literal
+}
+
+func (tmd *TokenMetaData) CreateToken(lineNum int) Token {
+	return Token{Type: tmd.Type, Literal: tmd.Literal}
 }
 
 type Token struct {
 	Literal    string
 	Type       string
 	LineNumber int
+}
+
+func (t *Token) ErrorDisplay() string {
+	// How tokens should be displayed in error messages
+	return fmt.Sprintf("%s (%#v)", t.Type, t.Literal)
 }
 
 // Token types/labels
@@ -90,46 +107,51 @@ var (
 
 	// Misc
 	IDENTIFIER_TOKEN = getToken(IDENTIFIER)
-	EOF_TOKEN        = getToken(EOF) // end of file
+	EOF_TOKEN        = Token{Type: EOF, Literal: ""} // end of file
 )
 
 var tokenData = []TokenMetaData{
 	// Data types/misc
-	{Type: NUMBER, Literal: "[0-9]*[.]?[0-9]+", IsRegex: true},
-	{Type: STRING, Literal: "\"(.*)\"", IsRegex: true},
-	{Type: BOOLEAN, Literal: "(true|false)", IsRegex: true},
+	{Type: NUMBER, Literal: "[0-9]*[.]?[0-9]+"},
+	{Type: STRING, Literal: "\"(.*)\""},
+	{Type: BOOLEAN, Literal: "(true|false)"},
 
 	// Keywords. Need to be defined before "IDENTIFIER" in this list so they are not misclassified
-	{Type: WHEN, Literal: "when", IsRegex: true},
-	{Type: IS, Literal: "is", IsRegex: true},
-	{Type: NOT, Literal: "not", IsRegex: true},
-	{Type: ELSE, Literal: "else", IsRegex: true},
-	{Type: PRINT, Literal: "print", IsRegex: true},
-	{Type: FUNCTION, Literal: "func", IsRegex: true},
+	{Type: WHEN, Literal: "when"},
+	{Type: IS, Literal: "is"},
+	{Type: NOT, Literal: "not"},
+	{Type: ELSE, Literal: "else"},
+	{Type: PRINT, Literal: "print"},
+	{Type: FUNCTION, Literal: "func"},
 
 	// Identifier
-	{Type: IDENTIFIER, Literal: "[a-zA-Z]+[a-zA-Z0-9_]*", IsRegex: true},
+	{Type: IDENTIFIER, Literal: "[a-zA-Z]+[a-zA-Z0-9_]*"},
 
-	// Symbols
-	{Type: PLUS, Literal: "+"},
+	/*
+		Symbols
+
+		NOTE: If a token's literal value contains a substring of another token, that tokens must be declared before
+		the substring tokens in this list. For example "==" must come before "=" and "##" must come before "#". Otherwise,
+		the tokenizer would match "==" as two "=" tokens.
+	*/
+	{Type: PLUS, Literal: "+", IsRegexChar: true},
 	{Type: MINUS, Literal: "-"},
-	{Type: ASTERISK, Literal: "*"},
-	{Type: FORWARD_SLASH, Literal: "/"},
+	{Type: ASTERISK, Literal: "*", IsRegexChar: true},
+	{Type: FORWARD_SLASH, Literal: "/", IsRegexChar: true},
 	{Type: SEMICOLON, Literal: ";"},
-	{Type: OPEN_PAREN, Literal: "("},
-	{Type: CLOSED_PAREN, Literal: ")"},
+	{Type: OPEN_PAREN, Literal: "(", IsRegexChar: true},
+	{Type: CLOSED_PAREN, Literal: ")", IsRegexChar: true},
+	{Type: EQ, Literal: "=="},
 	{Type: ASSIGN, Literal: "="},
 	{Type: COMMA, Literal: ","},
-	{Type: OPEN_CURLY_BRACKET, Literal: "{"},
-	{Type: CLOSED_CURLY_BRACKET, Literal: "}"},
+	{Type: OPEN_CURLY_BRACKET, Literal: "{", IsRegexChar: true},
+	{Type: CLOSED_CURLY_BRACKET, Literal: "}", IsRegexChar: true},
 	{Type: PTR, Literal: "<-"},
-	{Type: OPEN_BRACKET, Literal: "["},
-	{Type: CLOSED_BRACKET, Literal: "]"},
+	{Type: OPEN_BRACKET, Literal: "[", IsRegexChar: true},
+	{Type: CLOSED_BRACKET, Literal: "]", IsRegexChar: true},
 	{Type: AT, Literal: "@"},
-	{Type: INLINE_COMMENT, Literal: "#"},
 	{Type: BLOCK_COMMENT, Literal: "##"},
-	{Type: EQ, Literal: "=="},
-	{Type: EOF, Literal: ""},
+	{Type: INLINE_COMMENT, Literal: "#"},
 }
 
 func getToken(name string) Token {
@@ -158,11 +180,6 @@ func GetKeywordToken(literal string) Token {
 	return identifierToken
 }
 
-func TokenTypesEqual(first Token, second Token) bool {
-	return first.Type == second.Type
-}
-
-func (t *Token) ErrorDisplay() string {
-	// How tokens should be displayed in error messages
-	return fmt.Sprintf("%s (%#v)", t.Type, t.Literal)
+func TokenTypesEqual(t Token, tokenType string) bool {
+	return t.Type == tokenType
 }

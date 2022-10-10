@@ -236,7 +236,7 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		return nil, err
 	}
 	operator := unaryExpression.GetParam(node.OPERATOR)
-	if operator.Type == tokens.MINUS_TOKEN.Type {
+	if operator.Type == tokens.MINUS {
 
 		if expression.Type != node.NUMBER {
 			return nil, utils.CreateError(expression.LineNum, "invalid type for minus operator: %s", expression.ErrorDisplay())
@@ -244,7 +244,7 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		expressionValue := -e.toFloat(expression.Value)
 		return e.createNumberNode(expressionValue, unaryExpression.LineNum).Ptr(), nil
 
-	} else if operator.Type == tokens.NOT_TOKEN.Type {
+	} else if operator.Type == tokens.NOT {
 
 		if expression.Type != node.BOOLEAN {
 			return nil, utils.CreateError(
@@ -287,25 +287,25 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 
 	switch op.Type {
 
-	case tokens.PLUS_TOKEN.Type:
+	case tokens.PLUS:
 		return e.add(*left, *right)
 
-	case tokens.MINUS_TOKEN.Type:
+	case tokens.MINUS:
 		return e.subtract(*left, *right)
 
-	case tokens.ASTERISK_TOKEN.Type:
+	case tokens.ASTERISK:
 		return e.multuply(*left, *right)
 
 	case tokens.FORWARD_SLASH:
 		return e.divide(*left, *right)
 
-	case tokens.PTR_TOKEN.Type:
+	case tokens.PTR:
 		return e.pointer(*left, *right)
 
-	case tokens.AT_TOKEN.Type:
+	case tokens.AT:
 		return e.index(*left, *right)
 
-	case tokens.EQ_TOKEN.Type:
+	case tokens.EQ:
 		return e.compare(*left, *right)
 
 	default:
