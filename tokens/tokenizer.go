@@ -2,6 +2,7 @@ package tokens
 
 import (
 	"boomerang/utils"
+	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -146,21 +147,21 @@ func (t *Tokenizer) Next() (*Token, error) {
 		token.LineNumber = t.currentLineNumber
 		return &token, nil
 
-	} else if t.isNumber() {
-		literal := t.readNumber()
+		// } else if t.isNumber() {
+		// 	literal := t.readNumber()
 
-		r, _ := regexp.Compile("^([0-9]*[.])?[0-9]+$")
-		if !r.MatchString(literal) {
-			return nil, utils.CreateError(
-				t.currentLineNumber,
-				"error at line %d: invalid number literal: %s",
-				t.currentLineNumber,
-				literal,
-			)
-		}
+		// 	r, _ := regexp.Compile("^([0-9]*[.])?[0-9]+$")
+		// 	if !r.MatchString(literal) {
+		// 		return nil, utils.CreateError(
+		// 			t.currentLineNumber,
+		// 			"error at line %d: invalid number literal: %s",
+		// 			t.currentLineNumber,
+		// 			literal,
+		// 		)
+		// 	}
 
-		token := t.createToken(NUMBER, literal)
-		return &token, nil
+		// 	token := t.createToken(NUMBER, literal)
+		// 	return &token, nil
 
 	} else if t.isString() {
 		t.advance()
@@ -191,9 +192,33 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 		are not matched (like NUMBER and IDENTIFIER).
 	*/
 	var matchingTokens []Token
-	for _, token := range tokenData {
-		if strings.HasPrefix(token.Literal, string(t.current())) && len(token.Literal) > 0 {
-			matchingTokens = append(matchingTokens, token)
+	for _, tokenData := range tokenData {
+
+		var token *Token
+		if tokenData.IsRegex {
+			source := t.source[t.currentPos:]
+			pattern := fmt.Sprintf("^%s", tokenData.Literal)
+
+			r, err := regexp.Compile(pattern)
+			if err != nil {
+				panic(err.Error())
+			}
+
+			location := r.FindStringSubmatchIndex(source)
+			if location != nil {
+				start := location[0]
+				end := location[1]
+
+				literal := t.source[t.currentPos+start : t.currentPos+end]
+				token = &Token{Type: tokenData.Type, Literal: literal}
+			}
+
+		} else if strings.HasPrefix(tokenData.Literal, string(t.current())) && len(tokenData.Literal) > 0 {
+			token = &Token{Type: tokenData.Type, Literal: tokenData.Literal}
+		}
+
+		if token != nil {
+			matchingTokens = append(matchingTokens, *token)
 		}
 	}
 

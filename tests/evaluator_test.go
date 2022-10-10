@@ -911,7 +911,6 @@ func TestEvaluator_InvalidUnaryOperatorError(t *testing.T) {
 }
 
 func TestEvaluator_InvalidBinaryOperatorError(t *testing.T) {
-	// an if-statement in the global scope containing a return statement should throw an error
 	ast := []node.Node{
 		node.CreateBinaryExpression(
 			CreateNumber("1"),
@@ -921,7 +920,7 @@ func TestEvaluator_InvalidBinaryOperatorError(t *testing.T) {
 	}
 
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: invalid binary operator: NUMBER (\"\")"
+	expectedError := "error at line 1: invalid binary operator: NUMBER (\"([0-9]*[.]?[0-9]+)\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)

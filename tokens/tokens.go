@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+type TokenMetaData struct {
+	Literal string
+	Type    string
+	IsRegex bool
+}
+
 type Token struct {
 	Literal    string
 	Type       string
@@ -89,9 +95,9 @@ var (
 	EOF_TOKEN        = getToken(EOF) // end of file
 )
 
-var tokenData = map[string]Token{
+var tokenData = map[string]TokenMetaData{
 	// Data types/misc
-	NUMBER:     {Type: "NUMBER", Literal: ""},
+	NUMBER:     {Type: "NUMBER", Literal: "([0-9]*[.]?[0-9]+)", IsRegex: true},
 	IDENTIFIER: {Type: "IDENTIFIER", Literal: ""},
 	STRING:     {Type: "STRING", Literal: ""},
 	BOOLEAN:    {Type: "BOOLEAN", Literal: ""},
@@ -131,7 +137,7 @@ var tokenData = map[string]Token{
 
 func getToken(name string) Token {
 	if token, ok := tokenData[name]; ok {
-		return token
+		return Token{Type: token.Type, Literal: token.Literal}
 	}
 	panic(fmt.Sprintf("No token matching name: %s", name))
 }
@@ -144,7 +150,7 @@ func GetTokenType(name string) string {
 func GetKeywordToken(literal string) Token {
 	for _, token := range tokenData {
 		if token.Literal == literal {
-			return token
+			return Token{Type: token.Type, Literal: token.Literal}
 		}
 	}
 
