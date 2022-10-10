@@ -20,3 +20,6 @@ I realized if I wanted this project to grow, I would need to use a statically-ty
 
 ## Wiki
 Additional documentation and notes are on the [wiki](https://github.com/johneastman/boomerang/wiki).
+
+## License
+This project is licensed under the [MIT License](LICENSE).
