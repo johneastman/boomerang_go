@@ -90,6 +90,14 @@ var (
 )
 
 var tokenData = map[string]Token{
+	// Data types/misc
+	NUMBER:     {Type: "NUMBER", Literal: ""},
+	IDENTIFIER: {Type: "IDENTIFIER", Literal: ""},
+	STRING:     {Type: "STRING", Literal: ""},
+	BOOLEAN:    {Type: "BOOLEAN", Literal: ""},
+	EOF:        {Type: "EOF", Literal: ""},
+
+	// Symbols
 	PLUS:                 {Type: "PLUS", Literal: "+"},
 	MINUS:                {Type: "MINUS", Literal: "-"},
 	ASTERISK:             {Type: "ASTERISK", Literal: "*"},
@@ -101,27 +109,24 @@ var tokenData = map[string]Token{
 	COMMA:                {Type: "COMMA", Literal: ","},
 	OPEN_CURLY_BRACKET:   {Type: "OPEN_CURLY_BRACKET", Literal: "{"},
 	CLOSED_CURLY_BRACKET: {Type: "CLOSED_CURLY_BRACKET", Literal: "}"},
-	EOF:                  {Type: "EOF", Literal: ""},
-	PRINT:                {Type: "PRINT", Literal: "print"},
-	FUNCTION:             {Type: "FUNCTION", Literal: "func"},
 	PTR:                  {Type: "LEFT_POINTER", Literal: "<-"},
-	NUMBER:               {Type: "NUMBER", Literal: ""},
-	IDENTIFIER:           {Type: "IDENTIFIER", Literal: ""},
 	DOUBLE_QUOTE:         {Type: "DOUBLE_QUOTE", Literal: "\""},
-	STRING:               {Type: "STRING", Literal: ""},
-	BOOLEAN:              {Type: "BOOLEAN", Literal: ""},
-	TRUE:                 {Type: "BOOLEAN", Literal: "true"},
-	FALSE:                {Type: "BOOLEAN", Literal: "false"},
 	OPEN_BRACKET:         {Type: "OPEN_BRACKET", Literal: "["},
 	CLOSED_BRACKET:       {Type: "CLOSED_BRACKET", Literal: "]"},
-	ELSE:                 {Type: "ELSE", Literal: "else"},
 	AT:                   {Type: "AT", Literal: "@"},
 	INLINE_COMMENT:       {Type: "INLINE_COMMENT", Literal: "#"},
 	BLOCK_COMMENT:        {Type: "BLOCK_COMMENT", Literal: "##"},
-	NOT:                  {Type: "NOT", Literal: "not"},
 	EQ:                   {Type: "EQUAL", Literal: "=="},
-	WHEN:                 {Type: "WHEN", Literal: "when"},
-	IS:                   {Type: "IS", Literal: "is"},
+
+	// Keywords
+	WHEN:     {Type: "WHEN", Literal: "when"},
+	IS:       {Type: "IS", Literal: "is"},
+	NOT:      {Type: "NOT", Literal: "not"},
+	ELSE:     {Type: "ELSE", Literal: "else"},
+	TRUE:     {Type: "BOOLEAN", Literal: "true"},
+	FALSE:    {Type: "BOOLEAN", Literal: "false"},
+	PRINT:    {Type: "PRINT", Literal: "print"},
+	FUNCTION: {Type: "FUNCTION", Literal: "func"},
 }
 
 func getToken(name string) Token {
@@ -136,21 +141,13 @@ func GetTokenType(name string) string {
 	return token.Type
 }
 
-var keywords = map[string]Token{
-	"print": PRINT_TOKEN,
-	"func":  FUNCTION_TOKEN,
-	"true":  TRUE_TOKEN,
-	"false": FALSE_TOKEN,
-	"else":  ELSE_TOKEN,
-	"not":   NOT_TOKEN,
-	"when":  WHEN_TOKEN,
-	"is":    IS_TOKEN,
-}
-
 func GetKeywordToken(literal string) Token {
-	if token, ok := keywords[literal]; ok {
-		return token
+	for _, token := range tokenData {
+		if token.Literal == literal {
+			return token
+		}
 	}
+
 	identifierToken := getToken(IDENTIFIER)
 	identifierToken.Literal = literal
 	return identifierToken
