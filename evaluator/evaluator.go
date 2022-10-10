@@ -111,34 +111,6 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 	}
 }
 
-func (e *evaluator) evaluateIfStatement(ifStatement node.Node) (*node.Node, error) {
-	condition := ifStatement.GetParam(node.CONDITION)
-	trueStatements := ifStatement.GetParam(node.TRUE_BRANCH)
-	falseStatements := ifStatement.GetParam(node.FALSE_BRANCH)
-
-	evaluatedCondition, conditionErr := e.evaluateExpression(condition)
-	if conditionErr != nil {
-		return nil, conditionErr
-	}
-
-	if evaluatedCondition.Type != node.BOOLEAN {
-		return nil, utils.CreateError(
-			evaluatedCondition.LineNum,
-			"invalid type for if-statement condition: %s",
-			evaluatedCondition.ErrorDisplay(),
-		)
-	}
-
-	var returnValue *node.Node
-	var statementsErr error
-	if evaluatedCondition.String() == tokens.TRUE_TOKEN.Literal {
-		returnValue, statementsErr = e.evaluateBlockStatements(trueStatements)
-	} else {
-		returnValue, statementsErr = e.evaluateBlockStatements(falseStatements)
-	}
-	return returnValue, statementsErr
-}
-
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
 	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
 	value, err := e.evaluateExpression(stmt.GetParam(node.EXPR))
@@ -195,9 +167,6 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 	case node.FUNCTION_CALL:
 		return e.evaluateFunctionCall(expr)
-
-	case node.IF_STMT:
-		return e.evaluateIfStatement(expr)
 
 	case node.SWITCH:
 		return e.evaluateSwitchExpression(expr)

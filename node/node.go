@@ -20,7 +20,6 @@ const (
 	RETURN_VALUE     = "ReturnValue"
 	PRINT_STMT       = "PrintStatement"
 	ASSIGN_STMT      = "Assign"
-	IF_STMT          = "IfStatement"
 	TRUE_BRANCH      = "TrueBranch"
 	FALSE_BRANCH     = "FalseBranch"
 	CONDITION        = "Condition"
@@ -92,11 +91,6 @@ var indexMap = map[string]map[string]int{
 		CALL_PARAMS: 0,
 		FUNCTION:    1,
 		IDENTIFIER:  1,
-	},
-	IF_STMT: {
-		CONDITION:    0,
-		TRUE_BRANCH:  1,
-		FALSE_BRANCH: 2,
 	},
 	SWITCH: {
 		SWITCH_VALUE:         0,
@@ -275,18 +269,6 @@ func CreateFunctionCall(lineNum int, function Node, callParams []Node) Node {
 		Params: []Node{
 			{Type: CALL_PARAMS, Params: callParams, LineNum: lineNum},
 			function,
-		},
-	}
-}
-
-func CreateIfStatement(lineNum int, condition Node, trueStatements Node, falseStatements Node) Node {
-	return Node{
-		Type:    IF_STMT,
-		LineNum: lineNum,
-		Params: []Node{
-			condition,
-			trueStatements,
-			falseStatements,
 		},
 	}
 }

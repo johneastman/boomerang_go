@@ -398,35 +398,6 @@ func TestNode_CreateReturnValueParams(t *testing.T) {
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
-func TestNode_CreateIfStatement(t *testing.T) {
-	actualNode := node.CreateIfStatement(TEST_LINE_NUM,
-		node.CreateBooleanTrue(TEST_LINE_NUM),
-		node.CreateBlockStatements(TEST_LINE_NUM,
-			[]node.Node{
-				node.CreatePrintStatement(TEST_LINE_NUM, []node.Node{
-					node.CreateRawString(TEST_LINE_NUM, "true!!!"),
-				}),
-			},
-		),
-		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{}),
-	)
-	expectedNode := node.Node{
-		Type:    node.IF_STMT,
-		LineNum: TEST_LINE_NUM,
-		Params: []node.Node{
-			{Type: node.BOOLEAN, Value: tokens.TRUE_TOKEN.Literal, LineNum: TEST_LINE_NUM},
-			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
-				{Type: node.PRINT_STMT, LineNum: TEST_LINE_NUM, Params: []node.Node{
-					{Type: node.STRING, Value: "true!!!", LineNum: TEST_LINE_NUM},
-				}},
-			}},
-			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{}},
-		},
-	}
-
-	AssertNodeEqual(t, 0, expectedNode, actualNode)
-}
-
 func TestNode_CreateSwitchNode(t *testing.T) {
 	actualNode := node.CreateSwitchNode(
 		TEST_LINE_NUM,

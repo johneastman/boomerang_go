@@ -411,26 +411,6 @@ func TestParser_ListIndex(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
-func TestParser_IfStatement(t *testing.T) {
-	actualAST := getAST("if true { print(\"true!!!\"); } else { print(\"false!!!\"); };")
-	expectedAST := []node.Node{
-		CreateIfStatement(
-			CreateBooleanTrue(),
-			[]node.Node{
-				CreatePrintStatement([]node.Node{
-					CreateRawString("true!!!"),
-				}),
-			},
-			[]node.Node{
-				CreatePrintStatement([]node.Node{
-					CreateRawString("false!!!"),
-				}),
-			},
-		),
-	}
-	AssertNodesEqual(t, 0, expectedAST, actualAST)
-}
-
 func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
 	actualAST := getAST("add <- (3, 4) + 3;")
 	expectedAST := []node.Node{

@@ -127,47 +127,6 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	return returnNode, err
 }
 
-func (p *Parser) parseIfExpression() (*node.Node, error) {
-
-	lineNumber := p.current.LineNumber
-
-	if err := p.advance(); err != nil {
-		return nil, err
-	}
-
-	condition, err := p.parseExpression(LOWEST)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
-		return nil, err
-	}
-
-	// Statements if condition is true
-	trueStatements, err := p.parseBlockStatements()
-	if err != nil {
-		return nil, err
-	}
-
-	// Statements if condition is false
-	if err := p.expectToken(tokens.ELSE_TOKEN); err != nil {
-		return nil, err
-	}
-
-	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
-		return nil, err
-	}
-
-	falseStatements, err := p.parseBlockStatements()
-	if err != nil {
-		return nil, err
-	}
-
-	node := node.CreateIfStatement(lineNumber, *condition, *trueStatements, *falseStatements)
-	return &node, nil
-}
-
 func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
 	identifierToken := p.current
 
@@ -248,9 +207,6 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 
 	case tokens.IDENTIFIER_TOKEN.Type:
 		return p.parseIdentifier()
-
-	case tokens.IF_TOKEN.Type:
-		return p.parseIfExpression()
 
 	case tokens.WHEN_TOKEN.Type:
 		return p.parseSwitchExpression()

@@ -38,8 +38,6 @@ func TestTokenizer_Keywords(t *testing.T) {
 		CreateTokenFromToken(tokens.FUNCTION_TOKEN),
 		CreateTokenFromToken(tokens.TRUE_TOKEN),
 		CreateTokenFromToken(tokens.FALSE_TOKEN),
-		CreateTokenFromToken(tokens.IF_TOKEN),
-		CreateTokenFromToken(tokens.ELSE_TOKEN),
 		CreateTokenFromToken(tokens.NOT_TOKEN),
 		CreateTokenFromToken(tokens.WHEN_TOKEN),
 		CreateTokenFromToken(tokens.IS_TOKEN),

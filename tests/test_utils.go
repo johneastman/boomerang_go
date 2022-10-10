@@ -60,12 +60,6 @@ func CreateFunctionCall(function node.Node, callParams []node.Node) node.Node {
 	return node.CreateFunctionCall(TEST_LINE_NUM, function, callParams)
 }
 
-func CreateIfStatement(condition node.Node, trueStatements []node.Node, falseStatements []node.Node) node.Node {
-	trueBlockStatements := node.CreateBlockStatements(TEST_LINE_NUM, trueStatements)
-	falseBlockStatements := node.CreateBlockStatements(TEST_LINE_NUM, falseStatements)
-	return node.CreateIfStatement(TEST_LINE_NUM, condition, trueBlockStatements, falseBlockStatements)
-}
-
 func CreateFunctionReturnValue(statement *node.Node) node.Node {
 	return node.CreateFunctionReturnValue(TEST_LINE_NUM, statement)
 }

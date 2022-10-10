@@ -11,7 +11,6 @@
 * [Expressions](#expressions)
     * [Lists](#lists)
     * [Functions](#functions)
-    * [If Expressions](#if-expressions)
     * [Switch Expressions](#switch-expressions)
 
 ## Comments
@@ -88,7 +87,7 @@ print(); # Does nothing
 ```
 
 ### Block Statements
-Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (if expressions, functions, switch expressions, etc.). Block statements return the result of the last statement/expression wrapped in a list.
+Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, switch expressions, etc.). Block statements return the result of the last statement/expression wrapped in a list.
 
 If the block statement returns a value, the block statement will return `(true, <VALUE>)`, where `<VALUE>` is the returned value, and `true` indicates that a value was returned. For example, the below function utilizes a block statement that returns `a + b`, and because that statement/expression returns a value, the function will return `(true, a + b)`.
 ```
@@ -167,50 +166,6 @@ value = unwrap <- (value, 0) # value: 24
 value = func() {} <- ();  # value: (false)
 
 result = unwrap <- (value, 2) # result: 2
-```
-
-### If Expressions
-Syntax: `if EXPRESSION { STATEMENT; STATEMENT; ...; STATEMENT; } else { STATEMENT; STATEMENT; ...; STATEMENT; };`
-
-
-If expressions return the result of the block statement associated with the condition that evaluates to true at runtime (see [Block Statements](#block-statements) for more information).
-
-
-Below are some examples.
-
-
-Examples:
-```
-# The condition after `if` returns `true`, so the value of `number` is `(true, 5)`
-number = if true {
-  5;
-} else {
-  10;
-};
-print(unwrap <- (number, 0));  # prints 5
-
-
-# The condition after `if` returns `false`, so the value of `number` is `(true, 10)`
-number = if false {
-  5;
-} else {
-  10;
-};
-print(unwrap <- (number, 0));  # prints 10
-
-
-# There are no statements in the `else` block, but the condition after `if` returns `false`, so the value of `number` is `(false)`
-number = if false {
-  5;
-} else {};
-print(unwrap <- (number, 0));  # prints 0, the default value passed to unwrap
-
-
-# The condition after `if` is true, but the if-block has no statements, so the value of `number` is `(false)`
-number = if true {} else {
-  5;
-};
-print(unwrap <- (number, 0));  # prints 0, the default value passed to unwrap
 ```
 
 ### Switch Expressions
