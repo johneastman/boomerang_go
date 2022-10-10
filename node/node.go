@@ -57,10 +57,6 @@ func (n *Node) String() string {
 		}
 		return fmt.Sprintf("(%s)", s)
 
-	case STRING:
-		doubleQuoteLiteral := tokens.DOUBLE_QUOTE_TOKEN.Literal
-		return fmt.Sprintf("%s%s%s", doubleQuoteLiteral, n.Value, doubleQuoteLiteral)
-
 	default:
 		// NUMBER, BOOLEAN
 		return n.Value

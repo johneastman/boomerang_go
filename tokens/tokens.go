@@ -37,7 +37,6 @@ const (
 	IDENTIFIER           = "IDENTIFIER"
 	EOF                  = "EOF"
 	PTR                  = "POINTER"
-	DOUBLE_QUOTE         = "DOUBLE_QUOTE"
 	TRUE                 = "TRUE"
 	FALSE                = "FALSE"
 	OPEN_BRACKET         = "OPEN_BRACKET"
@@ -67,7 +66,6 @@ var (
 	OPEN_CURLY_BRACKET_TOKEN   = getToken(OPEN_CURLY_BRACKET)
 	CLOSED_CURLY_BRACKET_TOKEN = getToken(CLOSED_CURLY_BRACKET)
 	PTR_TOKEN                  = getToken(PTR)
-	DOUBLE_QUOTE_TOKEN         = getToken(DOUBLE_QUOTE)
 	OPEN_BRACKET_TOKEN         = getToken(OPEN_BRACKET)
 	CLOSED_BRACKET_TOKEN       = getToken(CLOSED_BRACKET)
 	AT_TOKEN                   = getToken(AT)
@@ -99,7 +97,7 @@ var tokenData = map[string]TokenMetaData{
 	// Data types/misc
 	NUMBER:     {Type: "NUMBER", Literal: "([0-9]*[.]?[0-9]+)", IsRegex: true},
 	IDENTIFIER: {Type: "IDENTIFIER", Literal: ""},
-	STRING:     {Type: "STRING", Literal: ""},
+	STRING:     {Type: "STRING", Literal: "\"(.*)\"", IsRegex: true},
 	BOOLEAN:    {Type: "BOOLEAN", Literal: ""},
 	EOF:        {Type: "EOF", Literal: ""},
 
@@ -116,7 +114,6 @@ var tokenData = map[string]TokenMetaData{
 	OPEN_CURLY_BRACKET:   {Type: "OPEN_CURLY_BRACKET", Literal: "{"},
 	CLOSED_CURLY_BRACKET: {Type: "CLOSED_CURLY_BRACKET", Literal: "}"},
 	PTR:                  {Type: "LEFT_POINTER", Literal: "<-"},
-	DOUBLE_QUOTE:         {Type: "DOUBLE_QUOTE", Literal: "\""},
 	OPEN_BRACKET:         {Type: "OPEN_BRACKET", Literal: "["},
 	CLOSED_BRACKET:       {Type: "CLOSED_BRACKET", Literal: "]"},
 	AT:                   {Type: "AT", Literal: "@"},

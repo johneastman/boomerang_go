@@ -103,35 +103,6 @@ func (t *Tokenizer) readIdentifier() string {
 	return t.source[startPos:endPos]
 }
 
-func (t *Tokenizer) isNumber() bool {
-	char := t.current()
-	return '0' <= char && char <= '9' || char == '.'
-}
-
-func (t *Tokenizer) readNumber() string {
-	startPos := t.currentPos
-	endPos := startPos
-	for t.isNumber() {
-		endPos += 1
-		t.advance()
-	}
-	return t.source[startPos:endPos]
-}
-
-func (t *Tokenizer) isString() bool {
-	return t.current() == DOUBLE_QUOTE_TOKEN.Literal[0]
-}
-
-func (t *Tokenizer) readString() string {
-	startPos := t.currentPos
-	endPos := startPos
-	for !t.isString() {
-		endPos += 1
-		t.advance()
-	}
-	return t.source[startPos:endPos]
-}
-
 func (t *Tokenizer) Next() (*Token, error) {
 	t.skipWhitespace()
 
@@ -146,30 +117,6 @@ func (t *Tokenizer) Next() (*Token, error) {
 		token := GetKeywordToken(literal)
 		token.LineNumber = t.currentLineNumber
 		return &token, nil
-
-		// } else if t.isNumber() {
-		// 	literal := t.readNumber()
-
-		// 	r, _ := regexp.Compile("^([0-9]*[.])?[0-9]+$")
-		// 	if !r.MatchString(literal) {
-		// 		return nil, utils.CreateError(
-		// 			t.currentLineNumber,
-		// 			"error at line %d: invalid number literal: %s",
-		// 			t.currentLineNumber,
-		// 			literal,
-		// 		)
-		// 	}
-
-		// 	token := t.createToken(NUMBER, literal)
-		// 	return &token, nil
-
-	} else if t.isString() {
-		t.advance()
-		literal := t.readString()
-		t.advance()
-
-		token := t.createToken(STRING, literal)
-		return &token, nil
 	}
 
 	token, err := t.getMatchingTokens()
@@ -181,10 +128,6 @@ func (t *Tokenizer) Next() (*Token, error) {
 	return token, nil
 }
 
-func (t *Tokenizer) createToken(tokenType string, tokenLiteral string) Token {
-	return Token{Type: tokenType, Literal: tokenLiteral, LineNumber: t.currentLineNumber}
-}
-
 func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 	/*
 		Get list of tokens where the token literal start with current character. The check for
@@ -194,7 +137,6 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 	var matchingTokens []Token
 	for _, tokenData := range tokenData {
 
-		var token *Token
 		if tokenData.IsRegex {
 			source := t.source[t.currentPos:]
 			pattern := fmt.Sprintf("^%s", tokenData.Literal)
@@ -205,20 +147,39 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 			}
 
 			location := r.FindStringSubmatchIndex(source)
-			if location != nil {
-				start := location[0]
-				end := location[1]
+			/*
+				location is nil if no match is found.
 
-				literal := t.source[t.currentPos+start : t.currentPos+end]
-				token = &Token{Type: tokenData.Type, Literal: literal}
+				If a match is found, location[0] and location[1] contain the start and end indices for the full regex match.
+				location[3] and location[4] containg the start and end indices for sub-matches (e.g., a capturing group).
+			*/
+			if location != nil {
+				matchStart := location[0]
+				matchEnd := location[1]
+
+				literalStart := location[2]
+				literalEnd := location[3]
+
+				literal := t.source[t.currentPos+literalStart : t.currentPos+literalEnd]
+				token := Token{Type: tokenData.Type, Literal: literal}
+
+				/*
+					To advance past all the characters matching the regex, skip over the number of characters captured
+					by the full regex match. For example, this ensures the double quotes for strings are skipped. However,
+					when creating string tokens, we only want the text between the quotes, which is why the "literalStart"
+					and "literalEnd" are used for token creation.
+				*/
+				for i := 0; i < (matchEnd - matchStart); i++ {
+					t.advance()
+				}
+
+				return &token, nil
 			}
 
+			// For non-regex tokens, check if the current character matches the first character of the token literal
 		} else if strings.HasPrefix(tokenData.Literal, string(t.current())) && len(tokenData.Literal) > 0 {
-			token = &Token{Type: tokenData.Type, Literal: tokenData.Literal}
-		}
-
-		if token != nil {
-			matchingTokens = append(matchingTokens, *token)
+			token := Token{Type: tokenData.Type, Literal: tokenData.Literal}
+			matchingTokens = append(matchingTokens, token)
 		}
 	}
 
@@ -258,6 +219,7 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 			}
 
 			// Advance past n characters, where n is the length of the token literal
+
 			for i := 0; i < len(source); i++ {
 				t.advance()
 			}
