@@ -17,3 +17,6 @@ I realized if I wanted this project to grow, I would need to use a statically-ty
 * [Grammar](docs/grammar.md)
 * [Syntax](docs/syntax.md)
 * [Builtin Functions](docs/builtins.md)
+
+## Wiki
+Additional documentation and notes are on the [wiki](https://github.com/johneastman/boomerang/wiki).
