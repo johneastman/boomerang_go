@@ -34,13 +34,13 @@ func TestTokenizer_Symbols(t *testing.T) {
 
 func TestTokenizer_Keywords(t *testing.T) {
 	keywordTokens := []tokens.Token{
-		CreateTokenFromToken(tokens.PRINT_TOKEN),
-		CreateTokenFromToken(tokens.FUNCTION_TOKEN),
-		CreateTokenFromToken(tokens.TRUE_TOKEN),
-		CreateTokenFromToken(tokens.FALSE_TOKEN),
-		CreateTokenFromToken(tokens.NOT_TOKEN),
-		CreateTokenFromToken(tokens.WHEN_TOKEN),
-		CreateTokenFromToken(tokens.IS_TOKEN),
+		{Type: tokens.PRINT, Literal: "print", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.FUNCTION, Literal: "func", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.BOOLEAN, Literal: "true", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.BOOLEAN, Literal: "false", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.NOT, Literal: "not", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.WHEN, Literal: "when", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.IS, Literal: "is", LineNumber: TEST_LINE_NUM},
 	}
 
 	for i, expectedToken := range keywordTokens {
@@ -102,7 +102,6 @@ func TestTokenizer_Identifiers(t *testing.T) {
 		"variable",
 		"varaible1",
 		"variable_23",
-		"_variable_",
 	}
 
 	for i, variable := range variables {
@@ -165,5 +164,25 @@ func TestTokenizer_BlockCommentError(t *testing.T) {
 	expectedError := "error at line 1: did not find ending ## while parsing block comment"
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %#v, Actual error: %#v", expectedError, actualError)
+	}
+}
+
+func TestTokenizer_Booleans(t *testing.T) {
+	/*
+		This test is because I originally had the boolean regex "true|false", but after appending "^", the regex
+		was interpreted as "^true|false", when it should have been "^(true|false)".
+	*/
+	expectedTokens := []tokens.Token{
+		{Type: tokens.IDENTIFIER, Literal: "b", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.ASSIGN, Literal: "=", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.BOOLEAN, Literal: "false", LineNumber: TEST_LINE_NUM},
+	}
+
+	source := "b = false;"
+	tokenizer := tokens.New(source)
+
+	for i, expectedToken := range expectedTokens {
+		token, _ := tokenizer.Next()
+		AssertTokenEqual(t, i, expectedToken, *token)
 	}
 }

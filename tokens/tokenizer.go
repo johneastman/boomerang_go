@@ -80,41 +80,11 @@ func (t *Tokenizer) skipInlineComment() (*Token, error) {
 	return t.Next()
 }
 
-func (t *Tokenizer) isIdentifier(allowDigits bool) bool {
-	/* Identifiers (e.g., variables) can include digits in the name but can't start with digits. When 'allowDigits' is false,
-	 * only letters and underscores are allowed. When 'allowDigits' is true, digits are allowed.
-	 */
-	char := t.current()
-
-	isIdentifierWithoutDigits := 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_'
-	if allowDigits {
-		return isIdentifierWithoutDigits || '0' <= char && char <= '9'
-	}
-	return isIdentifierWithoutDigits
-}
-
-func (t *Tokenizer) readIdentifier() string {
-	startPos := t.currentPos
-	endPos := startPos
-	for t.isIdentifier(true) {
-		endPos += 1
-		t.advance()
-	}
-	return t.source[startPos:endPos]
-}
-
 func (t *Tokenizer) Next() (*Token, error) {
 	t.skipWhitespace()
 
 	if t.current() == EOF_CHAR {
 		token := EOF_TOKEN
-		token.LineNumber = t.currentLineNumber
-		return &token, nil
-	}
-
-	if t.isIdentifier(false) {
-		literal := t.readIdentifier()
-		token := GetKeywordToken(literal)
 		token.LineNumber = t.currentLineNumber
 		return &token, nil
 	}
@@ -146,20 +116,44 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 				panic(err.Error())
 			}
 
-			location := r.FindStringSubmatchIndex(source)
+			matchStart := -1
+			matchEnd := -1
+			literalStart := -1
+			literalEnd := -1
+
+			matchLocations := r.FindStringSubmatchIndex(source)
 			/*
-				location is nil if no match is found.
+				When there are no grouped expressions in the regex, "matchLocation" is 2-elements long: the start and end
+				positions in the searched string. However, if grouped expressions are found in the searched string, they
+				will be added to "matchLocations."
 
-				If a match is found, location[0] and location[1] contain the start and end indices for the full regex match.
-				location[3] and location[4] containg the start and end indices for sub-matches (e.g., a capturing group).
+				For example, if the string is '\"hello, world\"' and the regex is '\"(.*)\"', "matchLocations" will be
+				[0, 15, 1, 14].
+
+				However, if the string is 'true', and the regex is 'true|false', "matchLocations" will be [0, 5].
+
+				Note that end indices will be the index of the character after the last matched character. See documentation
+				for more details: https://pkg.go.dev/regexp#Regexp.FindSubmatchIndex
 			*/
-			if location != nil {
-				matchStart := location[0]
-				matchEnd := location[1]
+			if len(matchLocations) == 2 {
+				// No grouped expressions in regex
+				matchStart = matchLocations[0]
+				matchEnd = matchLocations[1]
 
-				literalStart := location[2]
-				literalEnd := location[3]
+				literalStart = matchLocations[0]
+				literalEnd = matchLocations[1]
+			}
 
+			if len(matchLocations) == 4 {
+				// Grouped expressions in regex
+				matchStart = matchLocations[0]
+				matchEnd = matchLocations[1]
+
+				literalStart = matchLocations[2]
+				literalEnd = matchLocations[3]
+			}
+
+			if matchStart != -1 && matchEnd != -1 && literalStart != -1 && literalEnd != -1 {
 				literal := t.source[t.currentPos+literalStart : t.currentPos+literalEnd]
 				token := Token{Type: tokenData.Type, Literal: literal}
 
@@ -172,7 +166,6 @@ func (t *Tokenizer) getMatchingTokens() (*Token, error) {
 				for i := 0; i < (matchEnd - matchStart); i++ {
 					t.advance()
 				}
-
 				return &token, nil
 			}
 

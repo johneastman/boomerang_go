@@ -16,7 +16,7 @@ type Token struct {
 	LineNumber int
 }
 
-// Token names
+// Token types/labels
 const (
 	PLUS                 = "PLUS"
 	MINUS                = "MINUS"
@@ -77,8 +77,8 @@ var (
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
 	FUNCTION_TOKEN = getToken(FUNCTION)
-	TRUE_TOKEN     = getToken(TRUE)
-	FALSE_TOKEN    = getToken(FALSE)
+	TRUE_TOKEN     = Token{Type: BOOLEAN, Literal: "true"}
+	FALSE_TOKEN    = Token{Type: BOOLEAN, Literal: "false"}
 	ELSE_TOKEN     = getToken(ELSE)
 	WHEN_TOKEN     = getToken(WHEN)
 	IS_TOKEN       = getToken(IS)
@@ -93,48 +93,50 @@ var (
 	EOF_TOKEN        = getToken(EOF) // end of file
 )
 
-var tokenData = map[string]TokenMetaData{
+var tokenData = []TokenMetaData{
 	// Data types/misc
-	NUMBER:     {Type: "NUMBER", Literal: "([0-9]*[.]?[0-9]+)", IsRegex: true},
-	IDENTIFIER: {Type: "IDENTIFIER", Literal: ""},
-	STRING:     {Type: "STRING", Literal: "\"(.*)\"", IsRegex: true},
-	BOOLEAN:    {Type: "BOOLEAN", Literal: ""},
-	EOF:        {Type: "EOF", Literal: ""},
+	{Type: NUMBER, Literal: "[0-9]*[.]?[0-9]+", IsRegex: true},
+	{Type: STRING, Literal: "\"(.*)\"", IsRegex: true},
+	{Type: BOOLEAN, Literal: "(true|false)", IsRegex: true},
+
+	// Keywords. Need to be defined before "IDENTIFIER" in this list so they are not misclassified
+	{Type: WHEN, Literal: "when", IsRegex: true},
+	{Type: IS, Literal: "is", IsRegex: true},
+	{Type: NOT, Literal: "not", IsRegex: true},
+	{Type: ELSE, Literal: "else", IsRegex: true},
+	{Type: PRINT, Literal: "print", IsRegex: true},
+	{Type: FUNCTION, Literal: "func", IsRegex: true},
+
+	// Identifier
+	{Type: IDENTIFIER, Literal: "[a-zA-Z]+[a-zA-Z0-9_]*", IsRegex: true},
 
 	// Symbols
-	PLUS:                 {Type: "PLUS", Literal: "+"},
-	MINUS:                {Type: "MINUS", Literal: "-"},
-	ASTERISK:             {Type: "ASTERISK", Literal: "*"},
-	FORWARD_SLASH:        {Type: "FORWARD_SLASH", Literal: "/"},
-	SEMICOLON:            {Type: "SEMICOLON", Literal: ";"},
-	OPEN_PAREN:           {Type: "OPEN_PAREN", Literal: "("},
-	CLOSED_PAREN:         {Type: "CLOSED_PAREN", Literal: ")"},
-	ASSIGN:               {Type: "ASSIGN", Literal: "="},
-	COMMA:                {Type: "COMMA", Literal: ","},
-	OPEN_CURLY_BRACKET:   {Type: "OPEN_CURLY_BRACKET", Literal: "{"},
-	CLOSED_CURLY_BRACKET: {Type: "CLOSED_CURLY_BRACKET", Literal: "}"},
-	PTR:                  {Type: "LEFT_POINTER", Literal: "<-"},
-	OPEN_BRACKET:         {Type: "OPEN_BRACKET", Literal: "["},
-	CLOSED_BRACKET:       {Type: "CLOSED_BRACKET", Literal: "]"},
-	AT:                   {Type: "AT", Literal: "@"},
-	INLINE_COMMENT:       {Type: "INLINE_COMMENT", Literal: "#"},
-	BLOCK_COMMENT:        {Type: "BLOCK_COMMENT", Literal: "##"},
-	EQ:                   {Type: "EQUAL", Literal: "=="},
-
-	// Keywords
-	WHEN:     {Type: "WHEN", Literal: "when"},
-	IS:       {Type: "IS", Literal: "is"},
-	NOT:      {Type: "NOT", Literal: "not"},
-	ELSE:     {Type: "ELSE", Literal: "else"},
-	TRUE:     {Type: "BOOLEAN", Literal: "true"},
-	FALSE:    {Type: "BOOLEAN", Literal: "false"},
-	PRINT:    {Type: "PRINT", Literal: "print"},
-	FUNCTION: {Type: "FUNCTION", Literal: "func"},
+	{Type: PLUS, Literal: "+"},
+	{Type: MINUS, Literal: "-"},
+	{Type: ASTERISK, Literal: "*"},
+	{Type: FORWARD_SLASH, Literal: "/"},
+	{Type: SEMICOLON, Literal: ";"},
+	{Type: OPEN_PAREN, Literal: "("},
+	{Type: CLOSED_PAREN, Literal: ")"},
+	{Type: ASSIGN, Literal: "="},
+	{Type: COMMA, Literal: ","},
+	{Type: OPEN_CURLY_BRACKET, Literal: "{"},
+	{Type: CLOSED_CURLY_BRACKET, Literal: "}"},
+	{Type: PTR, Literal: "<-"},
+	{Type: OPEN_BRACKET, Literal: "["},
+	{Type: CLOSED_BRACKET, Literal: "]"},
+	{Type: AT, Literal: "@"},
+	{Type: INLINE_COMMENT, Literal: "#"},
+	{Type: BLOCK_COMMENT, Literal: "##"},
+	{Type: EQ, Literal: "=="},
+	{Type: EOF, Literal: ""},
 }
 
 func getToken(name string) Token {
-	if token, ok := tokenData[name]; ok {
-		return Token{Type: token.Type, Literal: token.Literal}
+	for _, token := range tokenData {
+		if token.Type == name {
+			return Token{Type: token.Type, Literal: token.Literal}
+		}
 	}
 	panic(fmt.Sprintf("No token matching name: %s", name))
 }

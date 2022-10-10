@@ -914,13 +914,13 @@ func TestEvaluator_InvalidBinaryOperatorError(t *testing.T) {
 	ast := []node.Node{
 		node.CreateBinaryExpression(
 			CreateNumber("1"),
-			CreateTokenFromToken(tokens.NUMBER_TOKEN),
+			CreateTokenFromToken(tokens.NOT_TOKEN),
 			CreateNumber("1"),
 		),
 	}
 
 	actualError := getError(t, ast)
-	expectedError := "error at line 1: invalid binary operator: NUMBER (\"([0-9]*[.]?[0-9]+)\")"
+	expectedError := "error at line 1: invalid binary operator: NOT (\"not\")"
 
 	if expectedError != actualError {
 		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
