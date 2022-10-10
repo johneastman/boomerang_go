@@ -26,9 +26,14 @@ multiple
 lines
 ##
 i = 0;
-if true {
-  i = i + 1; # inline comments appear after a single `#` and occupy a single line
-}
+when true {
+  is i == 0 {
+    i = i + 1; # inline comments appear after a single `#` and occupy a single line
+  }
+  else {
+    i = i + 2;
+  }
+};
 print(i)
 ```
 
