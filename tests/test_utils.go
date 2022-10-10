@@ -72,11 +72,11 @@ func CreateBlockStatements(statements []node.Node) node.Node {
 	return node.CreateBlockStatements(TEST_LINE_NUM, statements)
 }
 
-func CreateSwitchNode(whenExpression node.Node, cases []node.Node, defaultStatements node.Node) node.Node {
-	return node.CreateSwitchNode(TEST_LINE_NUM, whenExpression, cases, defaultStatements)
+func CreateWhenNode(whenExpression node.Node, cases []node.Node, defaultStatements node.Node) node.Node {
+	return node.CreateWhenNode(TEST_LINE_NUM, whenExpression, cases, defaultStatements)
 }
 
-func CreateSwitchCaseNode(expression node.Node, statements node.Node) node.Node {
+func CreateWhenCaseNode(expression node.Node, statements node.Node) node.Node {
 	return node.CreateCaseNode(TEST_LINE_NUM, expression, statements)
 }
 

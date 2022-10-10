@@ -36,10 +36,10 @@ const (
 	LEFT                   = "Left"
 	RIGHT                  = "Right"
 	ASSIGN_STMT_IDENTIFIER = "Identifier"
-	SWITCH                 = "Switch"
-	SWITCH_VALUE           = "SwitchValue"
-	SWITCH_CASES           = "SwitchCases"
-	SWITCH_CASES_DEFAULT   = "SwitchCasesDefault"
+	WHEN                   = "When"
+	WHEN_VALUE             = "WhenValue"
+	WHEN_CASES             = "WhenCases"
+	WHEN_CASES_DEFAULT     = "WhenCasesDefault"
 	CASE                   = "Case"
 	CASE_VALUE             = "CaseValue"
 	CASE_STMTS             = "CaseStatements"
@@ -92,10 +92,10 @@ var indexMap = map[string]map[string]int{
 		FUNCTION:    1,
 		IDENTIFIER:  1,
 	},
-	SWITCH: {
-		SWITCH_VALUE:         0,
-		SWITCH_CASES:         1,
-		SWITCH_CASES_DEFAULT: 2,
+	WHEN: {
+		WHEN_VALUE:         0,
+		WHEN_CASES:         1,
+		WHEN_CASES_DEFAULT: 2,
 	},
 	CASE: {
 		CASE_VALUE: 0,
@@ -298,13 +298,13 @@ func CreateBlockStatements(lineNum int, statements []Node) Node {
 	}
 }
 
-func CreateSwitchNode(lineNum int, expression Node, caseNodes []Node, elseStatements Node) Node {
+func CreateWhenNode(lineNum int, expression Node, caseNodes []Node, elseStatements Node) Node {
 	return Node{
-		Type:    SWITCH,
+		Type:    WHEN,
 		LineNum: lineNum,
 		Params: []Node{
 			expression,
-			{Type: SWITCH_CASES, LineNum: lineNum, Params: caseNodes},
+			{Type: WHEN_CASES, LineNum: lineNum, Params: caseNodes},
 			elseStatements,
 		},
 	}

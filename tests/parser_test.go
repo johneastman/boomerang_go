@@ -430,19 +430,19 @@ func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
-func TestParser_SwitchExpression(t *testing.T) {
+func TestParser_WhenExpression(t *testing.T) {
 	actualAST := getAST("when pos { is 0 { 5; } is 1 { 10; } else { 15; } };")
 	expectedAST := []node.Node{
-		CreateSwitchNode(
+		CreateWhenNode(
 			CreateIdentifier("pos"),
 			[]node.Node{
-				CreateSwitchCaseNode(
+				CreateWhenCaseNode(
 					CreateNumber("0"),
 					CreateBlockStatements([]node.Node{
 						CreateNumber("5"),
 					}),
 				),
-				CreateSwitchCaseNode(
+				CreateWhenCaseNode(
 					CreateNumber("1"),
 					CreateBlockStatements([]node.Node{
 						CreateNumber("10"),

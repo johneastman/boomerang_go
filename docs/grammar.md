@@ -25,7 +25,7 @@ EXPRESSION:
 - AT('@')
 - NOT('not')
 - IF-ELSE('if'/'else')
-- SWITCH('when')
+- WHEN('when')
 - FACTOR
 FACTOR:
 - NUMBER('float64')

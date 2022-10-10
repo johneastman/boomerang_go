@@ -11,7 +11,7 @@
 * [Expressions](#expressions)
     * [Lists](#lists)
     * [Functions](#functions)
-    * [Switch Expressions](#switch-expressions)
+    * [When Expressions](#when-expressions)
 
 ## Comments
 There are two types of comments:
@@ -87,7 +87,7 @@ print(); # Does nothing
 ```
 
 ### Block Statements
-Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, switch expressions, etc.). Block statements return the result of the last statement/expression wrapped in a list.
+Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, when expressions, etc.). Block statements return the result of the last statement/expression wrapped in a list.
 
 If the block statement returns a value, the block statement will return `(true, <VALUE>)`, where `<VALUE>` is the returned value, and `true` indicates that a value was returned. For example, the below function utilizes a block statement that returns `a + b`, and because that statement/expression returns a value, the function will return `(true, a + b)`.
 ```
@@ -168,7 +168,7 @@ value = func() {} <- ();  # value: (false)
 result = unwrap <- (value, 2) # result: 2
 ```
 
-### Switch Expressions
+### When Expressions
 Syntax:
 ```
 when EXPRESSION { 
@@ -191,6 +191,38 @@ when EXPRESSION {
     ...;
     STATEMENT;
   }
+};
+```
+
+
+When expressions act as both `if-else if-else` and `switch` statements, depending on how they are implemented. Below are some examples
+```
+# switch
+num = 0;
+when num {
+  is 0 { ... }
+  is 1 { ... }
+  ...
+  else { ... }
+};
+
+# if-else if-else
+num = 0;
+when true {
+  is num == 0 { ... }
+  is num == 1 { ... }
+  ...
+  else { ... }
+};
+
+# putting "false" after "when" means the code block associated with the first expression to evaluates to
+# "false" is executed.
+num = 0;
+when false {
+  is num == 0 { ... }
+  is num == 1 { ... }
+  ...
+  else { ... }
 };
 ```
 

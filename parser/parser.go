@@ -209,7 +209,7 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 		return p.parseIdentifier()
 
 	case tokens.WHEN_TOKEN.Type:
-		return p.parseSwitchExpression()
+		return p.parseWhenExpression()
 
 	default:
 		current := p.current
@@ -454,7 +454,7 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 	return &functionNode, nil
 }
 
-func (p *Parser) parseSwitchExpression() (*node.Node, error) {
+func (p *Parser) parseWhenExpression() (*node.Node, error) {
 	lineNumber := p.current.LineNumber
 
 	// Skip over "when"
@@ -517,7 +517,7 @@ func (p *Parser) parseSwitchExpression() (*node.Node, error) {
 		return nil, err
 	}
 
-	return node.CreateSwitchNode(lineNumber, *whenExpression, caseNodes, *elseStatements).Ptr(), nil
+	return node.CreateWhenNode(lineNumber, *whenExpression, caseNodes, *elseStatements).Ptr(), nil
 }
 
 func (p *Parser) expectToken(token tokens.Token) error {

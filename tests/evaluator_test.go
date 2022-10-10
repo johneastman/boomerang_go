@@ -789,11 +789,11 @@ func TestEvaluator_CompareOperators(t *testing.T) {
 	}
 }
 
-func TestEvaluator_SwitchExpression(t *testing.T) {
+func TestEvaluator_WhenExpression(t *testing.T) {
 
 	tests := []struct {
-		SwitchCondition string
-		ExpectedValue   string
+		WhenCondition string
+		ExpectedValue string
 	}{
 		{"0", "5"},
 		{"1", "10"},
@@ -802,17 +802,71 @@ func TestEvaluator_SwitchExpression(t *testing.T) {
 
 	for i, test := range tests {
 		ast := []node.Node{
-			CreateSwitchNode(
-				CreateNumber(test.SwitchCondition),
+			CreateWhenNode(
+				CreateNumber(test.WhenCondition),
 				[]node.Node{
-					CreateSwitchCaseNode(
+					CreateWhenCaseNode(
 						CreateNumber("0"),
 						CreateBlockStatements([]node.Node{
 							CreateNumber("5"),
 						}),
 					),
-					CreateSwitchCaseNode(
+					CreateWhenCaseNode(
 						CreateNumber("1"),
+						CreateBlockStatements([]node.Node{
+							CreateNumber("10"),
+						}),
+					),
+				},
+				CreateBlockStatements([]node.Node{
+					CreateNumber("15"),
+				}),
+			),
+		}
+
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			CreateList([]node.Node{
+				CreateBooleanTrue(),
+				CreateNumber(test.ExpectedValue),
+			}),
+		}
+		AssertNodesEqual(t, i, expectedResults, actualResults)
+	}
+}
+
+func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
+
+	tests := []struct {
+		WhenCondition string
+		ExpectedValue string
+	}{
+		{"true", "5"},
+		{"false", "10"},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateAssignmentStatement("number", CreateNumber("0")),
+			CreateWhenNode(
+				CreateNumber(test.WhenCondition),
+				[]node.Node{
+					CreateWhenCaseNode(
+						node.CreateBinaryExpression(
+							CreateIdentifier("number"),
+							CreateTokenFromToken(tokens.EQ_TOKEN),
+							CreateNumber("0"),
+						),
+						CreateBlockStatements([]node.Node{
+							CreateNumber("5"),
+						}),
+					),
+					CreateWhenCaseNode(
+						node.CreateBinaryExpression(
+							CreateIdentifier("number"),
+							CreateTokenFromToken(tokens.EQ_TOKEN),
+							CreateNumber("1"),
+						),
 						CreateBlockStatements([]node.Node{
 							CreateNumber("10"),
 						}),

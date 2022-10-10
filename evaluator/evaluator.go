@@ -168,8 +168,8 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 	case node.FUNCTION_CALL:
 		return e.evaluateFunctionCall(expr)
 
-	case node.SWITCH:
-		return e.evaluateSwitchExpression(expr)
+	case node.WHEN:
+		return e.evaluateWhenExpression(expr)
 
 	default:
 		// This error will only happen if the developer has not implemented an expression type
@@ -591,14 +591,14 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 	)
 }
 
-func (e *evaluator) evaluateSwitchExpression(switchExpression node.Node) (*node.Node, error) {
+func (e *evaluator) evaluateWhenExpression(whenExpression node.Node) (*node.Node, error) {
 
-	expression, err := e.evaluateExpression(switchExpression.GetParam(node.SWITCH_VALUE))
+	expression, err := e.evaluateExpression(whenExpression.GetParam(node.WHEN_VALUE))
 	if err != nil {
 		return nil, err
 	}
 
-	cases := switchExpression.GetParam(node.SWITCH_CASES)
+	cases := whenExpression.GetParam(node.WHEN_CASES)
 
 	for _, _case := range cases.Params {
 		caseValue, err := e.evaluateExpression(_case.GetParam(node.CASE_VALUE))
@@ -612,7 +612,7 @@ func (e *evaluator) evaluateSwitchExpression(switchExpression node.Node) (*node.
 	}
 
 	// If none of the cases match, the else/default case will be returned.
-	return e.evaluateBlockStatements(switchExpression.GetParam(node.SWITCH_CASES_DEFAULT))
+	return e.evaluateBlockStatements(whenExpression.GetParam(node.WHEN_CASES_DEFAULT))
 }
 
 func (e *evaluator) toFloat(s string) float64 {

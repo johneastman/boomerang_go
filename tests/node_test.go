@@ -398,8 +398,8 @@ func TestNode_CreateReturnValueParams(t *testing.T) {
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
-func TestNode_CreateSwitchNode(t *testing.T) {
-	actualNode := node.CreateSwitchNode(
+func TestNode_CreateWhenNode(t *testing.T) {
+	actualNode := node.CreateWhenNode(
 		TEST_LINE_NUM,
 		node.CreateNumber(TEST_LINE_NUM, "3"),
 		[]node.Node{
@@ -424,11 +424,11 @@ func TestNode_CreateSwitchNode(t *testing.T) {
 	)
 
 	expectedNode := node.Node{
-		Type:    node.SWITCH,
+		Type:    node.WHEN,
 		LineNum: TEST_LINE_NUM,
 		Params: []node.Node{
 			{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "3"},
-			{Type: node.SWITCH_CASES, LineNum: TEST_LINE_NUM, Params: []node.Node{
+			{Type: node.WHEN_CASES, LineNum: TEST_LINE_NUM, Params: []node.Node{
 				{Type: node.CASE, LineNum: TEST_LINE_NUM, Params: []node.Node{
 					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
 					{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
