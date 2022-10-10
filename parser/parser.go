@@ -35,7 +35,7 @@ type Parser struct {
 	peek      tokens.Token
 }
 
-func New(tokenizer tokens.Tokenizer) (*Parser, error) {
+func NewParser(tokenizer tokens.Tokenizer) (*Parser, error) {
 	currentToken, err := tokenizer.Next()
 	if err != nil {
 		return nil, err
@@ -289,6 +289,7 @@ func (p *Parser) parseString() (*node.Node, error) {
 	params := []node.Node{}
 	expressionIndex := 0
 
+	// Parse each expression block in the string interpolation and save the result to the string
 	r := regexp.MustCompile(`{[^{}]*}`)
 	for {
 		match := r.FindStringIndex(stringLiteral)
@@ -301,8 +302,8 @@ func (p *Parser) parseString() (*node.Node, error) {
 
 		expressionInString := stringLiteral[startPos+1 : endPos-1]
 
-		tokenizer := tokens.New(expressionInString)
-		parserObj, err := New(tokenizer)
+		tokenizer := tokens.NewTokenizer(expressionInString)
+		parserObj, err := NewParser(tokenizer)
 		if err != nil {
 			return nil, err
 		}

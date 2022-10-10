@@ -7,7 +7,7 @@ import (
 )
 
 func TestTokenizer_Symbols(t *testing.T) {
-	tokenizer := tokens.New("+-*/()=,{}<-[]==;")
+	tokenizer := getTokenizer("+-*/()=,{}<-[]==;")
 	expectedTokens := []tokens.Token{
 		CreateTokenFromToken(tokens.PLUS_TOKEN),
 		CreateTokenFromToken(tokens.MINUS_TOKEN),
@@ -44,7 +44,7 @@ func TestTokenizer_Keywords(t *testing.T) {
 	}
 
 	for i, expectedToken := range keywordTokens {
-		tokenizer := tokens.New(expectedToken.Literal)
+		tokenizer := getTokenizer(expectedToken.Literal)
 		actualToken, _ := tokenizer.Next()
 		AssertTokenEqual(t, i, expectedToken, *actualToken)
 	}
@@ -68,7 +68,7 @@ func TestTokenizer_Numbers(t *testing.T) {
 	}
 
 	for i, source := range numbers {
-		tokenizer := tokens.New(source)
+		tokenizer := getTokenizer(source)
 		token, _ := tokenizer.Next()
 
 		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.NUMBER, source, 1), *token)
@@ -89,7 +89,7 @@ func TestTokenizer_Strings(t *testing.T) {
 
 		source := fmt.Sprintf("\"%s\";", testString)
 
-		tokenizer := tokens.New(source)
+		tokenizer := getTokenizer(source)
 		token, _ := tokenizer.Next()
 
 		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.STRING, testString, 1), *token)
@@ -105,7 +105,7 @@ func TestTokenizer_Identifiers(t *testing.T) {
 	}
 
 	for i, variable := range variables {
-		tokenizer := tokens.New(variable)
+		tokenizer := getTokenizer(variable)
 		token, _ := tokenizer.Next()
 
 		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.IDENTIFIER, variable, 1), *token)
@@ -114,7 +114,7 @@ func TestTokenizer_Identifiers(t *testing.T) {
 
 func TestTokenizer_InlineCommentEOF(t *testing.T) {
 	source := "# this is a comment"
-	tokenizer := tokens.New(source)
+	tokenizer := getTokenizer(source)
 
 	token, _ := tokenizer.Next()
 
@@ -123,7 +123,7 @@ func TestTokenizer_InlineCommentEOF(t *testing.T) {
 
 func TestTokenizer_InlineComment(t *testing.T) {
 	source := "# this is a comment\n1;"
-	tokenizer := tokens.New(source)
+	tokenizer := getTokenizer(source)
 
 	actualToken, _ := tokenizer.Next()
 	expectedToken := tokens.Token{Type: tokens.NUMBER, Literal: "1", LineNumber: 2}
@@ -133,7 +133,7 @@ func TestTokenizer_InlineComment(t *testing.T) {
 
 func TestTokenizer_BlockCommentEOF(t *testing.T) {
 	source := "##\na = 1;\nb = a + 2\n##"
-	tokenizer := tokens.New(source)
+	tokenizer := getTokenizer(source)
 
 	actualToken, _ := tokenizer.Next()
 	expectedToken := tokens.Token{Type: tokens.EOF, Literal: tokens.EOF_TOKEN.Literal, LineNumber: 4}
@@ -143,7 +143,7 @@ func TestTokenizer_BlockCommentEOF(t *testing.T) {
 
 func TestTokenizer_BlockComment(t *testing.T) {
 	source := "##\na = 1;\nb = a + 2\n##1;"
-	tokenizer := tokens.New(source)
+	tokenizer := getTokenizer(source)
 
 	actualToken, _ := tokenizer.Next()
 	expectedToken := tokens.Token{Type: tokens.NUMBER, Literal: "1", LineNumber: 4}
@@ -153,7 +153,7 @@ func TestTokenizer_BlockComment(t *testing.T) {
 
 func TestTokenizer_BlockCommentError(t *testing.T) {
 	source := "##"
-	tokenizer := tokens.New(source)
+	tokenizer := getTokenizer(source)
 
 	_, err := tokenizer.Next()
 	if err == nil {
@@ -179,10 +179,14 @@ func TestTokenizer_Booleans(t *testing.T) {
 	}
 
 	source := "b = false;"
-	tokenizer := tokens.New(source)
+	tokenizer := getTokenizer(source)
 
 	for i, expectedToken := range expectedTokens {
 		token, _ := tokenizer.Next()
 		AssertTokenEqual(t, i, expectedToken, *token)
 	}
+}
+
+func getTokenizer(source string) tokens.Tokenizer {
+	return tokens.NewTokenizer(source)
 }

@@ -19,9 +19,9 @@ func getSource(path string) string {
 
 func main() {
 	source := getSource("source.bmg")
-	tokenizer := tokens.New(source)
+	tokenizer := tokens.NewTokenizer(source)
 
-	parser, err := parser.New(tokenizer)
+	parser, err := parser.NewParser(tokenizer)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -33,7 +33,7 @@ func main() {
 		return
 	}
 
-	eval := evaluator.New(*statements)
+	eval := evaluator.NewEvaluator(*statements)
 	_, err = eval.Evaluate()
 	if err != nil {
 		fmt.Println(err.Error())

@@ -12,9 +12,9 @@ type Tokenizer struct {
 	currentLineNumber int
 }
 
-const EOF_CHAR = 0
+const EOF_CHAR = 0 // end-of-file character
 
-func New(source string) Tokenizer {
+func NewTokenizer(source string) Tokenizer {
 	return Tokenizer{source: source, currentPos: 0, currentLineNumber: 1}
 }
 
@@ -26,7 +26,7 @@ func (t *Tokenizer) current() byte {
 	if t.currentPos < len(t.source) {
 		return t.source[t.currentPos]
 	}
-	return 0
+	return EOF_CHAR
 }
 
 func (t *Tokenizer) peek() byte {
@@ -34,7 +34,7 @@ func (t *Tokenizer) peek() byte {
 	if nextCharIndex < len(t.source) {
 		return t.source[nextCharIndex]
 	}
-	return 0
+	return EOF_CHAR
 }
 
 func (t *Tokenizer) advance() {
@@ -59,7 +59,7 @@ func (t *Tokenizer) skipBlockComment() (*Token, error) {
 			break
 		}
 
-		if t.peek() == 0 {
+		if t.peek() == EOF_CHAR {
 			return nil, utils.CreateError(t.currentLineNumber, "did not find ending ## while parsing block comment")
 		}
 

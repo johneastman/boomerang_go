@@ -47,7 +47,7 @@ type evaluator struct {
 	env environment
 }
 
-func New(ast []node.Node) evaluator {
+func NewEvaluator(ast []node.Node) evaluator {
 	return evaluator{
 		ast: ast,
 		env: CreateEnvironment(),

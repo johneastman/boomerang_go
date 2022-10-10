@@ -18,10 +18,6 @@ func (tmd *TokenMetaData) RegexPattern() string {
 	return tmd.Literal
 }
 
-func (tmd *TokenMetaData) CreateToken(lineNum int) Token {
-	return Token{Type: tmd.Type, Literal: tmd.Literal}
-}
-
 type Token struct {
 	Literal    string
 	Type       string
@@ -161,23 +157,6 @@ func getToken(name string) Token {
 		}
 	}
 	panic(fmt.Sprintf("No token matching name: %s", name))
-}
-
-func GetTokenType(name string) string {
-	token := getToken(name)
-	return token.Type
-}
-
-func GetKeywordToken(literal string) Token {
-	for _, token := range tokenData {
-		if token.Literal == literal {
-			return Token{Type: token.Type, Literal: token.Literal}
-		}
-	}
-
-	identifierToken := getToken(IDENTIFIER)
-	identifierToken.Literal = literal
-	return identifierToken
 }
 
 func TokenTypesEqual(t Token, tokenType string) bool {

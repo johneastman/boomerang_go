@@ -462,18 +462,7 @@ func TestParser_WhenExpression(t *testing.T) {
  * * * * * * * */
 
 func TestParser_UnexpectedTokenError(t *testing.T) {
-	tokenizer := tokens.New("1")
-	p, err := parser.New(tokenizer)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	_, err = p.Parse()
-	if err == nil {
-		t.Fatalf("Expected error to not be nil")
-	}
-
-	actualError := err.Error()
+	actualError := getParserError(t, "1")
 	expectedError := "error at line 1: expected token type SEMICOLON (\";\"), got EOF (\"\")"
 
 	if expectedError != actualError {
@@ -482,18 +471,7 @@ func TestParser_UnexpectedTokenError(t *testing.T) {
 }
 
 func TestParser_InvalidPrefixError(t *testing.T) {
-	tokenizer := tokens.New("+;")
-	p, err := parser.New(tokenizer)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	_, err = p.Parse()
-	if err == nil {
-		t.Fatalf("Expected error to not be nil")
-	}
-
-	actualError := err.Error()
+	actualError := getParserError(t, "+;")
 	expectedError := "error at line 1: invalid prefix: PLUS (\"+\")"
 
 	if expectedError != actualError {
@@ -502,18 +480,7 @@ func TestParser_InvalidPrefixError(t *testing.T) {
 }
 
 func TestParser_InvalidPrefixForGroupedExpressionError(t *testing.T) {
-	tokenizer := tokens.New("(1];")
-	p, err := parser.New(tokenizer)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	_, err = p.Parse()
-	if err == nil {
-		t.Fatalf("Expected error to not be nil")
-	}
-
-	actualError := err.Error()
+	actualError := getParserError(t, "(1];")
 	expectedError := "error at line 1: expected CLOSED_PAREN (\")\") or COMMA (\",\"), got CLOSED_BRACKET (\"]\")"
 
 	if expectedError != actualError {
@@ -522,9 +489,9 @@ func TestParser_InvalidPrefixForGroupedExpressionError(t *testing.T) {
 }
 
 func getAST(source string) []node.Node {
-	t := tokens.New(source)
+	t := tokens.NewTokenizer(source)
 
-	p, err := parser.New(t)
+	p, err := parser.NewParser(t)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -534,4 +501,19 @@ func getAST(source string) []node.Node {
 		panic(err.Error())
 	}
 	return *ast
+}
+
+func getParserError(t *testing.T, source string) string {
+	tokenizer := tokens.NewTokenizer(source)
+
+	p, err := parser.NewParser(tokenizer)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = p.Parse()
+	if err == nil {
+		t.Fatalf("Expected error to not be nil")
+	}
+	return err.Error()
 }

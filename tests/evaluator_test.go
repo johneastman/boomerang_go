@@ -1305,7 +1305,7 @@ func TestEvaluator_SliceInvalidNumberOfArgumentsError(t *testing.T) {
  * * * * * * * * * * * * */
 
 func getResults(ast []node.Node) []node.Node {
-	evaluatorObj := evaluator.New(ast)
+	evaluatorObj := evaluator.NewEvaluator(ast)
 	actualResults, err := evaluatorObj.Evaluate()
 	if err != nil {
 		panic(err.Error())
@@ -1314,7 +1314,7 @@ func getResults(ast []node.Node) []node.Node {
 }
 
 func getError(t *testing.T, ast []node.Node) string {
-	evaluatorObj := evaluator.New(ast)
+	evaluatorObj := evaluator.NewEvaluator(ast)
 	_, err := evaluatorObj.Evaluate()
 
 	if err == nil {
