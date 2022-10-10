@@ -849,7 +849,7 @@ func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
 		ast := []node.Node{
 			CreateAssignmentStatement("number", CreateNumber("0")),
 			CreateWhenNode(
-				CreateNumber(test.WhenCondition),
+				CreateBoolean(test.WhenCondition),
 				[]node.Node{
 					CreateWhenCaseNode(
 						node.CreateBinaryExpression(

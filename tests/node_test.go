@@ -7,6 +7,37 @@ import (
 	"testing"
 )
 
+func TestNode_Equals(t *testing.T) {
+	tests := []struct {
+		First   node.Node
+		Second  node.Node
+		IsEqual bool
+	}{
+		{
+			CreateNumber("5"),
+			CreateNumber("5"),
+			true,
+		},
+		{
+			CreateNumber("5"),
+			CreateNumber("6"),
+			false,
+		},
+		{
+			CreateBooleanTrue(),
+			CreateRawString("true"),
+			false,
+		},
+	}
+
+	for i, test := range tests {
+		isEqual := test.First.Equals(test.Second)
+		if isEqual != test.IsEqual {
+			t.Fatalf("Test #%d - Nodes not equal", i)
+		}
+	}
+}
+
 func TestNode_CreateNumber(t *testing.T) {
 	actualNode := node.CreateNumber(20, "1")
 	expectedNode := node.Node{

@@ -477,7 +477,7 @@ func (e *evaluator) evaluateBuiltinLen(lineNum int, callParameters []node.Node) 
 func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error) {
 
 	var booleanValue string
-	if left.String() == right.String() {
+	if left.Equals(right) {
 		booleanValue = tokens.TRUE_TOKEN.Literal
 	} else {
 		booleanValue = tokens.FALSE_TOKEN.Literal
@@ -606,7 +606,7 @@ func (e *evaluator) evaluateWhenExpression(whenExpression node.Node) (*node.Node
 			return nil, err
 		}
 
-		if caseValue.Value == expression.Value {
+		if caseValue.Equals(*expression) {
 			return e.evaluateBlockStatements(_case.GetParam(node.CASE_STMTS))
 		}
 	}

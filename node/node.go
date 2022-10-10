@@ -13,6 +13,78 @@ type Node struct {
 	Params  []Node
 }
 
+func (n *Node) ErrorDisplay() string {
+	return fmt.Sprintf("%s (%#v)", n.Type, n.Value)
+}
+
+func (n *Node) GetParam(key string) Node {
+	node, err := getParam(key, *n)
+	if err != nil {
+		panic(err.Error())
+	}
+	return *node
+}
+
+func (n *Node) GetParamByKeys(keys []string) Node {
+	/*
+		Check if any of the keys in a list of keys exist as parameters in a node. This method is useful for evaluating
+		function calls, which could be a variable (e.g., "add = func() { a + b; }; add(1, 2)") or a function literal
+		(e.g., "func(a, b) { a + b; }(1, 2);")
+	*/
+	for _, key := range keys {
+		node, err := getParam(key, *n)
+
+		// If err is nil, the node has been found
+		if err == nil {
+			return *node
+		}
+	}
+	panic(fmt.Sprintf("no keys matching provided keys: %s", strings.Join(keys, ", ")))
+}
+
+func (n *Node) String() string {
+
+	switch n.Type {
+
+	case LIST:
+		var s string
+		for i, param := range n.Params {
+			if i < len(n.Params)-1 {
+				s += fmt.Sprintf("%s, ", param.String())
+			} else {
+				s += param.String()
+			}
+		}
+		return fmt.Sprintf("(%s)", s)
+
+	case STRING:
+		doubleQuoteLiteral := tokens.DOUBLE_QUOTE_TOKEN.Literal
+		return fmt.Sprintf("%s%s%s", doubleQuoteLiteral, n.Value, doubleQuoteLiteral)
+
+	default:
+		// NUMBER, BOOLEAN
+		return n.Value
+	}
+}
+
+func (n Node) Equals(other Node) bool {
+	return n.Type == other.Type && n.Value == other.Value
+}
+
+func (n Node) Ptr() *Node {
+	return &n
+}
+
+func getParam(key string, n Node) (*Node, error) {
+	if stmtIndices, stmtOk := indexMap[n.Type]; stmtOk {
+		if paramIndex, paramOk := stmtIndices[key]; paramOk {
+			return &n.Params[paramIndex], nil
+		}
+		panic(fmt.Sprintf("invalid parameter: %s", key))
+	}
+	panic(fmt.Sprintf("invalid statement type: %s", n.Type))
+}
+
 const (
 
 	// Statements
@@ -101,74 +173,6 @@ var indexMap = map[string]map[string]int{
 		CASE_VALUE: 0,
 		CASE_STMTS: 1,
 	},
-}
-
-func (n *Node) ErrorDisplay() string {
-	return fmt.Sprintf("%s (%#v)", n.Type, n.Value)
-}
-
-func (n *Node) GetParam(key string) Node {
-	node, err := n.getParam(key)
-	if err != nil {
-		panic(err.Error())
-	}
-	return *node
-}
-
-func (n *Node) GetParamByKeys(keys []string) Node {
-	/*
-		Check if any of the keys in a list of keys exist as parameters in a node. This method is useful for evaluating
-		function calls, which could be a variable (e.g., "add = func() { a + b; }; add(1, 2)") or a function literal
-		(e.g., "func(a, b) { a + b; }(1, 2);")
-	*/
-	for _, key := range keys {
-		node, err := n.getParam(key)
-
-		// If err is nil, the node has been found
-		if err == nil {
-			return *node
-		}
-	}
-	panic(fmt.Sprintf("no keys matching provided keys: %s", strings.Join(keys, ", ")))
-}
-
-func (n *Node) getParam(key string) (*Node, error) {
-	if stmtIndices, stmtOk := indexMap[n.Type]; stmtOk {
-		if paramIndex, paramOk := stmtIndices[key]; paramOk {
-			return &n.Params[paramIndex], nil
-		}
-		panic(fmt.Sprintf("invalid parameter: %s", key))
-	}
-	panic(fmt.Sprintf("invalid statement type: %s", n.Type))
-}
-
-func (n *Node) String() string {
-
-	switch n.Type {
-
-	case LIST:
-		var s string
-		for i, param := range n.Params {
-			if i < len(n.Params)-1 {
-				s += fmt.Sprintf("%s, ", param.String())
-			} else {
-				s += param.String()
-			}
-		}
-		return fmt.Sprintf("(%s)", s)
-
-	case STRING:
-		doubleQuoteLiteral := tokens.DOUBLE_QUOTE_TOKEN.Literal
-		return fmt.Sprintf("%s%s%s", doubleQuoteLiteral, n.Value, doubleQuoteLiteral)
-
-	default:
-		// NUMBER, BOOLEAN
-		return n.Value
-	}
-}
-
-func (n Node) Ptr() *Node {
-	return &n
 }
 
 func CreateTokenNode(token tokens.Token) Node {
