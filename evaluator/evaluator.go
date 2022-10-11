@@ -308,6 +308,12 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 	case tokens.EQ:
 		return e.compare(*left, *right)
 
+	case tokens.OR:
+		return e.booleanOr(*left, *right)
+
+	case tokens.AND:
+		return e.booleanAnd(*left, *right)
+
 	default:
 		return nil, utils.CreateError(
 			op.LineNum,
@@ -589,6 +595,38 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 		left.ErrorDisplay(),
 		right.ErrorDisplay(),
 	)
+}
+
+func (e *evaluator) booleanOr(left node.Node, right node.Node) (*node.Node, error) {
+	if left.Type != node.BOOLEAN || right.Type != node.BOOLEAN {
+		return nil, utils.CreateError(
+			left.LineNum,
+			"invalid types for boolean or. left: %s, right: %s",
+			left.ErrorDisplay(),
+			right.ErrorDisplay(),
+		)
+	}
+
+	if left.String() == tokens.TRUE_TOKEN.Literal || right.String() == tokens.TRUE_TOKEN.Literal {
+		return node.CreateBooleanTrue(left.LineNum).Ptr(), nil
+	}
+	return node.CreateBooleanFalse(left.LineNum).Ptr(), nil
+}
+
+func (e *evaluator) booleanAnd(left node.Node, right node.Node) (*node.Node, error) {
+	if left.Type != node.BOOLEAN || right.Type != node.BOOLEAN {
+		return nil, utils.CreateError(
+			left.LineNum,
+			"invalid types for boolean and. left: %s, right: %s",
+			left.ErrorDisplay(),
+			right.ErrorDisplay(),
+		)
+	}
+
+	if left.String() == tokens.TRUE_TOKEN.Literal && right.String() == tokens.TRUE_TOKEN.Literal {
+		return node.CreateBooleanTrue(left.LineNum).Ptr(), nil
+	}
+	return node.CreateBooleanFalse(left.LineNum).Ptr(), nil
 }
 
 func (e *evaluator) evaluateWhenExpression(whenExpression node.Node) (*node.Node, error) {

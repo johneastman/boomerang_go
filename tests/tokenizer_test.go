@@ -38,9 +38,11 @@ func TestTokenizer_Keywords(t *testing.T) {
 		{Type: tokens.FUNCTION, Literal: "func", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.BOOLEAN, Literal: "true", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.BOOLEAN, Literal: "false", LineNumber: TEST_LINE_NUM},
-		{Type: tokens.NOT, Literal: "not", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.WHEN, Literal: "when", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.IS, Literal: "is", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.NOT, Literal: "not", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.OR, Literal: "or", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.AND, Literal: "and", LineNumber: TEST_LINE_NUM},
 	}
 
 	for i, expectedToken := range keywordTokens {

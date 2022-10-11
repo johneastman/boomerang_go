@@ -293,6 +293,74 @@ func TestEvaluator_BinaryExpressions(t *testing.T) {
 				CreateBooleanTrue(),
 			}),
 		},
+
+		// Boolean OR
+		{
+			AST: node.CreateBinaryExpression(
+				CreateBooleanTrue(),
+				CreateTokenFromToken(tokens.OR_TOKEN),
+				CreateBooleanTrue(),
+			),
+			Result: CreateBooleanTrue(),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateBooleanTrue(),
+				CreateTokenFromToken(tokens.OR_TOKEN),
+				CreateBooleanFalse(),
+			),
+			Result: CreateBooleanTrue(),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateBooleanFalse(),
+				CreateTokenFromToken(tokens.OR_TOKEN),
+				CreateBooleanTrue(),
+			),
+			Result: CreateBooleanTrue(),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateBooleanFalse(),
+				CreateTokenFromToken(tokens.OR_TOKEN),
+				CreateBooleanFalse(),
+			),
+			Result: CreateBooleanFalse(),
+		},
+
+		// Boolean AND
+		{
+			AST: node.CreateBinaryExpression(
+				CreateBooleanTrue(),
+				CreateTokenFromToken(tokens.AND_TOKEN),
+				CreateBooleanTrue(),
+			),
+			Result: CreateBooleanTrue(),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateBooleanTrue(),
+				CreateTokenFromToken(tokens.AND_TOKEN),
+				CreateBooleanFalse(),
+			),
+			Result: CreateBooleanFalse(),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateBooleanFalse(),
+				CreateTokenFromToken(tokens.AND_TOKEN),
+				CreateBooleanTrue(),
+			),
+			Result: CreateBooleanFalse(),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateBooleanFalse(),
+				CreateTokenFromToken(tokens.AND_TOKEN),
+				CreateBooleanFalse(),
+			),
+			Result: CreateBooleanFalse(),
+		},
 	}
 
 	for i, test := range tests {

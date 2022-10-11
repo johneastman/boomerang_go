@@ -207,6 +207,22 @@ func TestParser_BinaryExpression(t *testing.T) {
 				CreateNumber("13"),
 			),
 		},
+		{
+			"true or false",
+			node.CreateBinaryExpression(
+				CreateBooleanTrue(),
+				CreateTokenFromToken(tokens.OR_TOKEN),
+				CreateBooleanFalse(),
+			),
+		},
+		{
+			"false and true",
+			node.CreateBinaryExpression(
+				CreateBooleanFalse(),
+				CreateTokenFromToken(tokens.AND_TOKEN),
+				CreateBooleanTrue(),
+			),
+		},
 	}
 
 	for i, test := range tests {

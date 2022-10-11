@@ -62,6 +62,8 @@ const (
 	EQ                   = "EQUAL"
 	WHEN                 = "WHEN"
 	IS                   = "IS"
+	OR                   = "OR"
+	AND                  = "AND"
 )
 
 // Tokens
@@ -84,7 +86,6 @@ var (
 	AT_TOKEN                   = getToken(AT)
 	INLINE_COMMENT_TOKEN       = getToken(INLINE_COMMENT)
 	BLOCK_COMMENT_TOKEN        = getToken(BLOCK_COMMENT)
-	NOT_TOKEN                  = getToken(NOT)
 	EQ_TOKEN                   = getToken(EQ)
 
 	// Keywords
@@ -95,6 +96,9 @@ var (
 	ELSE_TOKEN     = getToken(ELSE)
 	WHEN_TOKEN     = getToken(WHEN)
 	IS_TOKEN       = getToken(IS)
+	NOT_TOKEN      = getToken(NOT)
+	OR_TOKEN       = getToken(OR)
+	AND_TOKEN      = getToken(AND)
 
 	// Data Types
 	NUMBER_TOKEN  = getToken(NUMBER)
@@ -116,6 +120,8 @@ var tokenData = []TokenMetaData{
 	{Type: WHEN, Literal: "when"},
 	{Type: IS, Literal: "is"},
 	{Type: NOT, Literal: "not"},
+	{Type: OR, Literal: "or"},
+	{Type: AND, Literal: "and"},
 	{Type: ELSE, Literal: "else"},
 	{Type: PRINT, Literal: "print"},
 	{Type: FUNCTION, Literal: "func"},

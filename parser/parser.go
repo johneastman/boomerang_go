@@ -24,6 +24,8 @@ var precedenceLevels = map[string]int{
 	tokens.PLUS:          SUM,
 	tokens.MINUS:         SUM,
 	tokens.NOT:           SUM,
+	tokens.OR:            SUM,
+	tokens.AND:           SUM,
 	tokens.ASTERISK:      PRODUCT,
 	tokens.FORWARD_SLASH: PRODUCT,
 	tokens.EQ:            COMPARE,

@@ -57,6 +57,8 @@ print(i)
 |left pointer|<-|IDENTIFIER (of function)|LIST|
 |at|@|LIST|NUMBER (must be an integer)|
 |equal|==|Any Type|Any Type|
+|and|`and`|BOOLEAN|BOOLEAN|
+|or|`or`|BOOLEAN|BOOLEAN|
 
 ### Unary (Prefix) Operators
 |Name|Literal|Valid Types|
