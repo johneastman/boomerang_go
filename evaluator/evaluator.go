@@ -9,13 +9,6 @@ import (
 	"strings"
 )
 
-func getBuiltinVariable(value string) *string {
-	if value, ok := builtinVariables[value]; ok {
-		return &value
-	}
-	return nil
-}
-
 type evaluator struct {
 	ast []node.Node
 	env environment
@@ -153,19 +146,21 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 func (e *evaluator) evaluateIdentifier(identifierExpression node.Node) (*node.Node, error) {
 
-	identifierName := identifierExpression.Value
-
 	// Check for builtin variables
-	variableValue := getBuiltinVariable(identifierName)
-	if variableValue != nil {
-		return node.CreateNumber(identifierExpression.LineNum, *variableValue).Ptr(), nil
+	builtinVariable := getBuiltinVariable(identifierExpression)
+	if builtinVariable != nil {
+		return builtinVariable, nil
 	}
 
-	if isBuiltinFunction(identifierName) {
+	/*
+		If the identifier is a builtin function, simply return the identifier token, and the
+		builtin function will be evaluated later.
+	*/
+	if isBuiltinFunction(identifierExpression.Value) {
 		return &identifierExpression, nil
 	}
 
-	// Variable defined in Boomerang file
+	// Get the user-defined variable from the environment
 	return e.env.GetIdentifier(identifierExpression)
 }
 

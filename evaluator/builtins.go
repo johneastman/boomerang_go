@@ -23,6 +23,11 @@ type BuiltinFunction struct {
 	Function func(*evaluator, int, []node.Node) (*node.Node, error)
 }
 
+type BuiltinVariable struct {
+	Literal string
+	Type    string
+}
+
 /*
 Initializing builtin functions with init() method to avoid initialization cycle error, in which the keys
 in "builtinFunctions" call methods that use "builtinFunctions".
@@ -32,7 +37,7 @@ More info: https://go.dev/ref/spec#Package_initialization
 For consistency, builtin variables are declared in "init" as well.
 */
 var builtinFunctions map[string]BuiltinFunction
-var builtinVariables map[string]string
+var builtinVariables map[string]BuiltinVariable
 
 // Value for "BuiltinFunction.NumArgs" for function that can take any number of arguments (like "len").
 var nArgsValue = -1
@@ -44,9 +49,21 @@ func init() {
 		BUILTIN_SLICE:  {NumArgs: 3, Function: evaluateBuiltinSlice},
 	}
 
-	builtinVariables = map[string]string{
-		BUILTIN_PI: fmt.Sprintf("%v", math.Pi),
+	builtinVariables = map[string]BuiltinVariable{
+		BUILTIN_PI: {Literal: fmt.Sprintf("%v", math.Pi), Type: node.NUMBER},
 	}
+}
+
+func getBuiltinVariable(identifierNode node.Node) *node.Node {
+	if value, ok := builtinVariables[identifierNode.Value]; ok {
+		switch value.Type {
+		case node.NUMBER:
+			return node.CreateNumber(identifierNode.LineNum, value.Literal).Ptr()
+		default:
+			panic(fmt.Sprintf("invalid type: %s", value.Type))
+		}
+	}
+	return nil
 }
 
 func isBuiltinFunction(value string) bool {
