@@ -5,35 +5,9 @@ import (
 	"boomerang/tokens"
 	"boomerang/utils"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 )
-
-const (
-	BUILTIN_LEN    = "len"
-	BUILTIN_UNWRAP = "unwrap"
-	BUILTIN_SLICE  = "slice"
-)
-
-var builtinFunctions = []string{
-	BUILTIN_LEN,
-	BUILTIN_UNWRAP,
-	BUILTIN_SLICE,
-}
-
-var builtinVariables = map[string]string{
-	"pi": fmt.Sprintf("%v", math.Pi),
-}
-
-func isBuiltinFunction(value string) bool {
-	for _, builtinFunction := range builtinFunctions {
-		if builtinFunction == value {
-			return true
-		}
-	}
-	return false
-}
 
 func getBuiltinVariable(value string) *string {
 	if value, ok := builtinVariables[value]; ok {
@@ -329,17 +303,11 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	function := functionCallExpression.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
 
 	if function.Type == node.IDENTIFIER {
-		switch function.Value {
-		case BUILTIN_LEN:
-			return e.evaluateBuiltinLen(function.LineNum, callParams.Params)
 
-		case BUILTIN_UNWRAP:
-			return e.evaluateBuiltinUnwrap(callParams.Params)
+		if isBuiltinFunction(function.Value) {
+			return evaluateBuiltinFunction(function.Value, e, function.LineNum, callParams.Params)
 
-		case BUILTIN_SLICE:
-			return e.evaluateBuiltinSlice(function.LineNum, callParams.Params)
-
-		default:
+		} else {
 			// If the function object is an identifier, retireve the actual function object from the environment
 			identifierFunction, err := e.env.GetIdentifier(function)
 			if err != nil {
@@ -398,86 +366,6 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	e.env = tmpEnv
 
 	return returnValue, nil
-}
-
-func (e *evaluator) evaluateBuiltinSlice(lineNum int, callParam []node.Node) (*node.Node, error) {
-
-	if len(callParam) != 3 {
-		return nil, utils.CreateError(lineNum, "incorrect number of arguments. expected 3, got %d", len(callParam))
-	}
-
-	list, err := e.evaluateAndCheckType(callParam[0], node.LIST)
-	if err != nil {
-		return nil, err
-	}
-	listValues := list.Params
-
-	startIndex, err := e.evaluateAndCheckType(callParam[1], node.NUMBER)
-	if err != nil {
-		return nil, err
-	}
-
-	endIndex, err := e.evaluateAndCheckType(callParam[2], node.NUMBER)
-	if err != nil {
-		return nil, err
-	}
-
-	start, err := utils.ConvertStringToInteger(startIndex.LineNum, startIndex.Value)
-	if err != nil {
-		return nil, err
-	}
-	startLiteral := *start
-
-	if err := utils.CheckOutOfRange(startIndex.LineNum, startLiteral, len(listValues)); err != nil {
-		return nil, err
-	}
-
-	end, err := utils.ConvertStringToInteger(endIndex.LineNum, endIndex.Value)
-	if err != nil {
-		return nil, err
-	}
-	endLiteral := *end
-
-	if err := utils.CheckOutOfRange(endIndex.LineNum, endLiteral, len(listValues)); err != nil {
-		return nil, err
-	}
-
-	if startLiteral > endLiteral {
-		return nil, utils.CreateError(lineNum, "start index cannot be greater than end index")
-	}
-
-	slicedList := listValues[startLiteral : endLiteral+1]
-	return node.CreateList(list.LineNum, slicedList).Ptr(), nil
-}
-
-func (e *evaluator) evaluateBuiltinUnwrap(callParameters []node.Node) (*node.Node, error) {
-	/*
-		I originally wanted "unwrap" to be implemented in pure Boomerang code, but because custom functions
-		return a list and the purpose of unwrap is to extract the return value from that list, this implementation
-		needs to be a builtin method.
-	*/
-	returnValueList, err := e.evaluateExpression(callParameters[0]) // Params[0] contains the boolean value
-	if err != nil {
-		return nil, err
-	}
-
-	returnValueListFirst, err := e.evaluateExpression(returnValueList.Params[0])
-	if err != nil {
-		return nil, err
-	}
-
-	// If the boolean value in the first element of the list is "true", return the function's actual return value
-	if returnValueListFirst.Value == tokens.TRUE_TOKEN.Literal {
-		return e.evaluateExpression(returnValueList.Params[1]) // Params[1] contains the actual return value, if Params[0] is true
-	}
-
-	// Otherwise, return the provided default value
-	return e.evaluateExpression(callParameters[1])
-}
-
-func (e *evaluator) evaluateBuiltinLen(lineNum int, callParameters []node.Node) (*node.Node, error) {
-	value := len(callParameters)
-	return node.CreateNumber(lineNum, fmt.Sprint(value)).Ptr(), nil
 }
 
 func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error) {
@@ -607,10 +495,18 @@ func (e *evaluator) booleanOr(left node.Node, right node.Node) (*node.Node, erro
 		)
 	}
 
-	if left.String() == tokens.TRUE_TOKEN.Literal || right.String() == tokens.TRUE_TOKEN.Literal {
+	// Line number does not matter here because we're just checking if "left" or "right" are boolean true
+	trueNode := node.CreateBooleanTrue(0)
+
+	if left.Equals(trueNode) {
 		return node.CreateBooleanTrue(left.LineNum).Ptr(), nil
+
+	} else if right.Equals(trueNode) {
+		return node.CreateBooleanTrue(left.LineNum).Ptr(), nil
+
+	} else {
+		return node.CreateBooleanFalse(left.LineNum).Ptr(), nil
 	}
-	return node.CreateBooleanFalse(left.LineNum).Ptr(), nil
 }
 
 func (e *evaluator) booleanAnd(left node.Node, right node.Node) (*node.Node, error) {

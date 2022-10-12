@@ -68,6 +68,12 @@ func (n *Node) String() string {
 }
 
 func (n Node) Equals(other Node) bool {
+	/*
+		The line number is not checked because two values could be equal but defined on different lines.
+		Also, the line number is for debugging/error handling, so that value is not relevant here.
+
+		Do not use this method for testing.
+	*/
 	return n.Type == other.Type && n.Value == other.Value
 }
 
