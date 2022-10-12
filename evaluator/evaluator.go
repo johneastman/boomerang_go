@@ -498,15 +498,10 @@ func (e *evaluator) booleanOr(left node.Node, right node.Node) (*node.Node, erro
 	// Line number does not matter here because we're just checking if "left" or "right" are boolean true
 	trueNode := node.CreateBooleanTrue(0)
 
-	if left.Equals(trueNode) {
+	if left.Equals(trueNode) || right.Equals(trueNode) {
 		return node.CreateBooleanTrue(left.LineNum).Ptr(), nil
-
-	} else if right.Equals(trueNode) {
-		return node.CreateBooleanTrue(left.LineNum).Ptr(), nil
-
-	} else {
-		return node.CreateBooleanFalse(left.LineNum).Ptr(), nil
 	}
+	return node.CreateBooleanFalse(left.LineNum).Ptr(), nil
 }
 
 func (e *evaluator) booleanAnd(left node.Node, right node.Node) (*node.Node, error) {
