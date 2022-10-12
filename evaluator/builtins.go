@@ -126,12 +126,16 @@ func evaluateBuiltinUnwrap(eval *evaluator, lineNum int, callParameters []node.N
 		I originally wanted "unwrap" to be implemented in pure Boomerang code, but because custom functions
 		return a list and the purpose of unwrap is to extract the return value from that list, this implementation
 		needs to be a builtin method.
+
+		callParameters[0] contains the list returned by the function ("(true, <VALUE>)" or "(false)")
+		callParameters[1] contains the default value, if the function returns "(false)"
 	*/
-	returnValueList, err := eval.evaluateExpression(callParameters[0]) // Params[0] contains the boolean value
+	returnValueList, err := eval.evaluateExpression(callParameters[0])
 	if err != nil {
 		return nil, err
 	}
 
+	// "returnValueList.Params[0]" contains the boolean value, denoting whether the function returned a value
 	returnValueListFirst, err := eval.evaluateExpression(returnValueList.Params[0])
 	if err != nil {
 		return nil, err
@@ -139,10 +143,11 @@ func evaluateBuiltinUnwrap(eval *evaluator, lineNum int, callParameters []node.N
 
 	// If the boolean value in the first element of the list is "true", return the function's actual return value
 	if returnValueListFirst.Value == tokens.TRUE_TOKEN.Literal {
-		return eval.evaluateExpression(returnValueList.Params[1]) // Params[1] contains the actual return value, if Params[0] is true
+		// "returnValueList.Params[1]" contains the actual return value, if "returnValueList.Params[0]" is "true"
+		return eval.evaluateExpression(returnValueList.Params[1])
 	}
 
-	// Otherwise, return the provided default value
+	// if "returnValueList.Params[0]" is "false", return the default value given to "unwrap".
 	return eval.evaluateExpression(callParameters[1])
 }
 
