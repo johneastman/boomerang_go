@@ -17,7 +17,7 @@ type evaluator struct {
 func NewEvaluator(ast []node.Node) evaluator {
 	return evaluator{
 		ast: ast,
-		env: CreateEnvironment(),
+		env: CreateEnvironment(nil),
 	}
 }
 
@@ -332,8 +332,8 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		)
 	}
 
-	tmpEnv := e.env
-	e.env = CreateEnvironment()
+	oldEnv := e.env
+	e.env = CreateEnvironment(&oldEnv)
 
 	// Set parameters to environment
 	for i := range callParams.Params {
@@ -358,7 +358,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	}
 
 	// Reset environment back to original scope environment
-	e.env = tmpEnv
+	e.env = *e.env.parentEnv
 
 	return returnValue, nil
 }
