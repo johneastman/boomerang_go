@@ -957,6 +957,42 @@ func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
 	}
 }
 
+func TestEvaluator_VariablesFromOuterScopes(t *testing.T) {
+	// "var" is defined outside the function "f", but is still accessible within that function.
+	ast := []node.Node{
+		CreateAssignmentStatement("var", CreateNumber("10")),
+		CreateAssignmentStatement(
+			"f",
+			CreateFunction(
+				[]node.Node{CreateIdentifier("c")},
+				[]node.Node{
+					node.CreateBinaryExpression(
+						CreateIdentifier("c"),
+						CreateTokenFromToken(tokens.PLUS_TOKEN),
+						CreateIdentifier("var"),
+					),
+				},
+			),
+		),
+		node.CreateBinaryExpression(
+			CreateIdentifier("f"),
+			CreateTokenFromToken(tokens.PTR_TOKEN),
+			CreateList([]node.Node{
+				CreateNumber("2"),
+			}),
+		),
+	}
+
+	actualResults := getResults(ast)
+	expectedResults := []node.Node{
+		CreateList([]node.Node{
+			CreateBooleanTrue(),
+			CreateNumber("12"),
+		}),
+	}
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */
