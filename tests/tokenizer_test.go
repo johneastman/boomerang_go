@@ -43,6 +43,8 @@ func TestTokenizer_Keywords(t *testing.T) {
 		{Type: tokens.NOT, Literal: "not", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.OR, Literal: "or", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.AND, Literal: "and", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.FOR, Literal: "for", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.IN, Literal: "in", LineNumber: TEST_LINE_NUM},
 	}
 
 	for i, expectedToken := range keywordTokens {
@@ -73,7 +75,7 @@ func TestTokenizer_Numbers(t *testing.T) {
 		tokenizer := getTokenizer(source)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.NUMBER, source, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.NUMBER, source), *token)
 	}
 }
 
@@ -94,7 +96,7 @@ func TestTokenizer_Strings(t *testing.T) {
 		tokenizer := getTokenizer(source)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.STRING, testString, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.STRING, testString), *token)
 	}
 }
 
@@ -110,7 +112,7 @@ func TestTokenizer_Identifiers(t *testing.T) {
 		tokenizer := getTokenizer(variable)
 		token, _ := tokenizer.Next()
 
-		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.IDENTIFIER, variable, 1), *token)
+		AssertTokenEqual(t, i, CreateTokenFromValues(tokens.IDENTIFIER, variable), *token)
 	}
 }
 

@@ -15,6 +15,7 @@
 STATEMENT:
 - ASSIGN
 - PRINT
+- FOR
 - EXPRESSION
 EXPRESSION:
 - ADD('+')
@@ -24,7 +25,6 @@ EXPRESSION:
 - LEFT_POINTER('<-')
 - AT('@')
 - NOT('not')
-- IF-ELSE('if'/'else')
 - WHEN('when')
 - FACTOR
 FACTOR:

@@ -64,6 +64,8 @@ const (
 	IS                   = "IS"
 	OR                   = "OR"
 	AND                  = "AND"
+	FOR                  = "FOR"
+	IN                   = "IN"
 )
 
 // Tokens
@@ -99,6 +101,8 @@ var (
 	NOT_TOKEN      = getToken(NOT)
 	OR_TOKEN       = getToken(OR)
 	AND_TOKEN      = getToken(AND)
+	FOR_TOKEN      = getToken(FOR)
+	IN_TOKEN       = getToken(IN)
 
 	// Data Types
 	NUMBER_TOKEN  = getToken(NUMBER)
@@ -125,6 +129,8 @@ var tokenData = []TokenMetaData{
 	{Type: ELSE, Literal: "else"},
 	{Type: PRINT, Literal: "print"},
 	{Type: FUNCTION, Literal: "func"},
+	{Type: FOR, Literal: "for"},
+	{Type: IN, Literal: "in"},
 
 	// Identifier
 	{Type: IDENTIFIER, Literal: "[a-zA-Z]+[a-zA-Z0-9_]*"},

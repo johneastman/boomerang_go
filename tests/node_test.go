@@ -390,8 +390,8 @@ func TestNode_String(t *testing.T) {
 	}
 }
 
-func TestNode_CreateReturnValueNoParams(t *testing.T) {
-	actualNode := node.CreateFunctionReturnValue(TEST_LINE_NUM, nil)
+func TestNode_CreateBlockStatementReturnValueNoParams(t *testing.T) {
+	actualNode := node.CreateBlockStatementReturnValue(TEST_LINE_NUM, nil)
 	expectedNode := node.Node{
 		Type:    node.LIST,
 		LineNum: TEST_LINE_NUM,
@@ -406,10 +406,10 @@ func TestNode_CreateReturnValueNoParams(t *testing.T) {
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
-func TestNode_CreateReturnValueParams(t *testing.T) {
+func TestNode_CreateBlockStatementReturnValueParams(t *testing.T) {
 
 	actualReturnValue := node.CreateNumber(TEST_LINE_NUM, "5")
-	actualNode := node.CreateFunctionReturnValue(TEST_LINE_NUM, &actualReturnValue)
+	actualNode := node.CreateBlockStatementReturnValue(TEST_LINE_NUM, &actualReturnValue)
 	expectedNode := node.Node{
 		Type:    node.LIST,
 		LineNum: TEST_LINE_NUM,
@@ -508,5 +508,44 @@ func TestNode_CreateCaseNode(t *testing.T) {
 		},
 	}
 
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
+func TestNode_ForLoop(t *testing.T) {
+	actualNode := node.CreateForLoop(
+		TEST_LINE_NUM,
+		node.CreateIdentifier(TEST_LINE_NUM, "element"),
+		node.CreateList(
+			TEST_LINE_NUM,
+			[]node.Node{
+				node.CreateNumber(TEST_LINE_NUM, "1"),
+				node.CreateNumber(TEST_LINE_NUM, "2"),
+				node.CreateNumber(TEST_LINE_NUM, "3"),
+			},
+		),
+		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+			node.CreatePrintStatement(TEST_LINE_NUM, []node.Node{
+				node.CreateIdentifier(TEST_LINE_NUM, "element"),
+			}),
+		}),
+	)
+
+	expectedNode := node.Node{
+		Type:    node.FOR_LOOP,
+		LineNum: TEST_LINE_NUM,
+		Params: []node.Node{
+			{Type: node.IDENTIFIER, LineNum: TEST_LINE_NUM, Value: "element"},
+			{Type: node.LIST, LineNum: TEST_LINE_NUM, Params: []node.Node{
+				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
+				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "2"},
+				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "3"},
+			}},
+			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+				{Type: node.PRINT_STMT, LineNum: TEST_LINE_NUM, Params: []node.Node{
+					{Type: node.IDENTIFIER, LineNum: TEST_LINE_NUM, Value: "element"},
+				}},
+			}},
+		},
+	}
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }

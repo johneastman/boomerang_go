@@ -60,8 +60,8 @@ func CreateFunctionCall(function node.Node, callParams []node.Node) node.Node {
 	return node.CreateFunctionCall(TEST_LINE_NUM, function, callParams)
 }
 
-func CreateFunctionReturnValue(statement *node.Node) node.Node {
-	return node.CreateFunctionReturnValue(TEST_LINE_NUM, statement)
+func CreateBlockStatementReturnValue(statement *node.Node) node.Node {
+	return node.CreateBlockStatementReturnValue(TEST_LINE_NUM, statement)
 }
 
 func CreateTokenFromToken(token tokens.Token) tokens.Token {
@@ -80,8 +80,12 @@ func CreateWhenCaseNode(expression node.Node, statements node.Node) node.Node {
 	return node.CreateCaseNode(TEST_LINE_NUM, expression, statements)
 }
 
-func CreateTokenFromValues(type_ string, literal string, lineNum int) tokens.Token {
-	return tokens.Token{Type: type_, Literal: literal, LineNumber: lineNum}
+func CreateTokenFromValues(type_ string, literal string) tokens.Token {
+	return tokens.Token{Type: type_, Literal: literal, LineNumber: TEST_LINE_NUM}
+}
+
+func CreateForLoop(placeholder node.Node, list node.Node, statements node.Node) node.Node {
+	return node.CreateForLoop(TEST_LINE_NUM, placeholder, list, statements)
 }
 
 func AssertTokenEqual(t *testing.T, testNumber int, expected tokens.Token, actual tokens.Token) {

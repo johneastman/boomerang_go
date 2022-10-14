@@ -473,6 +473,22 @@ func TestParser_WhenExpression(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
+func TestParser_ForLoop(t *testing.T) {
+	actualAST := getAST("for e in list { print(e); };")
+	expectedAST := []node.Node{
+		CreateForLoop(
+			CreateIdentifier("e"),
+			CreateIdentifier("list"),
+			CreateBlockStatements([]node.Node{
+				CreatePrintStatement([]node.Node{
+					CreateIdentifier("e"),
+				}),
+			}),
+		),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */

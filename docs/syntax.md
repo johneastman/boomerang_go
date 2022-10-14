@@ -117,6 +117,24 @@ value = printVal <- (2);
 
 To extract the actual return value of a block statement, use the builtin `unwrap` method. See [builtin functions](../docs/builtins.md) for more information.
 
+### For Loops
+Syntax: `for IDENTIFIER in LIST { STATEMENT, STATEMENT, ..., STATEMENT }`
+
+
+NOTE: for-loops are not expressions and do not return anything.
+
+
+Examples:
+```
+i = 0;
+list = (1, 2, 3, 4, 5);
+for element in list {
+  print(element);
+  i = i + e;
+};
+print(i);
+```
+
 ## Expressions
 
 ### Lists

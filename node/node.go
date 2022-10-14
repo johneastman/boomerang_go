@@ -102,6 +102,8 @@ const (
 	FALSE_BRANCH     = "FalseBranch"
 	CONDITION        = "Condition"
 	BLOCK_STATEMENTS = "BlockStatements"
+	FOR_LOOP         = "ForLoop"
+	FOR_LOOP_ELEMENT = "ForLoopElement"
 
 	// Expressions
 	EXPR                   = "Expression" // Super type
@@ -178,6 +180,11 @@ var indexMap = map[string]map[string]int{
 	CASE: {
 		CASE_VALUE: 0,
 		CASE_STMTS: 1,
+	},
+	FOR_LOOP: {
+		FOR_LOOP_ELEMENT: 0,
+		LIST:             1,
+		BLOCK_STATEMENTS: 2,
 	},
 }
 
@@ -283,8 +290,11 @@ func CreateFunctionCall(lineNum int, function Node, callParams []Node) Node {
 	}
 }
 
-func CreateFunctionReturnValue(linenum int, statement *Node) Node {
-
+func CreateBlockStatementReturnValue(linenum int, statement *Node) Node {
+	/*
+		Because some statements return no values (assignment, print, etc,), "statement" needs to be a reference value/pointer.
+		If that value is nil, "(false)" is returned. Otherwise, "(true, <statement>)" is returned.
+	*/
 	var parameters []Node
 
 	if statement == nil {
@@ -326,6 +336,18 @@ func CreateCaseNode(lineNum int, expression Node, statements Node) Node {
 		LineNum: lineNum,
 		Params: []Node{
 			expression,
+			statements,
+		},
+	}
+}
+
+func CreateForLoop(lineNum int, elementPlaceholder Node, list Node, statements Node) Node {
+	return Node{
+		Type:    FOR_LOOP,
+		LineNum: lineNum,
+		Params: []Node{
+			elementPlaceholder,
+			list,
 			statements,
 		},
 	}

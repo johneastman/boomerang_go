@@ -484,7 +484,7 @@ func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
 
 	expectedReturnValue := CreateNumber("8")
 	expectedResults := []node.Node{
-		CreateFunctionReturnValue(&expectedReturnValue),
+		CreateBlockStatementReturnValue(&expectedReturnValue),
 	}
 
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
@@ -517,7 +517,7 @@ func TestEvaluator_FunctionCallReturnStatement(t *testing.T) {
 
 	expectedReturnValue := CreateNumber("777")
 	expectedResults := []node.Node{
-		CreateFunctionReturnValue(&expectedReturnValue),
+		CreateBlockStatementReturnValue(&expectedReturnValue),
 	}
 
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
@@ -562,8 +562,8 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 	actualResults := getResults(ast)
 
 	expectedResults := []node.Node{
-		CreateFunctionReturnValue(CreateNumber("5").Ptr()),
-		CreateFunctionReturnValue(CreateNumber("2").Ptr()),
+		CreateBlockStatementReturnValue(CreateNumber("5").Ptr()),
+		CreateBlockStatementReturnValue(CreateNumber("2").Ptr()),
 	}
 
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
@@ -589,7 +589,7 @@ func TestEvaluator_FunctionCallWithNoParameters(t *testing.T) {
 
 	expectedReturnValue := CreateNumber("7")
 	expectedResults := []node.Node{
-		CreateFunctionReturnValue(&expectedReturnValue),
+		CreateBlockStatementReturnValue(&expectedReturnValue),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
@@ -606,7 +606,7 @@ func TestEvaluator_FunctionCallNoReturn(t *testing.T) {
 
 	actualResults := getResults(ast)
 	expectedResults := []node.Node{
-		CreateFunctionReturnValue(nil),
+		CreateBlockStatementReturnValue(nil),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
@@ -989,6 +989,38 @@ func TestEvaluator_VariablesFromOuterScopes(t *testing.T) {
 			CreateBooleanTrue(),
 			CreateNumber("12"),
 		}),
+	}
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
+func TestEvaluator_ForLoop(t *testing.T) {
+	ast := []node.Node{
+		CreateAssignmentStatement("i", CreateNumber("0")),
+		CreateForLoop(
+			CreateIdentifier("e"),
+			CreateList([]node.Node{
+				CreateNumber("1"),
+				CreateNumber("2"),
+				CreateNumber("3"),
+				CreateNumber("4"),
+			}),
+			CreateBlockStatements([]node.Node{
+				CreateAssignmentStatement(
+					"i",
+					node.CreateBinaryExpression(
+						CreateIdentifier("i"),
+						CreateTokenFromToken(tokens.PLUS_TOKEN),
+						CreateIdentifier("e"),
+					),
+				),
+			}),
+		),
+		CreateIdentifier("i"),
+	}
+
+	actualResults := getResults(ast)
+	expectedResults := []node.Node{
+		CreateNumber("10"),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }

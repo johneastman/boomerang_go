@@ -42,6 +42,11 @@ func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) (*[]node.Node, e
 }
 
 func (e *evaluator) evaluateBlockStatements(statements node.Node) (*node.Node, error) {
+
+	if statements.Type != node.BLOCK_STATEMENTS {
+		panic(fmt.Sprintf("invalid type for block statement: %s", statements.ErrorDisplay()))
+	}
+
 	var returnValue *node.Node
 	lineNum := statements.LineNum
 	for _, statement := range statements.Params {
@@ -53,7 +58,7 @@ func (e *evaluator) evaluateBlockStatements(statements node.Node) (*node.Node, e
 		returnValue = result
 	}
 
-	returnValue = node.CreateFunctionReturnValue(lineNum, returnValue).Ptr()
+	returnValue = node.CreateBlockStatementReturnValue(lineNum, returnValue).Ptr()
 	return returnValue, nil
 }
 
@@ -69,6 +74,12 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 
 	case node.PRINT_STMT:
 		if err := e.evaluatePrintStatement(stmt); err != nil {
+			return nil, err
+		}
+		return nil, nil
+
+	case node.FOR_LOOP:
+		if err := e.evaluateForLoop(stmt); err != nil {
 			return nil, err
 		}
 		return nil, nil
@@ -101,6 +112,44 @@ func (e *evaluator) evaluatePrintStatement(stmt node.Node) error {
 			fmt.Println(evaluatedParam.String())
 		}
 	}
+	return nil
+}
+
+func (e *evaluator) evaluateForLoop(expr node.Node) error {
+	lineNum := expr.LineNum
+
+	elementVariableName := expr.GetParam(node.FOR_LOOP_ELEMENT)
+	list := expr.GetParam(node.LIST)
+	statements := expr.GetParam(node.BLOCK_STATEMENTS)
+
+	evaluatedList, err := e.evaluateExpression(list)
+	if err != nil {
+		return err
+	}
+
+	if evaluatedList.Type != node.LIST {
+		return utils.CreateError(
+			lineNum,
+			"invalid type for for loop: %s",
+			evaluatedList.ErrorDisplay(),
+		)
+	}
+
+	for _, element := range evaluatedList.Params {
+		// Assign the placeholder/element variable to the value of the current list element
+		placeHolderVariable := node.CreateAssignmentStatement(lineNum, elementVariableName.Value, element)
+		_, err = e.evaluateStatement(placeHolderVariable)
+		if err != nil {
+			return err
+		}
+
+		// Evaluate the block statements in the for-loop
+		_, err = e.evaluateBlockStatements(statements)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -349,7 +398,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 	functionStatements := function.GetParam(node.STMTS)
 	if len(functionStatements.Params) == 0 {
-		return node.CreateFunctionReturnValue(callParams.LineNum, nil).Ptr(), nil
+		return node.CreateBlockStatementReturnValue(callParams.LineNum, nil).Ptr(), nil
 	}
 
 	returnValue, err := e.evaluateBlockStatements(functionStatements)
