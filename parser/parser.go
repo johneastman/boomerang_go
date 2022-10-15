@@ -517,17 +517,18 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 	}
 
 	var whenExpression *node.Node
-	switch p.current.Type {
-	case tokens.OPEN_CURLY_BRACKET:
+	if p.current.Type == tokens.OPEN_CURLY_BRACKET {
 		whenExpression = node.CreateBooleanTrue(lineNumber).Ptr()
-	case tokens.NOT:
+
+	} else if p.current.Type == tokens.NOT && p.peek.Type == tokens.OPEN_CURLY_BRACKET {
 		whenExpression = node.CreateBooleanFalse(lineNumber).Ptr()
 
+		// Advance past "not" token
 		if err := p.advance(); err != nil {
 			return nil, err
 		}
 
-	default:
+	} else {
 		// parse expression after "when"
 		var err error
 		whenExpression, err = p.parseExpression(LOWEST)
