@@ -549,3 +549,28 @@ func TestNode_ForLoop(t *testing.T) {
 	}
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
+
+func TestNode_WhileLoop(t *testing.T) {
+	actualNode := node.CreateWhileLoop(
+		TEST_LINE_NUM,
+		node.CreateBooleanTrue(TEST_LINE_NUM),
+		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+			node.CreatePrintStatement(TEST_LINE_NUM, []node.Node{
+				node.CreateRawString(TEST_LINE_NUM, "hello, world!"),
+			}),
+		}),
+	)
+	expectedNode := node.Node{
+		Type:    node.WHILE_LOOP,
+		LineNum: TEST_LINE_NUM,
+		Params: []node.Node{
+			{Type: node.BOOLEAN, Value: "true", LineNum: TEST_LINE_NUM},
+			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+				{Type: node.PRINT_STMT, LineNum: TEST_LINE_NUM, Params: []node.Node{
+					{Type: node.STRING, Value: "hello, world!", LineNum: TEST_LINE_NUM},
+				}},
+			}},
+		},
+	}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}

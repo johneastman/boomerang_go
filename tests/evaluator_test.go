@@ -1114,6 +1114,38 @@ func TestEvaluator_ForLoop(t *testing.T) {
 	}
 }
 
+func TestEvaluator_WhileLoop(t *testing.T) {
+	ast := []node.Node{
+		CreateAssignmentStatement(
+			"i",
+			CreateNumber("0"),
+		),
+		CreateWhileLoop(
+			node.CreateBinaryExpression(
+				CreateIdentifier("i"),
+				CreateTokenFromToken(tokens.LT_TOKEN),
+				CreateNumber("10"),
+			),
+			CreateBlockStatements([]node.Node{
+				CreateAssignmentStatement(
+					"i",
+					node.CreateBinaryExpression(
+						CreateIdentifier("i"),
+						CreateTokenFromToken(tokens.PLUS_TOKEN),
+						CreateNumber("1"),
+					),
+				),
+			}),
+		),
+		CreateIdentifier("i"),
+	}
+	actualResults := getResults(ast)
+	expectedResults := []node.Node{
+		CreateNumber("10"),
+	}
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */

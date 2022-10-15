@@ -29,6 +29,7 @@ var precedenceLevels = map[string]int{
 	tokens.ASTERISK:      PRODUCT,
 	tokens.FORWARD_SLASH: PRODUCT,
 	tokens.EQ:            COMPARE,
+	tokens.LT:            COMPARE,
 }
 
 type Parser struct {
@@ -111,6 +112,9 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT) {
 		returnNode, err = p.parsePrintStatement()
 
+	} else if tokens.TokenTypesEqual(p.current, tokens.WHILE) {
+		returnNode, err = p.parseWhileLoop()
+
 	} else {
 		returnNode, err = p.parseExpression(LOWEST)
 	}
@@ -149,54 +153,6 @@ func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
 	return &assignmentNode, nil
 }
 
-func (p *Parser) parseForLoop() (*node.Node, error) {
-	lineNumber := p.current.LineNumber
-
-	if err := p.advance(); err != nil {
-		return nil, err
-	}
-
-	// placeholder variable for each element in the list
-	elementPlaceholder := p.current
-	if elementPlaceholder.Type != tokens.IDENTIFIER {
-		return nil, utils.CreateError(
-			lineNumber,
-			"invalid type for for-loop element placeholder: %s",
-			elementPlaceholder.ErrorDisplay(),
-		)
-	}
-
-	if err := p.advance(); err != nil {
-		return nil, err
-	}
-
-	// "in" keyword
-	if err := p.expectToken(tokens.IN_TOKEN); err != nil {
-		return nil, err
-	}
-
-	list, err := p.parseExpression(LOWEST)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
-		return nil, err
-	}
-
-	blockStatements, err := p.parseBlockStatements()
-	if err != nil {
-		return nil, err
-	}
-
-	return node.CreateForLoop(
-		lineNumber,
-		node.CreateIdentifier(lineNumber, elementPlaceholder.Literal),
-		*list,
-		*blockStatements,
-	).Ptr(), nil
-}
-
 func (p *Parser) parsePrintStatement() (*node.Node, error) {
 
 	lineNumber := p.current.LineNumber
@@ -216,6 +172,31 @@ func (p *Parser) parsePrintStatement() (*node.Node, error) {
 
 	printNode := node.CreatePrintStatement(lineNumber, parameters.Params)
 	return &printNode, nil
+}
+
+func (p *Parser) parseWhileLoop() (*node.Node, error) {
+
+	lineNum := p.current.LineNumber
+
+	if err := p.advance(); err != nil {
+		return nil, err
+	}
+
+	conditionExpression, err := p.parseExpression(LOWEST)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
+
+	blockStatement, err := p.parseBlockStatements()
+	if err != nil {
+		return nil, err
+	}
+
+	return node.CreateWhileLoop(lineNum, *conditionExpression, *blockStatement).Ptr(), nil
 }
 
 func (p *Parser) parseExpression(precedenceLevel int) (*node.Node, error) {
@@ -644,6 +625,54 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 	}
 
 	return node.CreateWhenNode(lineNumber, *whenExpression, caseNodes, *elseStatements).Ptr(), nil
+}
+
+func (p *Parser) parseForLoop() (*node.Node, error) {
+	lineNumber := p.current.LineNumber
+
+	if err := p.advance(); err != nil {
+		return nil, err
+	}
+
+	// placeholder variable for each element in the list
+	elementPlaceholder := p.current
+	if elementPlaceholder.Type != tokens.IDENTIFIER {
+		return nil, utils.CreateError(
+			lineNumber,
+			"invalid type for for-loop element placeholder: %s",
+			elementPlaceholder.ErrorDisplay(),
+		)
+	}
+
+	if err := p.advance(); err != nil {
+		return nil, err
+	}
+
+	// "in" keyword
+	if err := p.expectToken(tokens.IN_TOKEN); err != nil {
+		return nil, err
+	}
+
+	list, err := p.parseExpression(LOWEST)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+		return nil, err
+	}
+
+	blockStatements, err := p.parseBlockStatements()
+	if err != nil {
+		return nil, err
+	}
+
+	return node.CreateForLoop(
+		lineNumber,
+		node.CreateIdentifier(lineNumber, elementPlaceholder.Literal),
+		*list,
+		*blockStatements,
+	).Ptr(), nil
 }
 
 func (p *Parser) expectToken(token tokens.Token) error {

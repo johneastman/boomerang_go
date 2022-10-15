@@ -7,6 +7,7 @@
 * [Statements](#statements)
     * [Variable Assignment](#variable-assignment)
     * [Print](#print)
+    * [While Loop](#while-loop)
     * [Block Statements](#block-statements)
 * [Expressions](#expressions)
     * [Lists](#lists)
@@ -92,6 +93,22 @@ number = 3 + 4 / 2;
 print(number, number * 2);
 
 print(); # Does nothing
+```
+
+### While Loop
+Syntax: `while EXPRESSION { STATEMENT; STATEMENT; ...; STATEMENT; };`
+
+
+Unlike for-loops, while-loops do not return any values. They simply execute the block statement until the condition evaluates to `false`.
+
+
+Examples:
+```
+i = 0;
+while i < 10 {
+  i = i + 1;
+};
+print(i);  # "i" is 10
 ```
 
 ### Block Statements

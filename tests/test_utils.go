@@ -88,6 +88,10 @@ func CreateForLoop(placeholder node.Node, list node.Node, statements node.Node) 
 	return node.CreateForLoop(TEST_LINE_NUM, placeholder, list, statements)
 }
 
+func CreateWhileLoop(condition node.Node, statements node.Node) node.Node {
+	return node.CreateWhileLoop(TEST_LINE_NUM, condition, statements)
+}
+
 func AssertTokenEqual(t *testing.T, testNumber int, expected tokens.Token, actual tokens.Token) {
 	testName := fmt.Sprintf("Test #%d", testNumber)
 

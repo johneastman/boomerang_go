@@ -94,19 +94,20 @@ func getParam(key string, n Node) (*Node, error) {
 const (
 
 	// Statements
-	STMTS            = "Statements" // Super type
-	RETURN_VALUE     = "ReturnValue"
-	PRINT_STMT       = "PrintStatement"
-	ASSIGN_STMT      = "Assign"
-	TRUE_BRANCH      = "TrueBranch"
-	FALSE_BRANCH     = "FalseBranch"
-	CONDITION        = "Condition"
-	BLOCK_STATEMENTS = "BlockStatements"
-	FOR_LOOP         = "ForLoop"
-	FOR_LOOP_ELEMENT = "ForLoopElement"
+	STMTS                 = "Statements"
+	RETURN_VALUE          = "ReturnValue"
+	PRINT_STMT            = "PrintStatement"
+	ASSIGN_STMT           = "Assign"
+	TRUE_BRANCH           = "TrueBranch"
+	FALSE_BRANCH          = "FalseBranch"
+	CONDITION             = "Condition"
+	BLOCK_STATEMENTS      = "BlockStatements"
+	WHILE_LOOP            = "WhileLoop"
+	WHILE_LOOP_CONDITION  = "WhileLoopCondition"
+	WHILE_LOOP_STATEMENTS = "WhileLoopStatements"
 
 	// Expressions
-	EXPR                   = "Expression" // Super type
+	EXPR                   = "Expression"
 	UNARY_EXPR             = "UnaryExpression"
 	OPERATOR               = "Operator"
 	CALL_PARAMS            = "FunctionCallParameters"
@@ -123,6 +124,8 @@ const (
 	CASE                   = "Case"
 	CASE_VALUE             = "CaseValue"
 	CASE_STMTS             = "CaseStatements"
+	FOR_LOOP               = "ForLoop"
+	FOR_LOOP_ELEMENT       = "ForLoopElement"
 
 	// Factors
 	NUMBER     = "Number"
@@ -185,6 +188,10 @@ var indexMap = map[string]map[string]int{
 		FOR_LOOP_ELEMENT: 0,
 		LIST:             1,
 		BLOCK_STATEMENTS: 2,
+	},
+	WHILE_LOOP: {
+		WHILE_LOOP_CONDITION:  0,
+		WHILE_LOOP_STATEMENTS: 1,
 	},
 }
 
@@ -348,6 +355,17 @@ func CreateForLoop(lineNum int, elementPlaceholder Node, list Node, statements N
 		Params: []Node{
 			elementPlaceholder,
 			list,
+			statements,
+		},
+	}
+}
+
+func CreateWhileLoop(lineNum int, conditionExpression Node, statements Node) Node {
+	return Node{
+		Type:    WHILE_LOOP,
+		LineNum: lineNum,
+		Params: []Node{
+			conditionExpression,
 			statements,
 		},
 	}

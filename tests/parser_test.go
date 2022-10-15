@@ -523,6 +523,30 @@ func TestParser_WhenExpression_BooleanFalseAndNoElse(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
+func TestParser_WhileLoop(t *testing.T) {
+	actualAST := getAST("while i < 10 { i = i + 1; };")
+	expectedAST := []node.Node{
+		CreateWhileLoop(
+			node.CreateBinaryExpression(
+				CreateIdentifier("i"),
+				CreateTokenFromToken(tokens.LT_TOKEN),
+				CreateNumber("10"),
+			),
+			CreateBlockStatements([]node.Node{
+				CreateAssignmentStatement(
+					"i",
+					node.CreateBinaryExpression(
+						CreateIdentifier("i"),
+						CreateTokenFromToken(tokens.PLUS_TOKEN),
+						CreateNumber("1"),
+					),
+				),
+			}),
+		),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
 func TestParser_ForLoop(t *testing.T) {
 	actualAST := getAST("for e in list { print(e); };")
 	expectedAST := []node.Node{

@@ -61,12 +61,14 @@ const (
 	BLOCK_COMMENT        = "BLOCK_COMMENT"
 	NOT                  = "NOT"
 	EQ                   = "EQUAL"
+	LT                   = "LESS_THAN"
 	WHEN                 = "WHEN"
 	IS                   = "IS"
 	OR                   = "OR"
 	AND                  = "AND"
 	FOR                  = "FOR"
 	IN                   = "IN"
+	WHILE                = "WHILE"
 )
 
 // Tokens
@@ -90,6 +92,7 @@ var (
 	INLINE_COMMENT_TOKEN       = getToken(INLINE_COMMENT)
 	BLOCK_COMMENT_TOKEN        = getToken(BLOCK_COMMENT)
 	EQ_TOKEN                   = getToken(EQ)
+	LT_TOKEN                   = getToken(LT)
 
 	// Keywords
 	PRINT_TOKEN    = getToken(PRINT)
@@ -104,6 +107,7 @@ var (
 	AND_TOKEN      = getToken(AND)
 	FOR_TOKEN      = getToken(FOR)
 	IN_TOKEN       = getToken(IN)
+	WHILE_TOKEN    = getToken(WHILE)
 
 	// Data Types
 	NUMBER_TOKEN  = getToken(NUMBER)
@@ -134,6 +138,7 @@ var tokenData = []TokenMetaData{
 	{Type: IN, Literal: "in", IsKeyword: true},
 	{Type: BOOLEAN, Literal: "true", IsKeyword: true},
 	{Type: BOOLEAN, Literal: "false", IsKeyword: true},
+	{Type: WHILE, Literal: "while", IsKeyword: true},
 
 	// Identifier
 	{Type: IDENTIFIER, Literal: "[a-zA-Z]+[a-zA-Z0-9_]*"},
@@ -152,12 +157,13 @@ var tokenData = []TokenMetaData{
 	{Type: SEMICOLON, Literal: ";"},
 	{Type: OPEN_PAREN, Literal: "(", IsRegexChar: true},
 	{Type: CLOSED_PAREN, Literal: ")", IsRegexChar: true},
+	{Type: PTR, Literal: "<-"},
 	{Type: EQ, Literal: "=="},
+	{Type: LT, Literal: "<"},
 	{Type: ASSIGN, Literal: "="},
 	{Type: COMMA, Literal: ","},
 	{Type: OPEN_CURLY_BRACKET, Literal: "{", IsRegexChar: true},
 	{Type: CLOSED_CURLY_BRACKET, Literal: "}", IsRegexChar: true},
-	{Type: PTR, Literal: "<-"},
 	{Type: OPEN_BRACKET, Literal: "[", IsRegexChar: true},
 	{Type: CLOSED_BRACKET, Literal: "]", IsRegexChar: true},
 	{Type: AT, Literal: "@"},

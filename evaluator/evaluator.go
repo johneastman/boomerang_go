@@ -78,6 +78,12 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 		}
 		return nil, nil
 
+	case node.WHILE_LOOP:
+		if err := e.evaluateWhileLoop(stmt); err != nil {
+			return nil, err
+		}
+		return nil, nil
+
 	default:
 		return e.evaluateExpression(stmt)
 	}
@@ -104,6 +110,28 @@ func (e *evaluator) evaluatePrintStatement(stmt node.Node) error {
 			fmt.Printf("%s ", evaluatedParam.String())
 		} else {
 			fmt.Println(evaluatedParam.String())
+		}
+	}
+	return nil
+}
+
+func (e *evaluator) evaluateWhileLoop(stmt node.Node) error {
+	condition := stmt.GetParam(node.WHILE_LOOP_CONDITION)
+	statements := stmt.GetParam(node.WHILE_LOOP_STATEMENTS)
+
+	for {
+		evaluatedCondition, err := e.evaluateExpression(condition)
+		if err != nil {
+			return err
+		}
+
+		if evaluatedCondition.Equals(node.CreateBooleanTrue(stmt.LineNum)) {
+			_, err := e.evaluateBlockStatements(statements)
+			if err != nil {
+				return err
+			}
+		} else {
+			break
 		}
 	}
 	return nil
@@ -324,7 +352,10 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 		return e.index(*left, *right)
 
 	case tokens.EQ:
-		return e.compare(*left, *right)
+		return e.compareEQ(*left, *right)
+
+	case tokens.LT:
+		return e.compareLT(*left, *right)
 
 	case tokens.OR:
 		return e.booleanOr(*left, *right)
@@ -412,7 +443,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 	return returnValue, nil
 }
 
-func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error) {
+func (e *evaluator) compareEQ(left node.Node, right node.Node) (*node.Node, error) {
 
 	var booleanValue string
 	if left.Equals(right) {
@@ -422,6 +453,37 @@ func (e *evaluator) compare(left node.Node, right node.Node) (*node.Node, error)
 	}
 
 	return node.CreateBoolean(left.LineNum, booleanValue).Ptr(), nil
+}
+
+func (e *evaluator) compareLT(left node.Node, right node.Node) (*node.Node, error) {
+
+	if left.Type == node.NUMBER && right.Type == node.NUMBER {
+		var booleanValue string
+
+		leftNum, err := utils.ConvertStringToInteger(left.LineNum, left.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		rightNum, err := utils.ConvertStringToInteger(right.LineNum, right.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		if *leftNum < *rightNum {
+			booleanValue = tokens.TRUE_TOKEN.Literal
+		} else {
+			booleanValue = tokens.FALSE_TOKEN.Literal
+		}
+
+		return node.CreateBoolean(left.LineNum, booleanValue).Ptr(), nil
+	}
+	return nil, utils.CreateError(
+		left.LineNum,
+		"invalid types for less than: %s and %s",
+		left.ErrorDisplay(),
+		right.ErrorDisplay(),
+	)
 }
 
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
