@@ -18,7 +18,14 @@ I realized if I wanted this project to grow, I would need to use a statically-ty
 * [Syntax](docs/syntax.md)
 * [Builtin Functions](docs/builtins.md)
 
+## License
+This project is licensed under the [MIT License](LICENSE).
+
 ## Development Notes
+Notes related to development. For example, notes on how to contribute, project design/structure, previous features and/or why they were removed, etc. Anything that a developer or contributer may find helpful to know.
+
+
+This section is a work in progress.
 
 ### Language vs. Program Errors
 There are two types of errors: Language Errors and Program Errors. Language errors are caused by users writing Boomerang code, such as syntax errors, evaluation errors, etc. These errors are created with `utils.CreateError` in `utils.go`.
@@ -26,18 +33,9 @@ There are two types of errors: Language Errors and Program Errors. Language erro
 Program errors are errors created during development or by the developer. These errors should never be raised by users writing Boomerang code and exist to inform developers when the code is broken in some way. To raise a program error, use `panic`.
 
 ### Notes on Previous Features
+
 #### Removed `if-else` Expressions
-In [this commit](https://github.com/johneastman/boomerang/commit/32397105ad307c3467f6936cee2a17b74b01b3f8), `if-else` expressions were removed. This is because `when` expressions can be used to perform the same functionality. For example, if checking a series of expressions, one could write:
-```
-num = 0;
-when true {
-  is num == 0 { ... }
-  is num == 1 { ... }
-  is num == 2 { ... }
-  else { ... }
-};
-```
-One could also write `when false`, and the code block associated with the first expression to evaluate to `false` would run.
+In [this commit](https://github.com/johneastman/boomerang/commit/32397105ad307c3467f6936cee2a17b74b01b3f8), `if-else` expressions were removed. This is because `when` expressions can be used to perform the same functionality (see [When Expressions](docs/builtins.md#when-expression))
 
 #### Removed Return Statements
 I decided to remove `return` statements because at the moment, they don't serve much of a purpose. However, I'm saving these changes here in case return statements need to be reimplemented.
@@ -45,6 +43,3 @@ I decided to remove `return` statements because at the moment, they don't serve 
 Commits removed in:
 * https://github.com/johneastman/boomerang/commit/87b27269e30cb5dde6c642a140aa0572e730dc37
 * https://github.com/johneastman/boomerang/commit/af18663e98058bd01e9bcc2dfd48f68964cae081
-
-## License
-This project is licensed under the [MIT License](LICENSE).
