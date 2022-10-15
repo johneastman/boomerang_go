@@ -9,6 +9,7 @@ type TokenMetaData struct {
 	Literal     string
 	Type        string
 	IsRegexChar bool // Any characters in Boomerang that are the same as regex characters need to be escaped.
+	IsKeyword   bool
 }
 
 func (tmd *TokenMetaData) RegexPattern() string {
@@ -121,16 +122,18 @@ var tokenData = []TokenMetaData{
 	{Type: BOOLEAN, Literal: "(true|false)"},
 
 	// Keywords. Need to be defined before "IDENTIFIER" in this list so they are not misclassified
-	{Type: WHEN, Literal: "when"},
-	{Type: IS, Literal: "is"},
-	{Type: NOT, Literal: "not"},
-	{Type: OR, Literal: "or"},
-	{Type: AND, Literal: "and"},
-	{Type: ELSE, Literal: "else"},
-	{Type: PRINT, Literal: "print"},
-	{Type: FUNCTION, Literal: "func"},
-	{Type: FOR, Literal: "for"},
-	{Type: IN, Literal: "in"},
+	{Type: WHEN, Literal: "when", IsKeyword: true},
+	{Type: IS, Literal: "is", IsKeyword: true},
+	{Type: NOT, Literal: "not", IsKeyword: true},
+	{Type: OR, Literal: "or", IsKeyword: true},
+	{Type: AND, Literal: "and", IsKeyword: true},
+	{Type: ELSE, Literal: "else", IsKeyword: true},
+	{Type: PRINT, Literal: "print", IsKeyword: true},
+	{Type: FUNCTION, Literal: "func", IsKeyword: true},
+	{Type: FOR, Literal: "for", IsKeyword: true},
+	{Type: IN, Literal: "in", IsKeyword: true},
+	{Type: BOOLEAN, Literal: "true", IsKeyword: true},
+	{Type: BOOLEAN, Literal: "false", IsKeyword: true},
 
 	// Identifier
 	{Type: IDENTIFIER, Literal: "[a-zA-Z]+[a-zA-Z0-9_]*"},
@@ -160,6 +163,20 @@ var tokenData = []TokenMetaData{
 	{Type: AT, Literal: "@"},
 	{Type: BLOCK_COMMENT, Literal: "##"},
 	{Type: INLINE_COMMENT, Literal: "#"},
+}
+
+var keywords = getKeywords()
+
+func getKeywords() map[string]string {
+
+	keywordTokens := map[string]string{}
+
+	for _, tokenDatum := range tokenData {
+		if tokenDatum.IsKeyword {
+			keywordTokens[tokenDatum.Literal] = tokenDatum.Type
+		}
+	}
+	return keywordTokens
 }
 
 func getToken(name string) Token {

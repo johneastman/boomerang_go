@@ -82,6 +82,29 @@ func (t *Tokenizer) skipInlineComment() (*Token, error) {
 	return t.Next()
 }
 
+func (t *Tokenizer) isIdentifier(allowDigits bool) bool {
+	/* Identifiers (e.g., variables) can include digits in the name but can't start with digits. When 'allowDigits' is false,
+	 * only letters and underscores are allowed. When 'allowDigits' is true, digits are allowed.
+	 */
+	char := t.current()
+
+	isIdentifierWithoutDigits := 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_'
+	if allowDigits {
+		return isIdentifierWithoutDigits || '0' <= char && char <= '9'
+	}
+	return isIdentifierWithoutDigits
+}
+
+func (t *Tokenizer) readIdentifier() string {
+	startPos := t.currentPos
+	endPos := startPos
+	for t.isIdentifier(true) {
+		endPos += 1
+		t.advance()
+	}
+	return t.source[startPos:endPos]
+}
+
 func (t *Tokenizer) Next() (*Token, error) {
 	t.skipWhitespace()
 
@@ -89,6 +112,16 @@ func (t *Tokenizer) Next() (*Token, error) {
 		token := EOF_TOKEN
 		token.LineNumber = t.currentLineNumber
 		return &token, nil
+
+	} else if t.isIdentifier(false) {
+		literal := t.readIdentifier()
+
+		tokenType := IDENTIFIER
+		if keywordType, ok := keywords[literal]; ok {
+			tokenType = keywordType
+		}
+
+		return &Token{Type: tokenType, Literal: literal, LineNumber: t.currentLineNumber}, nil
 	}
 
 	token, err := t.getMatchingTokens()
