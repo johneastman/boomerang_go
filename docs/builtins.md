@@ -7,7 +7,26 @@
     * defaultValue: this value is returned if `list` is `(false)`, meaning no value was returned from the block statement. 
 * **Examples:**
   ```
-  unwrap <- (list, defaultValue)
+  list = (true, 5);
+  defaultValue = -1;
+  unwrap <- (list, defaultValue);
+  ```
+
+## unwrap_all
+* **Description:** get a list of values from a list of block statement return values.
+* **Arguments:**
+    * list: a list of values returned from a block statement (function call, if-else expression, for-loop, etc.). The values in this list will either be `(true, <VALUE>)` or `(false)`.
+    * defaultValue: this value is used if any of the values in `list` are `(false)`
+* **Examples:**
+  ```
+  list = (
+    (true, 5),
+    (false,),
+    (true, 10),
+    (true, 15),
+  );
+  defaultValue = -1;
+  unwrap_all <- (list, defaultValue); # return: (5, -1, 10, 15)
   ```
 
 ## len
@@ -19,9 +38,9 @@
   len <- (1, 2, 3);  # 3
 
   list = ("hello", "world");
-  len <- list  # 2
-  len <- ()    # 0
-  len <- (9,)  # 1
+  len <- list;  # 2
+  len <- ();    # 0
+  len <- (9,);  # 1
   ```
 
 ## slice
