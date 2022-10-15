@@ -14,6 +14,13 @@ func CreateError(lineNum int, errorMessage string, args ...any) error {
 	return fmt.Errorf(fullErrorMessage)
 }
 
+func CheckTypeError(lineNum int, actualType string, expectedType string) error {
+	if expectedType != actualType {
+		return CreateError(lineNum, "expected %s, got %s", expectedType, actualType)
+	}
+	return nil
+}
+
 func ConvertStringToInteger(lineNum int, value string) (*int, error) {
 	integer, err := strconv.Atoi(value)
 	if err != nil {

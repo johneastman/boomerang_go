@@ -78,12 +78,6 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 		}
 		return nil, nil
 
-	case node.FOR_LOOP:
-		if err := e.evaluateForLoop(stmt); err != nil {
-			return nil, err
-		}
-		return nil, nil
-
 	default:
 		return e.evaluateExpression(stmt)
 	}
@@ -112,44 +106,6 @@ func (e *evaluator) evaluatePrintStatement(stmt node.Node) error {
 			fmt.Println(evaluatedParam.String())
 		}
 	}
-	return nil
-}
-
-func (e *evaluator) evaluateForLoop(expr node.Node) error {
-	lineNum := expr.LineNum
-
-	elementVariableName := expr.GetParam(node.FOR_LOOP_ELEMENT)
-	list := expr.GetParam(node.LIST)
-	statements := expr.GetParam(node.BLOCK_STATEMENTS)
-
-	evaluatedList, err := e.evaluateExpression(list)
-	if err != nil {
-		return err
-	}
-
-	if evaluatedList.Type != node.LIST {
-		return utils.CreateError(
-			lineNum,
-			"invalid type for for loop: %s",
-			evaluatedList.ErrorDisplay(),
-		)
-	}
-
-	for _, element := range evaluatedList.Params {
-		// Assign the placeholder/element variable to the value of the current list element
-		placeHolderVariable := node.CreateAssignmentStatement(lineNum, elementVariableName.Value, element)
-		_, err = e.evaluateStatement(placeHolderVariable)
-		if err != nil {
-			return err
-		}
-
-		// Evaluate the block statements in the for-loop
-		_, err = e.evaluateBlockStatements(statements)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -186,6 +142,9 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 	case node.WHEN:
 		return e.evaluateWhenExpression(expr)
+
+	case node.FOR_LOOP:
+		return e.evaluateForLoop(expr)
 
 	default:
 		// This error will only happen if the developer has not implemented an expression type
@@ -246,6 +205,47 @@ func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, erro
 	}
 
 	return node.CreateRawString(stringExpression.LineNum, stringExpression.Value).Ptr(), nil
+}
+
+func (e *evaluator) evaluateForLoop(expr node.Node) (*node.Node, error) {
+	lineNum := expr.LineNum
+
+	elementVariableName := expr.GetParam(node.FOR_LOOP_ELEMENT)
+	list := expr.GetParam(node.LIST)
+	statements := expr.GetParam(node.BLOCK_STATEMENTS)
+
+	evaluatedList, err := e.evaluateExpression(list)
+	if err != nil {
+		return nil, err
+	}
+
+	if evaluatedList.Type != node.LIST {
+		return nil, utils.CreateError(
+			lineNum,
+			"invalid type for for loop: %s",
+			evaluatedList.ErrorDisplay(),
+		)
+	}
+
+	var values = []node.Node{}
+
+	for _, element := range evaluatedList.Params {
+		// Assign the placeholder/element variable to the value of the current list element
+		placeHolderVariable := node.CreateAssignmentStatement(lineNum, elementVariableName.Value, element)
+		_, err = e.evaluateStatement(placeHolderVariable)
+		if err != nil {
+			return nil, err
+		}
+
+		// Evaluate the block statements in the for-loop
+		result, err := e.evaluateBlockStatements(statements)
+		if err != nil {
+			return nil, err
+		}
+		values = append(values, *result)
+	}
+
+	return node.CreateList(lineNum, values).Ptr(), nil
 }
 
 func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.Node, error) {

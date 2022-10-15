@@ -692,6 +692,68 @@ func TestEvaluator_BuiltinUnwrapReturnValue(t *testing.T) {
 	}
 }
 
+func TestEvaluator_UnwrapAll(t *testing.T) {
+
+	tests := []struct {
+		BlockStatementReturnValues node.Node
+		ExpectedResult             node.Node
+	}{
+		{
+			BlockStatementReturnValues: CreateList([]node.Node{
+				CreateBlockStatementReturnValue(nil),
+				CreateBlockStatementReturnValue(nil),
+				CreateBlockStatementReturnValue(nil),
+			}),
+			ExpectedResult: CreateList([]node.Node{
+				CreateNumber("-1"),
+				CreateNumber("-1"),
+				CreateNumber("-1"),
+			}),
+		},
+		{
+			BlockStatementReturnValues: CreateList([]node.Node{
+				CreateBlockStatementReturnValue(CreateNumber("5").Ptr()),
+				CreateBlockStatementReturnValue(CreateNumber("10").Ptr()),
+				CreateBlockStatementReturnValue(CreateNumber("15").Ptr()),
+			}),
+			ExpectedResult: CreateList([]node.Node{
+				CreateNumber("5"),
+				CreateNumber("10"),
+				CreateNumber("15"),
+			}),
+		},
+		{
+			BlockStatementReturnValues: CreateList([]node.Node{
+				CreateBlockStatementReturnValue(CreateNumber("5").Ptr()),
+				CreateBlockStatementReturnValue(nil),
+				CreateBlockStatementReturnValue(CreateNumber("15").Ptr()),
+			}),
+			ExpectedResult: CreateList([]node.Node{
+				CreateNumber("5"),
+				CreateNumber("-1"),
+				CreateNumber("15"),
+			}),
+		},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateIdentifier("unwrap_all"),
+				[]node.Node{
+					test.BlockStatementReturnValues,
+					CreateNumber("-1"),
+				},
+			),
+		}
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			test.ExpectedResult,
+		}
+		AssertNodesEqual(t, i, expectedResults, actualResults)
+	}
+}
+
 func TestEvaluator_Slice(t *testing.T) {
 	ast := []node.Node{
 		CreateFunctionCall(
@@ -994,35 +1056,62 @@ func TestEvaluator_VariablesFromOuterScopes(t *testing.T) {
 }
 
 func TestEvaluator_ForLoop(t *testing.T) {
-	ast := []node.Node{
-		CreateAssignmentStatement("i", CreateNumber("0")),
-		CreateForLoop(
-			CreateIdentifier("e"),
-			CreateList([]node.Node{
-				CreateNumber("1"),
-				CreateNumber("2"),
-				CreateNumber("3"),
-				CreateNumber("4"),
-			}),
-			CreateBlockStatements([]node.Node{
+
+	tests := []struct {
+		BlockStatement node.Node
+		ReturnValue    node.Node
+	}{
+		{
+			BlockStatement: CreateBlockStatements([]node.Node{
 				CreateAssignmentStatement(
 					"i",
-					node.CreateBinaryExpression(
-						CreateIdentifier("i"),
-						CreateTokenFromToken(tokens.PLUS_TOKEN),
-						CreateIdentifier("e"),
-					),
+					CreateIdentifier("e"),
 				),
 			}),
-		),
-		CreateIdentifier("i"),
+			ReturnValue: CreateList([]node.Node{
+				CreateBlockStatementReturnValue(nil),
+				CreateBlockStatementReturnValue(nil),
+				CreateBlockStatementReturnValue(nil),
+				CreateBlockStatementReturnValue(nil),
+			}),
+		},
+		{
+			BlockStatement: CreateBlockStatements([]node.Node{
+				node.CreateBinaryExpression(
+					CreateIdentifier("e"),
+					CreateTokenFromToken(tokens.ASTERISK_TOKEN),
+					CreateIdentifier("e"),
+				),
+			}),
+			ReturnValue: CreateList([]node.Node{
+				CreateBlockStatementReturnValue(CreateNumber("1").Ptr()),
+				CreateBlockStatementReturnValue(CreateNumber("4").Ptr()),
+				CreateBlockStatementReturnValue(CreateNumber("9").Ptr()),
+				CreateBlockStatementReturnValue(CreateNumber("16").Ptr()),
+			}),
+		},
 	}
 
-	actualResults := getResults(ast)
-	expectedResults := []node.Node{
-		CreateNumber("10"),
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateForLoop(
+				CreateIdentifier("e"),
+				CreateList([]node.Node{
+					CreateNumber("1"),
+					CreateNumber("2"),
+					CreateNumber("3"),
+					CreateNumber("4"),
+				}),
+				test.BlockStatement,
+			),
+		}
+
+		actualResults := getResults(ast)
+		expectedResults := []node.Node{
+			test.ReturnValue,
+		}
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
-	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 /* * * * * * * *
@@ -1041,9 +1130,7 @@ func TestEvaluator_InvalidUnaryOperatorError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: invalid unary operator: PLUS (\"+\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_InvalidBinaryOperatorError(t *testing.T) {
@@ -1058,9 +1145,7 @@ func TestEvaluator_InvalidBinaryOperatorError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: invalid binary operator: NOT (\"not\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_FunctionCallError(t *testing.T) {
@@ -1078,9 +1163,7 @@ func TestEvaluator_FunctionCallError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: cannot make function call on type Number (\"1\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_FunctionCallWrongNumberOfArgumentsError(t *testing.T) {
@@ -1102,9 +1185,7 @@ func TestEvaluator_FunctionCallWrongNumberOfArgumentsError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: expected 1 arguments, got 2"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_IndexValueNotIntegerError(t *testing.T) {
@@ -1122,9 +1203,7 @@ func TestEvaluator_IndexValueNotIntegerError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: list index must be an integer"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_IndexOutOfRangeError(t *testing.T) {
@@ -1142,9 +1221,7 @@ func TestEvaluator_IndexOutOfRangeError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: index 3 out of range. Length of list: 1"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_IndexInvalidTypeError(t *testing.T) {
@@ -1160,9 +1237,7 @@ func TestEvaluator_IndexInvalidTypeError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: invalid types for index: Number (\"3\") and Number (\"3\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_AddInvalidTypesError(t *testing.T) {
@@ -1176,9 +1251,7 @@ func TestEvaluator_AddInvalidTypesError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: cannot add types String (\"hello\") and String (\" world!\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_SubtractInvalidTypesError(t *testing.T) {
@@ -1192,9 +1265,7 @@ func TestEvaluator_SubtractInvalidTypesError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: cannot subtract types String (\"hello\") and String (\" world!\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_MultiplyInvalidTypesError(t *testing.T) {
@@ -1208,9 +1279,7 @@ func TestEvaluator_MultiplyInvalidTypesError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: cannot multiply types String (\"hello\") and String (\" world!\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_DivideInvalidTypesError(t *testing.T) {
@@ -1225,9 +1294,7 @@ func TestEvaluator_DivideInvalidTypesError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: cannot divide types Boolean (\"true\") and Boolean (\"false\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_DivideZeroError(t *testing.T) {
@@ -1242,9 +1309,7 @@ func TestEvaluator_DivideZeroError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: cannot divide by zero"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_PointerInvalidTypesError(t *testing.T) {
@@ -1259,9 +1324,7 @@ func TestEvaluator_PointerInvalidTypesError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: cannot use pointer on types Boolean (\"true\") and Boolean (\"false\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_BangError(t *testing.T) {
@@ -1274,9 +1337,7 @@ func TestEvaluator_BangError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: invalid type for bang operator: Number (\"1\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_MinusUnayError(t *testing.T) {
@@ -1289,8 +1350,106 @@ func TestEvaluator_MinusUnayError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: invalid type for minus operator: Boolean (\"false\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
+	AssertErrorEqual(t, 0, expectedError, actualError)
+}
+
+func TestEvaluator_BuiltinUnwrapErrors(t *testing.T) {
+
+	tests := []struct {
+		Args  []node.Node
+		Error string
+	}{
+		{
+			Args: []node.Node{
+				CreateList([]node.Node{
+					CreateNumber("0"),
+				}),
+				CreateNumber("-1"),
+			},
+			Error: "error at line 1: expected Boolean, got Number",
+		},
+		{
+			Args: []node.Node{
+				CreateNumber("-1"),
+				CreateNumber("-1"),
+			},
+			Error: "error at line 1: expected List, got Number",
+		},
+		{
+			Args:  []node.Node{},
+			Error: "error at line 1: incorrect number of arguments. expected 2, got 0",
+		},
+		{
+			Args: []node.Node{
+				CreateNumber("-1"),
+			},
+			Error: "error at line 1: incorrect number of arguments. expected 2, got 1",
+		},
+		{
+			Args: []node.Node{
+				CreateNumber("-1"),
+				CreateNumber("-1"),
+				CreateNumber("-1"),
+			},
+			Error: "error at line 1: incorrect number of arguments. expected 2, got 3",
+		},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateIdentifier("unwrap"),
+				test.Args,
+			),
+		}
+
+		actualError := getError(t, ast)
+
+		AssertErrorEqual(t, i, test.Error, actualError)
+	}
+}
+
+func TestEvaluator_BuiltinUnwrapAllErrors(t *testing.T) {
+	/*
+		Not testing other errors associated with "unwrap" because "unwrap_all" calls the method associated
+		with "unwrap", so that would be duplicate testing.
+	*/
+
+	tests := []struct {
+		Args  []node.Node
+		Error string
+	}{
+		{
+			Args:  []node.Node{},
+			Error: "error at line 1: incorrect number of arguments. expected 2, got 0",
+		},
+		{
+			Args: []node.Node{
+				CreateNumber("-1"),
+			},
+			Error: "error at line 1: incorrect number of arguments. expected 2, got 1",
+		},
+		{
+			Args: []node.Node{
+				CreateNumber("-1"),
+				CreateNumber("-1"),
+				CreateNumber("-1"),
+			},
+			Error: "error at line 1: incorrect number of arguments. expected 2, got 3",
+		},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateIdentifier("unwrap_all"),
+				test.Args,
+			),
+		}
+
+		actualError := getError(t, ast)
+
+		AssertErrorEqual(t, i, test.Error, actualError)
 	}
 }
 
@@ -1363,9 +1522,7 @@ func TestEvaluator_BuiltinSliceIndexErrors(t *testing.T) {
 		actualError := getError(t, ast)
 		expectedError := test.Error
 
-		if expectedError != actualError {
-			t.Fatalf("Test #%d - Expected error: %s, Actual Error: %s", i, expectedError, actualError)
-		}
+		AssertErrorEqual(t, i, expectedError, actualError)
 	}
 }
 
@@ -1384,9 +1541,7 @@ func TestEvaluator_SliceInvalidTypeError(t *testing.T) {
 	actualError := getError(t, ast)
 	expectedError := "error at line 1: expected List, got Boolean (\"true\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %s, Actual Error: %s", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestEvaluator_SliceInvalidNumberOfArgumentsError(t *testing.T) {
@@ -1430,9 +1585,7 @@ func TestEvaluator_SliceInvalidNumberOfArgumentsError(t *testing.T) {
 		actualError := getError(t, ast)
 		expectedError := fmt.Sprintf("error at line 1: incorrect number of arguments. expected 3, got %d", len(test.Args))
 
-		if expectedError != actualError {
-			t.Fatalf("Test #%d - Expected error: %s, Actual Error: %s", i, expectedError, actualError)
-		}
+		AssertErrorEqual(t, i, expectedError, actualError)
 	}
 }
 

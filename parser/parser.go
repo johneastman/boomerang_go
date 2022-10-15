@@ -111,9 +111,6 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT) {
 		returnNode, err = p.parsePrintStatement()
 
-	} else if tokens.TokenTypesEqual(p.current, tokens.FOR) {
-		returnNode, err = p.parseForLoop()
-
 	} else {
 		returnNode, err = p.parseExpression(LOWEST)
 	}
@@ -263,6 +260,9 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 
 	case tokens.WHEN:
 		return p.parseWhenExpression()
+
+	case tokens.FOR:
+		return p.parseForLoop()
 
 	default:
 		current := p.current

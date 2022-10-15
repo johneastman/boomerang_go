@@ -117,24 +117,6 @@ value = printVal <- (2);
 
 To extract the actual return value of a block statement, use the builtin `unwrap` method. See [builtin functions](../docs/builtins.md) for more information.
 
-### For Loops
-Syntax: `for IDENTIFIER in LIST { STATEMENT, STATEMENT, ..., STATEMENT }`
-
-
-NOTE: for-loops are not expressions and do not return anything.
-
-
-Examples:
-```
-i = 0;
-list = (1, 2, 3, 4, 5);
-for element in list {
-  print(element);
-  i = i + e;
-};
-print(i);
-```
-
 ## Expressions
 
 ### Lists
@@ -253,3 +235,25 @@ when false {
 
 
 The block statement associated with the case matching the `when` expression is returned (see [Block Statements](#block-statements) for more information).
+
+### For Loops
+Syntax: `for IDENTIFIER in LIST { STATEMENT, STATEMENT, ..., STATEMENT }`
+
+
+For loops act similar to the `map` function in other languages. A new list is returned containing the result of the last expression or statement in the block statement. The resulting list will be a list of lists as a result of evaluating a block statement (see [Block Statements](#block-statements) for more information).
+
+
+Examples:
+```
+# Use for-loop as a regular loop
+list = (1, 2, 3, 4, 5);
+for element in list {  # for loop returns ((false), (false), (false), (false), (false))
+  print(element);
+};
+
+# use for-loop as map
+squared = for element in list {
+  element * element;
+};
+print(squared); # squared: ((true, 1), (true, 4), (true, 9), (true, 16), (true, 25))
+```

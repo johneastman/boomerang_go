@@ -10,9 +10,10 @@ import (
 
 const (
 	// Functions
-	BUILTIN_LEN    = "len"
-	BUILTIN_UNWRAP = "unwrap"
-	BUILTIN_SLICE  = "slice"
+	BUILTIN_LEN        = "len"
+	BUILTIN_UNWRAP     = "unwrap"
+	BUILTIN_SLICE      = "slice"
+	BUILTIN_UNWRAP_ALL = "unwrap_all"
 
 	// Variables
 	BUILTIN_PI = "pi"
@@ -44,9 +45,10 @@ var nArgsValue = -1
 
 func init() {
 	builtinFunctions = map[string]BuiltinFunction{
-		BUILTIN_LEN:    {NumArgs: nArgsValue, Function: evaluateBuiltinLen},
-		BUILTIN_UNWRAP: {NumArgs: 2, Function: evaluateBuiltinUnwrap},
-		BUILTIN_SLICE:  {NumArgs: 3, Function: evaluateBuiltinSlice},
+		BUILTIN_LEN:        {NumArgs: nArgsValue, Function: evaluateBuiltinLen},
+		BUILTIN_UNWRAP:     {NumArgs: 2, Function: evaluateBuiltinUnwrap},
+		BUILTIN_UNWRAP_ALL: {NumArgs: 2, Function: evaluateBuiltinUnwrapAll},
+		BUILTIN_SLICE:      {NumArgs: 3, Function: evaluateBuiltinSlice},
 	}
 
 	builtinVariables = map[string]BuiltinVariable{
@@ -152,9 +154,19 @@ func evaluateBuiltinUnwrap(eval *evaluator, lineNum int, callParameters []node.N
 		return nil, err
 	}
 
+	// Check that the first value passed to "unwrap" is a list
+	if err := utils.CheckTypeError(lineNum, returnValueList.Type, node.LIST); err != nil {
+		return nil, err
+	}
+
 	// "returnValueList.Params[0]" contains the boolean value, denoting whether the function returned a value
 	returnValueListFirst, err := eval.evaluateExpression(returnValueList.Params[0])
 	if err != nil {
+		return nil, err
+	}
+
+	// Check that the first value in the block statement return value is a boolean value
+	if err := utils.CheckTypeError(lineNum, returnValueListFirst.Type, node.BOOLEAN); err != nil {
 		return nil, err
 	}
 
@@ -166,6 +178,54 @@ func evaluateBuiltinUnwrap(eval *evaluator, lineNum int, callParameters []node.N
 
 	// if "returnValueList.Params[0]" is "false", return the default value given to "unwrap".
 	return eval.evaluateExpression(callParameters[1])
+}
+
+func evaluateBuiltinUnwrapAll(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+	/*
+		This function could easily be implemented in pure Boomerang code; for example:
+		```
+		unwrap_all = func(list, default) {
+			newList = ()
+			for e in list {
+				newList = newList <- (unwrap <- (e, 0));
+			};
+			newList;
+		};
+
+		list = ((true, 1), (true, 2), (true, 3));
+		unwrap_all <- (list, -1);
+		```
+		However, in the example above, because "unwrap" always returns a valid value, the return value would always be
+		"(true, newList)". So, I decided "unwrap_all" should be a builtin method that just returns the list of values.
+	*/
+	list, err := eval.evaluateExpression(callParameters[0])
+	if err != nil {
+		return nil, err
+	}
+
+	if err := utils.CheckTypeError(lineNum, list.Type, node.LIST); err != nil {
+		return nil, err
+	}
+
+	defaultValue := callParameters[1] // will be evaluated in "evaluateBuiltinUnwrap"
+
+	unwrappedList := []node.Node{}
+
+	for _, param := range list.Params {
+		/*
+			"param" is the block statement return value ("(false)" or "(true, <VALUE>)"), so to utilize "evaluateBuiltinUnwrap",
+			"param" and the default value are sent to "evaluateBuiltinUnwrap" as the call parameters.
+
+			unwrap_all is essentially just calling "unwrap" on every element in the list (see example in comment above).
+			```
+		*/
+		value, err := evaluateBuiltinUnwrap(eval, lineNum, []node.Node{param, defaultValue})
+		if err != nil {
+			return nil, err
+		}
+		unwrappedList = append(unwrappedList, *value)
+	}
+	return node.CreateList(lineNum, unwrappedList).Ptr(), nil
 }
 
 func evaluateBuiltinLen(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {

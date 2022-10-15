@@ -196,3 +196,20 @@ func AssertExpectedOutput(t *testing.T, expectedOutput string, f func()) {
 		t.Fatalf("Expected %#v, got %#v", "1 2 3\n", actualOutput)
 	}
 }
+
+func AssertErrorEqual(t *testing.T, testNumber int, expected string, actual string) {
+	testName := fmt.Sprintf("Test #%d", testNumber)
+
+	t.Run(testName, func(t *testing.T) {
+		if err := assertErrorEqual(expected, actual); err != nil {
+			t.Fatal(err.Error())
+		}
+	})
+}
+
+func assertErrorEqual(expected string, actual string) error {
+	if expected != actual {
+		return fmt.Errorf("expected error: %s; actual error: %s", expected, actual)
+	}
+	return nil
+}
