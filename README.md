@@ -35,7 +35,7 @@ Program errors are errors created during development or by the developer. These 
 ### Notes on Previous Features
 
 #### Removed `if-else` Expressions
-In [this commit](https://github.com/johneastman/boomerang/commit/32397105ad307c3467f6936cee2a17b74b01b3f8), `if-else` expressions were removed. This is because `when` expressions can be used to perform the same functionality (see [When Expressions](docs/builtins.md#when-expression))
+In [this commit](https://github.com/johneastman/boomerang/commit/32397105ad307c3467f6936cee2a17b74b01b3f8), `if-else` expressions were removed. This is because `when` expressions can be used to perform the same functionality (see [When Expressions](docs/syntax.md#when-expressions))
 
 #### Removed Return Statements
 I decided to remove `return` statements because at the moment, they don't serve much of a purpose. However, I'm saving these changes here in case return statements need to be reimplemented.
