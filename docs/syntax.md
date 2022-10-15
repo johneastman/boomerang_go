@@ -12,6 +12,7 @@
     * [Lists](#lists)
     * [Functions](#functions)
     * [When Expressions](#when-expressions)
+    * [For Loops](#for-loops)
 
 ## Comments
 There are two types of comments:
@@ -177,8 +178,10 @@ result = unwrap <- (value, 2) # result: 2
 
 ### When Expressions
 Syntax:
+* **NOTE:** `NOTHING` is the absense of characters
+* `|` means "or"
 ```
-when [EXPRESSION | NOT | NOTHING] { 
+when [EXPRESSION | not | NOTHING] { 
   [is | NOTHING] EXPRESSION { 
     STATEMENT;
     STATEMENT;
@@ -200,10 +203,10 @@ when [EXPRESSION | NOT | NOTHING] {
   }
 };
 ```
-The block statement associated with the case matching the `when` expression is returned (see [Block Statements](#block-statements) for more information).
+The block statement associated with the case matching the `when` expression is run and the value of the last statement or expression is returned (see [Block Statements](#block-statements) for more information).
 
 
-`when` expressions act as both "if-'else if'-else" and switch statements, depending on how they are implemented (although in Boomerang, `when` is an expression and can return a value). When the implementation acts as a switch statement, a value is provided after `when` and the `is` keyword denotes each case; for example:
+`when` expressions act as both "if-'else if'-else" and switch statements, depending on how they are implemented (although in Boomerang, `when` is an expression and can return a value). When the implementation acts as a switch statement, an expression is provided after `when` and the `is` keyword comes before each case. For example:
 ```
 num = 0;
 when num {
@@ -214,7 +217,7 @@ when num {
 };
 ```
 
-When then implementation acts as an `if-"else if"-else` statement, no value is provided after `when` for `true`, and `not` is provided `false`. Below are some examples:
+When then implementation acts as an "if-'else if'-else" statement, nothing is provided after `when` for `true`, and `not` is provided `false`. Below are some examples:
 ```
 # The code block for "num == 0" is run because `num` does equal 1.
 num = 0;
