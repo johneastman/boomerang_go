@@ -516,10 +516,24 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 		return nil, err
 	}
 
-	// parse expression after "when"
-	whenExpression, err := p.parseExpression(LOWEST)
-	if err != nil {
-		return nil, err
+	var whenExpression *node.Node
+	switch p.current.Type {
+	case tokens.OPEN_CURLY_BRACKET:
+		whenExpression = node.CreateBooleanTrue(lineNumber).Ptr()
+	case tokens.NOT:
+		whenExpression = node.CreateBooleanFalse(lineNumber).Ptr()
+
+		if err := p.advance(); err != nil {
+			return nil, err
+		}
+
+	default:
+		// parse expression after "when"
+		var err error
+		whenExpression, err = p.parseExpression(LOWEST)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// expect open curly bracket
@@ -529,10 +543,53 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 
 	// Parse is/case expressions
 	caseNodes := []node.Node{}
-	for p.current.Type != tokens.ELSE {
+	for {
+		/*
+			When the "when" expression is being used for boolean values, "is" is not allowed, but is expected for
+			non-boolean values. This ensures the sequence of tokens are readable for the context.
 
-		if err := p.expectToken(tokens.IS_TOKEN); err != nil {
-			return nil, err
+			For example, when comparing a value, the code reads "when num [is 0 | is 1 | is 2 | else]"
+			```
+			num = 0;
+			when num {
+				is 0 { ... }
+				is 1 { ... }
+				is 2 { ... }
+				else { ... }
+			};
+			```
+
+			But when using "when" for boolean comparison, "is" does not make sense. It makes more sense to say "when [num == 0 |
+			num == 1 | num == 2 | else]".
+			```
+			when {
+				num == 0 { ... }
+				num == 1 { ... }
+				num == 2 { ... }
+				else { ... }
+			};
+			```
+
+			This also works with "not" ("when not [num == 0 | num == 1 | num == 2 | else]"):
+			```
+			when not {
+				num == 0 { ... }
+				num == 1 { ... }
+				num == 2 { ... }
+				else { ... }
+			};
+			```
+
+			If the user enters "when true" or "when false", the boolean structure is enforced.
+		*/
+		if whenExpression.Type != node.BOOLEAN {
+			if err := p.expectToken(tokens.IS_TOKEN); err != nil {
+				return nil, err
+			}
+		} else {
+			if p.current.Type == tokens.IS {
+				return nil, utils.CreateError(lineNumber, "\"%s\" not allowed for boolean values", tokens.IS)
+			}
 		}
 
 		caseExpression, err := p.parseExpression(LOWEST)
@@ -551,24 +608,38 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 
 		caseNode := node.CreateCaseNode(caseExpression.LineNum, *caseExpression, *caseStatements)
 		caseNodes = append(caseNodes, caseNode)
+
+		if p.current.Type == tokens.ELSE || p.current.Type == tokens.CLOSED_CURLY_BRACKET {
+			break
+		}
 	}
 
-	// Parse else/default case
-	if err := p.expectToken(tokens.ELSE_TOKEN); err != nil {
-		return nil, err
-	}
+	elseStatements := node.CreateBlockStatements(lineNumber, []node.Node{}).Ptr()
 
-	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
-		return nil, err
-	}
+	if p.current.Type == tokens.ELSE {
+		if err := p.advance(); err != nil {
+			return nil, err
+		}
 
-	elseStatements, err := p.parseBlockStatements()
-	if err != nil {
-		return nil, err
-	}
+		if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
+			return nil, err
+		}
 
-	if err := p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN); err != nil {
-		return nil, err
+		var err error
+		elseStatements, err = p.parseBlockStatements()
+		if err != nil {
+			return nil, err
+		}
+
+		if err := p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN); err != nil {
+			return nil, err
+		}
+
+	} else {
+		// If no "else" is provided, expected the closing curly bracket of the "when" block
+		if err := p.expectToken(tokens.CLOSED_CURLY_BRACKET_TOKEN); err != nil {
+			return nil, err
+		}
 	}
 
 	return node.CreateWhenNode(lineNumber, *whenExpression, caseNodes, *elseStatements).Ptr(), nil

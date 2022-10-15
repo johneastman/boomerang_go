@@ -178,21 +178,21 @@ result = unwrap <- (value, 2) # result: 2
 ### When Expressions
 Syntax:
 ```
-when EXPRESSION { 
-  is EXPRESSION { 
+when [EXPRESSION | NOT | NOTHING] { 
+  [is | NOTHING] EXPRESSION { 
     STATEMENT;
     STATEMENT;
     ...
     STATEMENT;
   }
-  is EXPRESSION { 
+  [is | NOTHING] EXPRESSION { 
     STATEMENT;
     STATEMENT;
     ...;
     STATEMENT
   }
   ...
-  else {
+  [else | NOTHING] {
     STATEMENT;
     STATEMENT;
     ...;
@@ -200,11 +200,11 @@ when EXPRESSION {
   }
 };
 ```
+The block statement associated with the case matching the `when` expression is returned (see [Block Statements](#block-statements) for more information).
 
 
-When expressions act as both `if-else if-else` and `switch` statements, depending on how they are implemented. Below are some examples
+`when` expressions act as both "if-'else if'-else" and switch statements, depending on how they are implemented (although in Boomerang, `when` is an expression and can return a value). When the implementation acts as a switch statement, a value is provided after `when` and the `is` keyword denotes each case; for example:
 ```
-# switch
 num = 0;
 when num {
   is 0 { ... }
@@ -212,29 +212,57 @@ when num {
   ...
   else { ... }
 };
+```
 
-# if-else if-else
+When then implementation acts as an `if-"else if"-else` statement, no value is provided after `when` for `true`, and `not` is provided `false`. Below are some examples:
+```
+# The code block for "num == 0" is run because `num` does equal 1.
 num = 0;
-when true {
-  is num == 0 { ... }
-  is num == 1 { ... }
+when {
+  num == 0 { ... }
+  num == 1 { ... }
   ...
   else { ... }
 };
 
-# putting "false" after "when" means the code block associated with the first expression to evaluates to
-# "false" is executed.
+# The code block for "num == 1" is run because `num` does not equal 1.
 num = 0;
-when false {
-  is num == 0 { ... }
-  is num == 1 { ... }
+when not {
+  num == 0 { ... }
+  num == 1 { ... }
   ...
   else { ... }
 };
 ```
 
+Additionally, the "else" block is not required:
+```
+when {
+  true { ... }
+  false { ... }
+};
+```
+If none of the conditions are a match, the `when` expression will return `(false)`:
+```
+num = 0;
+value = when num {
+  is 1 { ... }
+  is 2 { ... }
+};
+print(value); # value: (false)
+```
 
-The block statement associated with the case matching the `when` expression is returned (see [Block Statements](#block-statements) for more information).
+Be aware that these slight syntactic differences are enforced by the language. The following examples will produce errors:
+```
+when {
+  is true { ... }  # ERROR
+};
+
+num = 1;
+when num {
+  1 { ... }  # ERROR
+};
+```
 
 ### For Loops
 Syntax: `for IDENTIFIER in LIST { STATEMENT, STATEMENT, ..., STATEMENT }`

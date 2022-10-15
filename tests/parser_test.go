@@ -446,7 +446,7 @@ func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
-func TestParser_WhenExpression(t *testing.T) {
+func TestParser_WhenExpression_NotBoolean(t *testing.T) {
 	actualAST := getAST("when pos { is 0 { 5; } is 1 { 10; } else { 15; } };")
 	expectedAST := []node.Node{
 		CreateWhenNode(
@@ -468,6 +468,56 @@ func TestParser_WhenExpression(t *testing.T) {
 			CreateBlockStatements([]node.Node{
 				CreateNumber("15"),
 			}),
+		),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
+func TestParser_WhenExpression_BooleanTrueAndNoElse(t *testing.T) {
+	actualAST := getAST("when { true { 5; } false { 10; } };")
+	expectedAST := []node.Node{
+		CreateWhenNode(
+			CreateBooleanTrue(),
+			[]node.Node{
+				CreateWhenCaseNode(
+					CreateBooleanTrue(),
+					CreateBlockStatements([]node.Node{
+						CreateNumber("5"),
+					}),
+				),
+				CreateWhenCaseNode(
+					CreateBooleanFalse(),
+					CreateBlockStatements([]node.Node{
+						CreateNumber("10"),
+					}),
+				),
+			},
+			CreateBlockStatements([]node.Node{}),
+		),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
+func TestParser_WhenExpression_BooleanFalseAndNoElse(t *testing.T) {
+	actualAST := getAST("when not { true { 5; } false { 10; } };")
+	expectedAST := []node.Node{
+		CreateWhenNode(
+			CreateBooleanFalse(),
+			[]node.Node{
+				CreateWhenCaseNode(
+					CreateBooleanTrue(),
+					CreateBlockStatements([]node.Node{
+						CreateNumber("5"),
+					}),
+				),
+				CreateWhenCaseNode(
+					CreateBooleanFalse(),
+					CreateBlockStatements([]node.Node{
+						CreateNumber("10"),
+					}),
+				),
+			},
+			CreateBlockStatements([]node.Node{}),
 		),
 	}
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
@@ -497,26 +547,43 @@ func TestParser_UnexpectedTokenError(t *testing.T) {
 	actualError := getParserError(t, "1")
 	expectedError := "error at line 1: expected token type SEMICOLON (\";\"), got EOF (\"\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %#v, Actual Error: %#v", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestParser_InvalidPrefixError(t *testing.T) {
 	actualError := getParserError(t, "+;")
 	expectedError := "error at line 1: invalid prefix: PLUS (\"+\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %#v, Actual Error: %#v", expectedError, actualError)
-	}
+	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
 func TestParser_InvalidPrefixForGroupedExpressionError(t *testing.T) {
 	actualError := getParserError(t, "(1];")
 	expectedError := "error at line 1: expected CLOSED_PAREN (\")\") or COMMA (\",\"), got CLOSED_BRACKET (\"]\")"
 
-	if expectedError != actualError {
-		t.Fatalf("Expected error: %#v, Actual Error: %#v", expectedError, actualError)
+	AssertErrorEqual(t, 0, expectedError, actualError)
+}
+
+func TestParser_WhenExpressionErrors(t *testing.T) {
+
+	tests := []struct {
+		Source string
+		Error  string
+	}{
+		{
+			Source: "when { is",
+			Error:  "error at line 1: \"IS\" not allowed for boolean values",
+		},
+		{
+			Source: "when num { 1",
+			Error:  "error at line 1: expected token type IS (\"is\"), got NUMBER (\"1\")",
+		},
+	}
+
+	for _, test := range tests {
+		actualError := getParserError(t, test.Source)
+
+		AssertErrorEqual(t, 0, test.Error, actualError)
 	}
 }
 
