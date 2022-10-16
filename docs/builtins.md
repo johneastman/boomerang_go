@@ -56,3 +56,16 @@
   slice <- (list, 0, 0);  # (1,)
   slice <- (list, 4, 2);  # error because the start index cannot be greater than the end index
   ```
+
+## range
+* **Description:** return a list of numbers incrementing from the start value to the end value (inclusive).
+* **Arguments:**
+    * startValue: the number starting the sequence (the first element of the list)
+    * endValue: the number ending the sequence (the last element in the list)
+* **Examples:**
+  ```
+  range <- (0, 5)    # (0, 1, 2, 3, 4, 5)
+  range <- (10, 20)  # (10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+  range <- (0, 0)    # (0)
+  range <- (0, -1)   # ()
+  ```

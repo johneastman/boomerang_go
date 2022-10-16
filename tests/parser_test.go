@@ -2,7 +2,6 @@ package tests
 
 import (
 	"boomerang/node"
-	"boomerang/parser"
 	"boomerang/tokens"
 	"fmt"
 	"testing"
@@ -17,7 +16,7 @@ func TestParser_Numbers(t *testing.T) {
 	}
 
 	for i, number := range numbers {
-		actualAST := getAST(fmt.Sprintf("%s;", number))
+		actualAST := getParserAST(fmt.Sprintf("%s;", number))
 		expectedAST := []node.Node{
 			CreateNumber(number),
 		}
@@ -42,7 +41,7 @@ func TestParser_Booleans(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		actualAST := getAST(fmt.Sprintf("%s;", test.Source))
+		actualAST := getParserAST(fmt.Sprintf("%s;", test.Source))
 		expectedAST := []node.Node{
 			test.ExpectedNode,
 		}
@@ -97,7 +96,7 @@ func TestParser_Strings(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		actualAST := getAST(fmt.Sprintf("\"%s\";", test.InputSource))
+		actualAST := getParserAST(fmt.Sprintf("\"%s\";", test.InputSource))
 		expectedAST := []node.Node{
 			node.CreateString(1, test.OutputSource, test.Params),
 		}
@@ -152,7 +151,7 @@ func TestParser_TestParameters(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		actualAST := getAST(fmt.Sprintf("%s;", test.Source))
+		actualAST := getParserAST(fmt.Sprintf("%s;", test.Source))
 		expectedAST := []node.Node{
 			CreateList(test.Params),
 		}
@@ -162,7 +161,7 @@ func TestParser_TestParameters(t *testing.T) {
 }
 
 func TestParser_NegativeNumber(t *testing.T) {
-	actualAST := getAST("-66;")
+	actualAST := getParserAST("-66;")
 	expectedAST := []node.Node{
 		node.CreateUnaryExpression(
 			CreateTokenFromToken(tokens.MINUS_TOKEN),
@@ -174,7 +173,7 @@ func TestParser_NegativeNumber(t *testing.T) {
 }
 
 func TestParser_Bang(t *testing.T) {
-	actualAST := getAST("not true;")
+	actualAST := getParserAST("not true;")
 	expectedAST := []node.Node{
 		node.CreateUnaryExpression(
 			CreateTokenFromToken(tokens.NOT_TOKEN),
@@ -227,7 +226,7 @@ func TestParser_BinaryExpression(t *testing.T) {
 
 	for i, test := range tests {
 		source := fmt.Sprintf("%s;", test.Source)
-		actualAST := getAST(source)
+		actualAST := getParserAST(source)
 		expectedAST := []node.Node{
 			test.ExpectedAST,
 		}
@@ -236,7 +235,7 @@ func TestParser_BinaryExpression(t *testing.T) {
 }
 
 func TestParser_Parentheses(t *testing.T) {
-	actualAST := getAST("7 + (3);")
+	actualAST := getParserAST("7 + (3);")
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			CreateNumber("7"),
@@ -249,7 +248,7 @@ func TestParser_Parentheses(t *testing.T) {
 
 func TestParser_ParenthesesBinaryExpression(t *testing.T) {
 
-	actualAST := getAST("7 + (5 - 2);")
+	actualAST := getParserAST("7 + (5 - 2);")
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			CreateNumber("7"),
@@ -265,7 +264,7 @@ func TestParser_ParenthesesBinaryExpression(t *testing.T) {
 }
 
 func TestParser_VariableAssignment(t *testing.T) {
-	actualAST := getAST("variable = 8 / 2;")
+	actualAST := getParserAST("variable = 8 / 2;")
 	expectedAST := []node.Node{
 		CreateAssignmentStatement(
 			"variable",
@@ -280,7 +279,7 @@ func TestParser_VariableAssignment(t *testing.T) {
 }
 
 func TestParser_Identifier(t *testing.T) {
-	actualAST := getAST("variable;")
+	actualAST := getParserAST("variable;")
 	expectedAST := []node.Node{
 		CreateIdentifier("variable"),
 	}
@@ -289,7 +288,7 @@ func TestParser_Identifier(t *testing.T) {
 }
 
 func TestParser_PrintStatement(t *testing.T) {
-	actualAST := getAST("print(1, 2, variable);")
+	actualAST := getParserAST("print(1, 2, variable);")
 	expectedAST := []node.Node{
 		CreatePrintStatement(
 			[]node.Node{
@@ -303,7 +302,7 @@ func TestParser_PrintStatement(t *testing.T) {
 }
 
 func TestParser_PrintStatementNoArguments(t *testing.T) {
-	actualAST := getAST("print();")
+	actualAST := getParserAST("print();")
 	expectedAST := []node.Node{
 		CreatePrintStatement([]node.Node{}),
 	}
@@ -311,7 +310,7 @@ func TestParser_PrintStatementNoArguments(t *testing.T) {
 }
 
 func TestParser_Function(t *testing.T) {
-	actualAST := getAST("func(a, b) { a + b; };")
+	actualAST := getParserAST("func(a, b) { a + b; };")
 	expectedAST := []node.Node{
 		CreateFunction(
 			[]node.Node{
@@ -331,7 +330,7 @@ func TestParser_Function(t *testing.T) {
 }
 
 func TestParser_FunctionNoParameters(t *testing.T) {
-	actualAST := getAST("func() { 3 + 4; };")
+	actualAST := getParserAST("func() { 3 + 4; };")
 	expectedAST := []node.Node{
 		CreateFunction(
 			[]node.Node{},
@@ -348,7 +347,7 @@ func TestParser_FunctionNoParameters(t *testing.T) {
 }
 
 func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
-	actualAST := getAST("func() {};")
+	actualAST := getParserAST("func() {};")
 	expectedAST := []node.Node{
 		CreateFunction(
 			[]node.Node{},
@@ -359,7 +358,7 @@ func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
 }
 
 func TestParser_FunctionCallWithNoParameters(t *testing.T) {
-	actualAST := getAST("divide <- ();")
+	actualAST := getParserAST("divide <- ();")
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			CreateIdentifier("divide"),
@@ -371,7 +370,7 @@ func TestParser_FunctionCallWithNoParameters(t *testing.T) {
 }
 
 func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
-	actualAST := getAST("func(c, d) { d - c; } <- (10, 2);")
+	actualAST := getParserAST("func(c, d) { d - c; } <- (10, 2);")
 
 	functionNode := CreateFunction(
 		[]node.Node{
@@ -401,7 +400,7 @@ func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
 }
 
 func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
-	actualAST := getAST("multiply <- (10, 3);")
+	actualAST := getParserAST("multiply <- (10, 3);")
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			CreateIdentifier("multiply"),
@@ -416,7 +415,7 @@ func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
 }
 
 func TestParser_ListIndex(t *testing.T) {
-	actualAST := getAST("numbers @ 1;")
+	actualAST := getParserAST("numbers @ 1;")
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			CreateIdentifier("numbers"),
@@ -428,7 +427,7 @@ func TestParser_ListIndex(t *testing.T) {
 }
 
 func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
-	actualAST := getAST("add <- (3, 4) + 3;")
+	actualAST := getParserAST("add <- (3, 4) + 3;")
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			node.CreateBinaryExpression(
@@ -447,7 +446,7 @@ func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
 }
 
 func TestParser_WhenExpression_NotBoolean(t *testing.T) {
-	actualAST := getAST("when pos { is 0 { 5; } is 1 { 10; } else { 15; } };")
+	actualAST := getParserAST("when pos { is 0 { 5; } is 1 { 10; } else { 15; } };")
 	expectedAST := []node.Node{
 		CreateWhenNode(
 			CreateIdentifier("pos"),
@@ -474,7 +473,7 @@ func TestParser_WhenExpression_NotBoolean(t *testing.T) {
 }
 
 func TestParser_WhenExpression_BooleanTrueAndNoElse(t *testing.T) {
-	actualAST := getAST("when { true { 5; } false { 10; } };")
+	actualAST := getParserAST("when { true { 5; } false { 10; } };")
 	expectedAST := []node.Node{
 		CreateWhenNode(
 			CreateBooleanTrue(),
@@ -499,7 +498,7 @@ func TestParser_WhenExpression_BooleanTrueAndNoElse(t *testing.T) {
 }
 
 func TestParser_WhenExpression_BooleanFalseAndNoElse(t *testing.T) {
-	actualAST := getAST("when not { true { 5; } false { 10; } };")
+	actualAST := getParserAST("when not { true { 5; } false { 10; } };")
 	expectedAST := []node.Node{
 		CreateWhenNode(
 			CreateBooleanFalse(),
@@ -524,7 +523,7 @@ func TestParser_WhenExpression_BooleanFalseAndNoElse(t *testing.T) {
 }
 
 func TestParser_WhileLoop(t *testing.T) {
-	actualAST := getAST("while i < 10 { i = i + 1; };")
+	actualAST := getParserAST("while i < 10 { i = i + 1; };")
 	expectedAST := []node.Node{
 		CreateWhileLoop(
 			node.CreateBinaryExpression(
@@ -548,7 +547,7 @@ func TestParser_WhileLoop(t *testing.T) {
 }
 
 func TestParser_ForLoop(t *testing.T) {
-	actualAST := getAST("for e in list { print(e); };")
+	actualAST := getParserAST("for e in list { print(e); };")
 	expectedAST := []node.Node{
 		CreateForLoop(
 			CreateIdentifier("e"),
@@ -609,34 +608,4 @@ func TestParser_WhenExpressionErrors(t *testing.T) {
 
 		AssertErrorEqual(t, 0, test.Error, actualError)
 	}
-}
-
-func getAST(source string) []node.Node {
-	t := tokens.NewTokenizer(source)
-
-	p, err := parser.NewParser(t)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	ast, err := p.Parse()
-	if err != nil {
-		panic(err.Error())
-	}
-	return *ast
-}
-
-func getParserError(t *testing.T, source string) string {
-	tokenizer := tokens.NewTokenizer(source)
-
-	p, err := parser.NewParser(tokenizer)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	_, err = p.Parse()
-	if err == nil {
-		t.Fatalf("Expected error to not be nil")
-	}
-	return err.Error()
 }

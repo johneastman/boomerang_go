@@ -14,6 +14,7 @@ const (
 	BUILTIN_UNWRAP     = "unwrap"
 	BUILTIN_SLICE      = "slice"
 	BUILTIN_UNWRAP_ALL = "unwrap_all"
+	BUILTIN_RANGE      = "range"
 
 	// Variables
 	BUILTIN_PI = "pi"
@@ -49,6 +50,7 @@ func init() {
 		BUILTIN_UNWRAP:     {NumArgs: 2, Function: evaluateBuiltinUnwrap},
 		BUILTIN_UNWRAP_ALL: {NumArgs: 2, Function: evaluateBuiltinUnwrapAll},
 		BUILTIN_SLICE:      {NumArgs: 3, Function: evaluateBuiltinSlice},
+		BUILTIN_RANGE:      {NumArgs: 2, Function: evaluateBuiltinRange},
 	}
 
 	builtinVariables = map[string]BuiltinVariable{
@@ -231,4 +233,43 @@ func evaluateBuiltinUnwrapAll(eval *evaluator, lineNum int, callParameters []nod
 func evaluateBuiltinLen(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
 	value := len(callParameters)
 	return node.CreateNumber(lineNum, fmt.Sprint(value)).Ptr(), nil
+}
+
+func evaluateBuiltinRange(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+
+	startNumber, err := eval.evaluateExpression(callParameters[0])
+	if err != nil {
+		return nil, err
+	}
+
+	if err := utils.CheckTypeError(lineNum, startNumber.Type, node.NUMBER); err != nil {
+		return nil, err
+	}
+
+	startValue, err := utils.ConvertStringToInteger(lineNum, startNumber.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	endNumber, err := eval.evaluateExpression(callParameters[1])
+	if err != nil {
+		return nil, err
+	}
+
+	if err := utils.CheckTypeError(lineNum, endNumber.Type, node.NUMBER); err != nil {
+		return nil, err
+	}
+
+	endValue, err := utils.ConvertStringToInteger(lineNum, endNumber.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	numbersNodeValues := []node.Node{}
+	for i := *startValue; i <= *endValue; i++ {
+		numberNode := node.CreateNumber(lineNum, fmt.Sprint(i))
+		numbersNodeValues = append(numbersNodeValues, numberNode)
+	}
+
+	return node.CreateList(lineNum, numbersNodeValues).Ptr(), nil
 }

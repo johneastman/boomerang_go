@@ -1,7 +1,9 @@
 package tests
 
 import (
+	"boomerang/evaluator"
 	"boomerang/node"
+	"boomerang/parser"
 	"boomerang/tokens"
 	"fmt"
 	"io"
@@ -10,6 +12,59 @@ import (
 )
 
 const TEST_LINE_NUM = 1
+
+/* * * * * * * * * *
+ * Test Data Utils *
+ * * * * * * * * * */
+
+func getEvaluatorResults(ast []node.Node) []node.Node {
+	evaluatorObj := evaluator.NewEvaluator(ast)
+	actualResults, err := evaluatorObj.Evaluate()
+	if err != nil {
+		panic(err.Error())
+	}
+	return *actualResults
+}
+
+func getEvaluatorError(t *testing.T, ast []node.Node) string {
+	evaluatorObj := evaluator.NewEvaluator(ast)
+	_, err := evaluatorObj.Evaluate()
+
+	if err == nil {
+		t.Fatal("error is nil")
+	}
+	return err.Error()
+}
+
+func getParserAST(source string) []node.Node {
+	t := tokens.NewTokenizer(source)
+
+	p, err := parser.NewParser(t)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	ast, err := p.Parse()
+	if err != nil {
+		panic(err.Error())
+	}
+	return *ast
+}
+
+func getParserError(t *testing.T, source string) string {
+	tokenizer := tokens.NewTokenizer(source)
+
+	p, err := parser.NewParser(tokenizer)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = p.Parse()
+	if err == nil {
+		t.Fatalf("Expected error to not be nil")
+	}
+	return err.Error()
+}
 
 func CreateNumber(value string) node.Node {
 	return node.CreateNumber(TEST_LINE_NUM, value)
