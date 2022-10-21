@@ -8,6 +8,7 @@
     * [Variable Assignment](#variable-assignment)
     * [Print](#print)
     * [While Loop](#while-loop)
+    * [Break](#break)
     * [Block Statements](#block-statements)
 * [Expressions](#expressions)
     * [Lists](#lists)
@@ -109,6 +110,37 @@ while i < 10 {
   i = i + 1;
 };
 print(i);  # "i" is 10
+```
+
+### Break
+Syntax: `break;`
+
+
+Break statements terminate a loop early. These statements are only allowed in loops--using them outside a loop will result in an error.
+
+
+Examples:
+```
+i = 0;
+while i < 10 {
+  when {
+    i == 5 {
+      break;
+    }
+  };
+  i = i + 1;
+};
+print(i);  # "i" is 5
+
+# the loop will terminate when "i" is "5". The list returned from this loop would only be 5 elements long (0 - 4)
+for i in range <- (0, 10) {
+  when {
+    i == 5 {
+      break;
+    }
+  };
+  i;  # Because "i" is returned for every element, the list returned by this loop will be `((true, 0), (true, 1), (true, 2), (true, 3), (true, 4))`.
+};
 ```
 
 ### Block Statements
