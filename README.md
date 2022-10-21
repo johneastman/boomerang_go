@@ -1,5 +1,14 @@
 # Boomerang
-A custom interpreted programming language written in Go.
+A custom programming language written in Go.
+
+Boomerang is:
+* **Interpreted.** Code executes in the runtime of another language (in this case, Go).
+* **Multi-paradigm** 
+    * **Procedural.** Commands execute in the order they are defined.
+    * **Functional.** Most constructs return a value/produce no side effects. However, the language does support several statements that return no values/produce side effects (variable assignment, printing, etc.).
+    * **Imperative:** Explicitly define a series of commands to execute (what to do, as opposed to what to achieve).
+* **Dynamically Typed.** Variable, function, parameter, etc. types are not declared explicitly; rather, they are interpreted from literal characters in the code (e.g., `1` and `3.14159` are numbers, `"hello world!"` is a string, `true` and `false` are booleans, etc.).
+* **Strongly Typed.** The language has strict rules for how different types interact (e.g. `1 + 1` or `1 + 1.5` are valid, but `1 + "hello world!"` is invalid).
 
 ## Background
 I originally started developing this project in [Python](https://github.com/johneastman/boomerang_old), but as the project grew, I ran into issues with Python's dynamic typing system because Python's runtime does not enforce type annotations (see the builtin [`typing`](https://docs.python.org/3/library/typing.html) module for type hints). I tried to resolve these issues with [mypy](https://github.com/python/mypy), a static code analysis tool that uses type hints, but I found myself regularly dealing with edge cases mypy could not handle, and refactoring code for the sake of mypy/the type checker. 
