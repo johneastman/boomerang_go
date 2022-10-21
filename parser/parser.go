@@ -14,12 +14,12 @@ const (
 	COMPARE
 	SUM
 	PRODUCT
-	FUNC_CALL
+	SEND
 	INDEX
 )
 
 var precedenceLevels = map[string]int{
-	tokens.PTR:           FUNC_CALL,
+	tokens.SEND:          SEND,
 	tokens.AT:            INDEX,
 	tokens.PLUS:          SUM,
 	tokens.MINUS:         SUM,
@@ -30,6 +30,7 @@ var precedenceLevels = map[string]int{
 	tokens.FORWARD_SLASH: PRODUCT,
 	tokens.EQ:            COMPARE,
 	tokens.LT:            COMPARE,
+	tokens.IN:            COMPARE,
 }
 
 type Parser struct {

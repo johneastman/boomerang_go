@@ -50,7 +50,7 @@ const (
 	BOOLEAN              = "BOOLEAN"
 	IDENTIFIER           = "IDENTIFIER"
 	EOF                  = "EOF"
-	PTR                  = "POINTER"
+	SEND                 = "SEND"
 	TRUE                 = "TRUE"
 	FALSE                = "FALSE"
 	OPEN_BRACKET         = "OPEN_BRACKET"
@@ -86,7 +86,7 @@ var (
 	COMMA_TOKEN                = getToken(COMMA)
 	OPEN_CURLY_BRACKET_TOKEN   = getToken(OPEN_CURLY_BRACKET)
 	CLOSED_CURLY_BRACKET_TOKEN = getToken(CLOSED_CURLY_BRACKET)
-	PTR_TOKEN                  = getToken(PTR)
+	SEND_TOKEN                 = getToken(SEND)
 	OPEN_BRACKET_TOKEN         = getToken(OPEN_BRACKET)
 	CLOSED_BRACKET_TOKEN       = getToken(CLOSED_BRACKET)
 	AT_TOKEN                   = getToken(AT)
@@ -160,7 +160,7 @@ var tokenData = []TokenMetaData{
 	{Type: SEMICOLON, Literal: ";"},
 	{Type: OPEN_PAREN, Literal: "(", IsRegexChar: true},
 	{Type: CLOSED_PAREN, Literal: ")", IsRegexChar: true},
-	{Type: PTR, Literal: "<-"},
+	{Type: SEND, Literal: "<-"},
 	{Type: EQ, Literal: "=="},
 	{Type: LT, Literal: "<"},
 	{Type: ASSIGN, Literal: "="},

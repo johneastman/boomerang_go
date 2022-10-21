@@ -300,7 +300,7 @@ func CreateFunctionCall(lineNum int, function Node, callParams []Node) Node {
 
 func CreateBlockStatementReturnValue(linenum int, statement *Node) Node {
 	/*
-		Because some statements return no values (assignment, print, etc,), "statement" needs to be a reference value/pointer.
+		Because some statements return no values (assignment, print, etc,), "statement" needs to be a reference value/send.
 		If that value is nil, "(false)" is returned. Otherwise, "(true, <statement>)" is returned.
 	*/
 	var parameters []Node

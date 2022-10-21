@@ -249,6 +249,7 @@ func TestEvaluator_BinaryExpressions(t *testing.T) {
 		AST    node.Node
 		Result node.Node
 	}{
+		// Math expression
 		{
 			AST: node.CreateBinaryExpression(
 				CreateNumber("1"),
@@ -257,13 +258,15 @@ func TestEvaluator_BinaryExpressions(t *testing.T) {
 			),
 			Result: CreateNumber("2"),
 		},
+
+		// List append
 		{
 			AST: node.CreateBinaryExpression(
 				CreateList([]node.Node{
 					CreateBooleanTrue(),
 					CreateBooleanFalse(),
 				}),
-				CreateTokenFromToken(tokens.PTR_TOKEN),
+				CreateTokenFromToken(tokens.SEND_TOKEN),
 				CreateBooleanTrue(),
 			),
 			Result: CreateList([]node.Node{
@@ -278,7 +281,7 @@ func TestEvaluator_BinaryExpressions(t *testing.T) {
 					CreateBooleanTrue(),
 					CreateBooleanFalse(),
 				}),
-				CreateTokenFromToken(tokens.PTR_TOKEN),
+				CreateTokenFromToken(tokens.SEND_TOKEN),
 				CreateList([]node.Node{
 					CreateBooleanFalse(),
 					CreateBooleanTrue(),
@@ -290,6 +293,20 @@ func TestEvaluator_BinaryExpressions(t *testing.T) {
 				CreateBooleanFalse(),
 				CreateBooleanTrue(),
 			}),
+		},
+
+		// "in" operator: 5 in (1, 3, 5)
+		{
+			AST: node.CreateBinaryExpression(
+				CreateNumber("5"),
+				CreateTokenFromToken(tokens.IN_TOKEN),
+				CreateList([]node.Node{
+					CreateNumber("1"),
+					CreateNumber("3"),
+					CreateNumber("5"),
+				}),
+			),
+			Result: CreateBooleanTrue(),
 		},
 
 		// Boolean OR
@@ -862,7 +879,7 @@ func TestEvaluator_VariablesFromOuterScopes(t *testing.T) {
 		),
 		node.CreateBinaryExpression(
 			CreateIdentifier("f"),
-			CreateTokenFromToken(tokens.PTR_TOKEN),
+			CreateTokenFromToken(tokens.SEND_TOKEN),
 			CreateList([]node.Node{
 				CreateNumber("2"),
 			}),
@@ -1198,17 +1215,17 @@ func TestEvaluator_DivideZeroError(t *testing.T) {
 	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
-func TestEvaluator_PointerInvalidTypesError(t *testing.T) {
+func TestEvaluator_SendInvalidTypesError(t *testing.T) {
 	ast := []node.Node{
 		node.CreateBinaryExpression(
 			CreateBooleanTrue(),
-			CreateTokenFromToken(tokens.PTR_TOKEN),
+			CreateTokenFromToken(tokens.SEND_TOKEN),
 			CreateBooleanFalse(),
 		),
 	}
 
 	actualError := getEvaluatorError(t, ast)
-	expectedError := "error at line 1: cannot use pointer on types Boolean (\"true\") and Boolean (\"false\")"
+	expectedError := "error at line 1: cannot use send on types Boolean (\"true\") and Boolean (\"false\")"
 
 	AssertErrorEqual(t, 0, expectedError, actualError)
 }

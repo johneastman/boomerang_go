@@ -222,6 +222,20 @@ func TestParser_BinaryExpression(t *testing.T) {
 				CreateBooleanTrue(),
 			),
 		},
+		{
+			"5 in (1, 2, 3, 4, 5)",
+			node.CreateBinaryExpression(
+				CreateNumber("5"),
+				CreateTokenFromToken(tokens.IN_TOKEN),
+				CreateList([]node.Node{
+					CreateNumber("1"),
+					CreateNumber("2"),
+					CreateNumber("3"),
+					CreateNumber("4"),
+					CreateNumber("5"),
+				}),
+			),
+		},
 	}
 
 	for i, test := range tests {
@@ -362,14 +376,14 @@ func TestParser_FunctionCallWithNoParameters(t *testing.T) {
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			CreateIdentifier("divide"),
-			CreateTokenFromToken(tokens.PTR_TOKEN),
+			CreateTokenFromToken(tokens.SEND_TOKEN),
 			CreateList([]node.Node{}),
 		),
 	}
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
-func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
+func TestParser_FunctionCallWithFunctionLiteralAndLeftSend(t *testing.T) {
 	actualAST := getParserAST("func(c, d) { d - c; } <- (10, 2);")
 
 	functionNode := CreateFunction(
@@ -389,7 +403,7 @@ func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			functionNode,
-			CreateTokenFromToken(tokens.PTR_TOKEN),
+			CreateTokenFromToken(tokens.SEND_TOKEN),
 			CreateList([]node.Node{
 				CreateNumber("10"),
 				CreateNumber("2"),
@@ -399,12 +413,12 @@ func TestParser_FunctionCallWithFunctionLiteralAndLeftPointer(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
-func TestParser_FunctionCallWithIdentifierAndLeftPointer(t *testing.T) {
+func TestParser_FunctionCallWithIdentifierAndLeftSend(t *testing.T) {
 	actualAST := getParserAST("multiply <- (10, 3);")
 	expectedAST := []node.Node{
 		node.CreateBinaryExpression(
 			CreateIdentifier("multiply"),
-			CreateTokenFromToken(tokens.PTR_TOKEN),
+			CreateTokenFromToken(tokens.SEND_TOKEN),
 			CreateList([]node.Node{
 				CreateNumber("10"),
 				CreateNumber("3"),
@@ -432,7 +446,7 @@ func TestParser_FunctionCallPrecedenceExpression(t *testing.T) {
 		node.CreateBinaryExpression(
 			node.CreateBinaryExpression(
 				CreateIdentifier("add"),
-				CreateTokenFromToken(tokens.PTR_TOKEN),
+				CreateTokenFromToken(tokens.SEND_TOKEN),
 				CreateList([]node.Node{
 					CreateNumber("3"),
 					CreateNumber("4"),

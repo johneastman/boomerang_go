@@ -370,8 +370,8 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 	case tokens.FORWARD_SLASH:
 		return e.divide(*left, *right)
 
-	case tokens.PTR:
-		return e.pointer(*left, *right)
+	case tokens.SEND:
+		return e.send(*left, *right)
 
 	case tokens.AT:
 		return e.index(*left, *right)
@@ -381,6 +381,9 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 
 	case tokens.LT:
 		return e.compareLT(*left, *right)
+
+	case tokens.IN:
+		return e.compareIn(*left, *right)
 
 	case tokens.OR:
 		return e.booleanOr(*left, *right)
@@ -511,6 +514,22 @@ func (e *evaluator) compareLT(left node.Node, right node.Node) (*node.Node, erro
 	)
 }
 
+func (e *evaluator) compareIn(left node.Node, right node.Node) (*node.Node, error) {
+	if right.Type == node.LIST {
+		for _, value := range right.Params {
+			if value.Equals(left) {
+				return node.CreateBooleanTrue(left.LineNum).Ptr(), nil
+			}
+		}
+		return node.CreateBooleanFalse(left.LineNum).Ptr(), nil
+	}
+	return nil, utils.CreateError(
+		left.LineNum,
+		"right side of \"in\" must be a list. Actual type: %s",
+		right.ErrorDisplay(),
+	)
+}
+
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.LIST && right.Type == node.NUMBER {
 
@@ -591,8 +610,8 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 	)
 }
 
-func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error) {
-	if (left.Type == node.FUNCTION || left.Type == node.IDENTIFIER) && right.Type == node.LIST {
+func (e *evaluator) send(left node.Node, right node.Node) (*node.Node, error) {
+	if left.Type == node.FUNCTION && right.Type == node.LIST {
 		functionCall := node.CreateFunctionCall(left.LineNum, left, right.Params)
 		return e.evaluateExpression(functionCall)
 
@@ -610,7 +629,7 @@ func (e *evaluator) pointer(left node.Node, right node.Node) (*node.Node, error)
 
 	return nil, utils.CreateError(
 		left.LineNum,
-		"cannot use pointer on types %s and %s",
+		"cannot use send on types %s and %s",
 		left.ErrorDisplay(),
 		right.ErrorDisplay(),
 	)

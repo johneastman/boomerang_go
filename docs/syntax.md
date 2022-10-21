@@ -51,23 +51,47 @@ print(i)
 ## Operators
 
 ### Binary (Infix) Operators
-|Name|Literal|Left Valid Types|Right Valid Types|
-|----|-------|----------------|-----------------|
-|add|+|NUMBER|NUMBER|
-|minus|-|NUMBER|NUMBER|
-|multiply|*|NUMBER|NUMBER|
-|divide|/|NUMBER|NUMBER|
-|left pointer|<-|IDENTIFIER (of function)|LIST|
-|at|@|LIST|NUMBER (must be an integer)|
-|equal|==|Any Type|Any Type|
-|and|`and`|BOOLEAN|BOOLEAN|
-|or|`or`|BOOLEAN|BOOLEAN|
+
+#### Addition
+* `NUMBER + NUMBER`: add two numbers together
+
+#### Subtraction
+* `NUMBER - NUMBER`: subtract two numbers together
+
+#### Multiplication
+* `NUMBER * NUMBER`: multiply two numbers together
+ 
+#### Division
+* `NUMBER / NUMBER`: divide two numbers together. The right number cannot be zero
+
+#### Send
+* `FUNCTION <- LIST`: perform a function call, where the left side is a function and the right side is the arguments being passed to that function
+* `LIST <- ANY`: append the right value to the list on the left
+* `LIST <- LIST`: combine the two lists, adding the values in the list on the right to the end of the list on the left
+
+#### At
+* `LIST @ NUMBER`: get the element at a given position (right) in the list (left)
+
+#### Equal
+* `EXPRESSION == EXPRESSION`: Compare two values and return `true` if they are the same; `false` otherwise
+
+#### And
+* `BOOLEAN and BOOLEAN`: `true` if left and right are both `true`; `false` otherwise
+
+#### Or
+* `BOOLEAN or BOOLEAN`: `true` if left or right are `true`; `false` otherwise
+
+#### In
+* `EXPRESSION in LIST`: `true` if the left value is in the list on the right
+
 
 ### Unary (Prefix) Operators
-|Name|Literal|Valid Types|
-|----|-------|-----------|
-|minus|-|NUMBER|
-|not/negate|`not`|BOOLEAN|
+
+#### Negative
+* `-NUMBER`: negate a number. Positive numbers become negative and negative numbers become positive
+
+#### Negate
+* `not BOOLEAN`: flip a boolean value. `false` becomes `true` and `true` becomes `false`
 
 ## Statements
 

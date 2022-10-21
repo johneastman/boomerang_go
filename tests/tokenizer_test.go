@@ -19,7 +19,7 @@ func TestTokenizer_Symbols(t *testing.T) {
 		CreateTokenFromToken(tokens.COMMA_TOKEN),
 		CreateTokenFromToken(tokens.OPEN_CURLY_BRACKET_TOKEN),
 		CreateTokenFromToken(tokens.CLOSED_CURLY_BRACKET_TOKEN),
-		CreateTokenFromToken(tokens.PTR_TOKEN),
+		CreateTokenFromToken(tokens.SEND_TOKEN),
 		CreateTokenFromToken(tokens.OPEN_BRACKET_TOKEN),
 		CreateTokenFromToken(tokens.CLOSED_BRACKET_TOKEN),
 		CreateTokenFromToken(tokens.EQ_TOKEN),

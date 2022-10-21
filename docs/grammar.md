@@ -15,17 +15,22 @@
 STATEMENT:
 - ASSIGN
 - PRINT
-- FOR
+- WHILE_LOOP
+- BREAK
 - EXPRESSION
 EXPRESSION:
 - ADD('+')
 - SUBTRACT('-')
 - MULTIPLY('*')
 - DIVIDE('/')
-- LEFT_POINTER('<-')
+- SEND('<-')
 - AT('@')
 - NOT('not')
+- IN('in')
+- EQUAL('==')
+- LESS_THAN('<')
 - WHEN('when')
+- FOR_LOOP('for')
 - FACTOR
 FACTOR:
 - NUMBER('float64')
