@@ -35,6 +35,9 @@ func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) (*[]node.Node, e
 
 		// If 'result' is not nil, then the statement returned a value (likely an expression statement)
 		if result != nil {
+			if result.Type == node.BREAK {
+				return nil, utils.CreateError(result.LineNum, "break statements not allowed outside loops")
+			}
 			results = append(results, *result)
 		}
 	}
@@ -55,6 +58,11 @@ func (e *evaluator) evaluateBlockStatements(statements node.Node) (*node.Node, e
 		if err != nil {
 			return nil, err
 		}
+
+		if result != nil && result.Type == node.BREAK {
+			return result, nil
+		}
+
 		returnValue = result
 	}
 
@@ -83,6 +91,9 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 			return nil, err
 		}
 		return nil, nil
+
+	case node.BREAK:
+		return &stmt, nil
 
 	default:
 		return e.evaluateExpression(stmt)
@@ -126,9 +137,13 @@ func (e *evaluator) evaluateWhileLoop(stmt node.Node) error {
 		}
 
 		if evaluatedCondition.Equals(node.CreateBooleanTrue(stmt.LineNum)) {
-			_, err := e.evaluateBlockStatements(statements)
+			stmt, err := e.evaluateBlockStatements(statements)
 			if err != nil {
 				return err
+			}
+
+			if stmt.Type == node.BREAK {
+				break
 			}
 		} else {
 			break
@@ -270,6 +285,11 @@ func (e *evaluator) evaluateForLoop(expr node.Node) (*node.Node, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		if result != nil && result.Type == node.BREAK {
+			return node.CreateList(lineNum, values).Ptr(), nil
+		}
+
 		values = append(values, *result)
 	}
 

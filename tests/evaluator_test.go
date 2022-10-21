@@ -761,20 +761,20 @@ func TestEvaluator_WhenExpression(t *testing.T) {
 				[]node.Node{
 					CreateWhenCaseNode(
 						CreateNumber("0"),
-						CreateBlockStatements([]node.Node{
+						[]node.Node{
 							CreateNumber("5"),
-						}),
+						},
 					),
 					CreateWhenCaseNode(
 						CreateNumber("1"),
-						CreateBlockStatements([]node.Node{
+						[]node.Node{
 							CreateNumber("10"),
-						}),
+						},
 					),
 				},
-				CreateBlockStatements([]node.Node{
+				[]node.Node{
 					CreateNumber("15"),
-				}),
+				},
 			),
 		}
 
@@ -811,9 +811,9 @@ func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
 							CreateTokenFromToken(tokens.EQ_TOKEN),
 							CreateNumber("0"),
 						),
-						CreateBlockStatements([]node.Node{
+						[]node.Node{
 							CreateNumber("5"),
-						}),
+						},
 					),
 					CreateWhenCaseNode(
 						node.CreateBinaryExpression(
@@ -821,14 +821,14 @@ func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
 							CreateTokenFromToken(tokens.EQ_TOKEN),
 							CreateNumber("1"),
 						),
-						CreateBlockStatements([]node.Node{
+						[]node.Node{
 							CreateNumber("10"),
-						}),
+						},
 					),
 				},
-				CreateBlockStatements([]node.Node{
+				[]node.Node{
 					CreateNumber("15"),
-				}),
+				},
 			),
 		}
 
@@ -882,16 +882,16 @@ func TestEvaluator_VariablesFromOuterScopes(t *testing.T) {
 func TestEvaluator_ForLoop(t *testing.T) {
 
 	tests := []struct {
-		BlockStatement node.Node
+		BlockStatement []node.Node
 		ReturnValue    node.Node
 	}{
 		{
-			BlockStatement: CreateBlockStatements([]node.Node{
+			BlockStatement: []node.Node{
 				CreateAssignmentStatement(
 					"i",
 					CreateIdentifier("e"),
 				),
-			}),
+			},
 			ReturnValue: CreateList([]node.Node{
 				CreateBlockStatementReturnValue(nil),
 				CreateBlockStatementReturnValue(nil),
@@ -900,13 +900,13 @@ func TestEvaluator_ForLoop(t *testing.T) {
 			}),
 		},
 		{
-			BlockStatement: CreateBlockStatements([]node.Node{
+			BlockStatement: []node.Node{
 				node.CreateBinaryExpression(
 					CreateIdentifier("e"),
 					CreateTokenFromToken(tokens.ASTERISK_TOKEN),
 					CreateIdentifier("e"),
 				),
-			}),
+			},
 			ReturnValue: CreateList([]node.Node{
 				CreateBlockStatementReturnValue(CreateNumber("1").Ptr()),
 				CreateBlockStatementReturnValue(CreateNumber("4").Ptr()),
@@ -950,7 +950,7 @@ func TestEvaluator_WhileLoop(t *testing.T) {
 				CreateTokenFromToken(tokens.LT_TOKEN),
 				CreateNumber("10"),
 			),
-			CreateBlockStatements([]node.Node{
+			[]node.Node{
 				CreateAssignmentStatement(
 					"i",
 					node.CreateBinaryExpression(
@@ -959,13 +959,43 @@ func TestEvaluator_WhileLoop(t *testing.T) {
 						CreateNumber("1"),
 					),
 				),
-			}),
+			},
 		),
 		CreateIdentifier("i"),
 	}
 	actualResults := getEvaluatorResults(ast)
 	expectedResults := []node.Node{
 		CreateNumber("10"),
+	}
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
+func TestEvaluator_BreakStatement(t *testing.T) {
+	ast := []node.Node{
+		CreateAssignmentStatement("i", CreateNumber("0")),
+		CreateWhileLoop(
+			node.CreateBinaryExpression(
+				CreateIdentifier("i"),
+				CreateTokenFromToken(tokens.LT_TOKEN),
+				CreateNumber("10"),
+			),
+			[]node.Node{
+				CreateAssignmentStatement(
+					"i",
+					node.CreateBinaryExpression(
+						CreateIdentifier("i"),
+						CreateTokenFromToken(tokens.PLUS_TOKEN),
+						CreateNumber("1"),
+					),
+				),
+				CreateBreakStatement(),
+			},
+		),
+		CreateIdentifier("i"),
+	}
+	actualResults := getEvaluatorResults(ast)
+	expectedResults := []node.Node{
+		CreateNumber("1"),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
@@ -1209,6 +1239,44 @@ func TestEvaluator_MinusUnayError(t *testing.T) {
 	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
-/* * * * * * * * * * * * *
- * EVALUATOR TEST UTILS  *
- * * * * * * * * * * * * */
+func TestEvaluator_BreakStatementOutsideLoopError(t *testing.T) {
+
+	tests := []node.Node{
+		CreateBreakStatement(),
+
+		// "break" in "when" expression
+		CreateWhenNode(
+			CreateBooleanTrue(),
+			[]node.Node{
+				CreateWhenCaseNode(
+					CreateBooleanTrue(),
+					[]node.Node{
+						CreateBreakStatement(),
+					},
+				),
+			},
+			[]node.Node{},
+		),
+
+		// "break" in function
+		CreateFunctionCall(
+			CreateFunction(
+				[]node.Node{},
+				[]node.Node{
+					CreateBreakStatement(),
+				},
+			),
+			[]node.Node{},
+		),
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			test,
+		}
+		actualError := getEvaluatorError(t, ast)
+		expectedError := "error at line 1: break statements not allowed outside loops"
+
+		AssertErrorEqual(t, i, expectedError, actualError)
+	}
+}

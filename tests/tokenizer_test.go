@@ -47,6 +47,7 @@ func TestTokenizer_Keywords(t *testing.T) {
 		{Type: tokens.FOR, Literal: "for", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.IN, Literal: "in", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.WHILE, Literal: "while", LineNumber: TEST_LINE_NUM},
+		{Type: tokens.BREAK, Literal: "break", LineNumber: TEST_LINE_NUM},
 	}
 
 	for i, expectedToken := range keywordTokens {

@@ -105,6 +105,7 @@ const (
 	WHILE_LOOP            = "WhileLoop"
 	WHILE_LOOP_CONDITION  = "WhileLoopCondition"
 	WHILE_LOOP_STATEMENTS = "WhileLoopStatements"
+	BREAK                 = "Break"
 
 	// Expressions
 	EXPR                   = "Expression"
@@ -369,4 +370,8 @@ func CreateWhileLoop(lineNum int, conditionExpression Node, statements Node) Nod
 			statements,
 		},
 	}
+}
+
+func CreateBreakStatement(lineNum int) Node {
+	return Node{Type: BREAK, LineNum: lineNum}
 }

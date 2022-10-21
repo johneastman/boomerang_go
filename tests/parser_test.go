@@ -453,20 +453,20 @@ func TestParser_WhenExpression_NotBoolean(t *testing.T) {
 			[]node.Node{
 				CreateWhenCaseNode(
 					CreateNumber("0"),
-					CreateBlockStatements([]node.Node{
+					[]node.Node{
 						CreateNumber("5"),
-					}),
+					},
 				),
 				CreateWhenCaseNode(
 					CreateNumber("1"),
-					CreateBlockStatements([]node.Node{
+					[]node.Node{
 						CreateNumber("10"),
-					}),
+					},
 				),
 			},
-			CreateBlockStatements([]node.Node{
+			[]node.Node{
 				CreateNumber("15"),
-			}),
+			},
 		),
 	}
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
@@ -480,18 +480,18 @@ func TestParser_WhenExpression_BooleanTrueAndNoElse(t *testing.T) {
 			[]node.Node{
 				CreateWhenCaseNode(
 					CreateBooleanTrue(),
-					CreateBlockStatements([]node.Node{
+					[]node.Node{
 						CreateNumber("5"),
-					}),
+					},
 				),
 				CreateWhenCaseNode(
 					CreateBooleanFalse(),
-					CreateBlockStatements([]node.Node{
+					[]node.Node{
 						CreateNumber("10"),
-					}),
+					},
 				),
 			},
-			CreateBlockStatements([]node.Node{}),
+			[]node.Node{},
 		),
 	}
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
@@ -505,18 +505,18 @@ func TestParser_WhenExpression_BooleanFalseAndNoElse(t *testing.T) {
 			[]node.Node{
 				CreateWhenCaseNode(
 					CreateBooleanTrue(),
-					CreateBlockStatements([]node.Node{
+					[]node.Node{
 						CreateNumber("5"),
-					}),
+					},
 				),
 				CreateWhenCaseNode(
 					CreateBooleanFalse(),
-					CreateBlockStatements([]node.Node{
+					[]node.Node{
 						CreateNumber("10"),
-					}),
+					},
 				),
 			},
-			CreateBlockStatements([]node.Node{}),
+			[]node.Node{},
 		),
 	}
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
@@ -531,7 +531,7 @@ func TestParser_WhileLoop(t *testing.T) {
 				CreateTokenFromToken(tokens.LT_TOKEN),
 				CreateNumber("10"),
 			),
-			CreateBlockStatements([]node.Node{
+			[]node.Node{
 				CreateAssignmentStatement(
 					"i",
 					node.CreateBinaryExpression(
@@ -540,7 +540,7 @@ func TestParser_WhileLoop(t *testing.T) {
 						CreateNumber("1"),
 					),
 				),
-			}),
+			},
 		),
 	}
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
@@ -552,12 +552,20 @@ func TestParser_ForLoop(t *testing.T) {
 		CreateForLoop(
 			CreateIdentifier("e"),
 			CreateIdentifier("list"),
-			CreateBlockStatements([]node.Node{
+			[]node.Node{
 				CreatePrintStatement([]node.Node{
 					CreateIdentifier("e"),
 				}),
-			}),
+			},
 		),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
+func TestParser_BreakStatement(t *testing.T) {
+	actualAST := getParserAST("break;")
+	expectedAST := []node.Node{
+		CreateBreakStatement(),
 	}
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }

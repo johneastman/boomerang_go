@@ -115,6 +115,9 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	} else if tokens.TokenTypesEqual(p.current, tokens.WHILE) {
 		returnNode, err = p.parseWhileLoop()
 
+	} else if tokens.TokenTypesEqual(p.current, tokens.BREAK) {
+		returnNode, err = p.parseBreakStatement()
+
 	} else {
 		returnNode, err = p.parseExpression(LOWEST)
 	}
@@ -172,6 +175,17 @@ func (p *Parser) parsePrintStatement() (*node.Node, error) {
 
 	printNode := node.CreatePrintStatement(lineNumber, parameters.Params)
 	return &printNode, nil
+}
+
+func (p *Parser) parseBreakStatement() (*node.Node, error) {
+
+	lineNum := p.current.LineNumber
+
+	if err := p.advance(); err != nil {
+		return nil, err
+	}
+
+	return node.CreateBreakStatement(lineNum).Ptr(), nil
 }
 
 func (p *Parser) parseWhileLoop() (*node.Node, error) {

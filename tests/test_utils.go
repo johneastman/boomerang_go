@@ -66,6 +66,14 @@ func getParserError(t *testing.T, source string) string {
 	return err.Error()
 }
 
+func CreateTokenFromToken(token tokens.Token) tokens.Token {
+	return tokens.Token{Type: token.Type, Literal: token.Literal, LineNumber: TEST_LINE_NUM}
+}
+
+func CreateTokenFromValues(type_ string, literal string) tokens.Token {
+	return tokens.Token{Type: type_, Literal: literal, LineNumber: TEST_LINE_NUM}
+}
+
 func CreateNumber(value string) node.Node {
 	return node.CreateNumber(TEST_LINE_NUM, value)
 }
@@ -107,8 +115,11 @@ func CreateAssignmentStatement(variableName string, value node.Node) node.Node {
 }
 
 func CreateFunction(parameters []node.Node, statements []node.Node) node.Node {
-	blockStatements := node.CreateBlockStatements(TEST_LINE_NUM, statements)
-	return node.CreateFunction(TEST_LINE_NUM, parameters, blockStatements)
+	return node.CreateFunction(
+		TEST_LINE_NUM,
+		parameters,
+		CreateBlockStatements(statements),
+	)
 }
 
 func CreateFunctionCall(function node.Node, callParams []node.Node) node.Node {
@@ -119,32 +130,46 @@ func CreateBlockStatementReturnValue(statement *node.Node) node.Node {
 	return node.CreateBlockStatementReturnValue(TEST_LINE_NUM, statement)
 }
 
-func CreateTokenFromToken(token tokens.Token) tokens.Token {
-	return tokens.Token{Type: token.Type, Literal: token.Literal, LineNumber: TEST_LINE_NUM}
-}
-
 func CreateBlockStatements(statements []node.Node) node.Node {
 	return node.CreateBlockStatements(TEST_LINE_NUM, statements)
 }
 
-func CreateWhenNode(whenExpression node.Node, cases []node.Node, defaultStatements node.Node) node.Node {
-	return node.CreateWhenNode(TEST_LINE_NUM, whenExpression, cases, defaultStatements)
+func CreateWhenNode(whenExpression node.Node, cases []node.Node, defaultStatements []node.Node) node.Node {
+	return node.CreateWhenNode(
+		TEST_LINE_NUM,
+		whenExpression,
+		cases,
+		CreateBlockStatements(defaultStatements),
+	)
 }
 
-func CreateWhenCaseNode(expression node.Node, statements node.Node) node.Node {
-	return node.CreateCaseNode(TEST_LINE_NUM, expression, statements)
+func CreateWhenCaseNode(expression node.Node, statements []node.Node) node.Node {
+	return node.CreateCaseNode(
+		TEST_LINE_NUM,
+		expression,
+		CreateBlockStatements(statements),
+	)
 }
 
-func CreateTokenFromValues(type_ string, literal string) tokens.Token {
-	return tokens.Token{Type: type_, Literal: literal, LineNumber: TEST_LINE_NUM}
+func CreateForLoop(placeholder node.Node, list node.Node, statements []node.Node) node.Node {
+	return node.CreateForLoop(
+		TEST_LINE_NUM,
+		placeholder,
+		list,
+		CreateBlockStatements(statements),
+	)
 }
 
-func CreateForLoop(placeholder node.Node, list node.Node, statements node.Node) node.Node {
-	return node.CreateForLoop(TEST_LINE_NUM, placeholder, list, statements)
+func CreateWhileLoop(condition node.Node, statements []node.Node) node.Node {
+	return node.CreateWhileLoop(
+		TEST_LINE_NUM,
+		condition,
+		CreateBlockStatements(statements),
+	)
 }
 
-func CreateWhileLoop(condition node.Node, statements node.Node) node.Node {
-	return node.CreateWhileLoop(TEST_LINE_NUM, condition, statements)
+func CreateBreakStatement() node.Node {
+	return node.CreateBreakStatement(TEST_LINE_NUM)
 }
 
 func AssertTokenEqual(t *testing.T, testNumber int, expected tokens.Token, actual tokens.Token) {

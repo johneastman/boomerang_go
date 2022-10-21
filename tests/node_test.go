@@ -574,3 +574,9 @@ func TestNode_WhileLoop(t *testing.T) {
 	}
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
+
+func TestNode_BreakStatement(t *testing.T) {
+	actualNode := node.CreateBreakStatement(TEST_LINE_NUM)
+	expectedNode := node.Node{Type: node.BREAK, LineNum: TEST_LINE_NUM}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
