@@ -66,7 +66,7 @@ print(i)
 
 #### Send
 * `FUNCTION <- LIST`: perform a function call, where the left side is a function and the right side is the arguments being passed to that function
-* `LIST <- ANY`: append the right value to the list on the left
+* `LIST <- EXPRESSION`: append the right value to the list on the left
 * `LIST <- LIST`: combine the two lists, adding the values in the list on the right to the end of the list on the left
 
 #### At
