@@ -3,6 +3,7 @@ package tests
 import (
 	"boomerang/node"
 	"boomerang/tokens"
+	"boomerang/utils"
 	"fmt"
 	"testing"
 )
@@ -245,6 +246,50 @@ func TestBuiltin_Range(t *testing.T) {
 	}
 }
 
+func TestBuiltin_Random(t *testing.T) {
+
+	tests := []struct {
+		Min int
+		Max int
+	}{
+		{Min: 5, Max: 10},
+		{Min: 0, Max: 0},
+		{Min: 50, Max: 100},
+	}
+
+	for i, test := range tests {
+		testName := fmt.Sprintf("Test #%d", i)
+		t.Run(testName, func(t *testing.T) {
+			ast := []node.Node{
+				CreateFunctionCall(
+					CreateIdentifier("random"),
+					[]node.Node{
+						CreateNumber(utils.IntToString(test.Min)),
+						CreateNumber(utils.IntToString(test.Max)),
+					},
+				),
+			}
+
+			actualResults := getEvaluatorResults(ast)
+
+			if len(actualResults) != 1 {
+				t.Fatalf("Expected 1 result, got %d", len(actualResults))
+			}
+
+			randomNumber := actualResults[0]
+			randomNumberValue := utils.StringToInt(randomNumber.Value)
+			if randomNumberValue == nil {
+				t.Fatalf("Could not convert %s to an integer", randomNumber.Value)
+			}
+
+			// Check that the random number is between the two
+			if *randomNumberValue < test.Min || *randomNumberValue > test.Max {
+				t.Fatalf("Expected random number to be between %d and %d, but got %d instead", test.Min, test.Max, *randomNumberValue)
+			}
+		})
+	}
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */
@@ -293,6 +338,68 @@ func TestBuiltin_RangeErrors(t *testing.T) {
 		ast := []node.Node{
 			CreateFunctionCall(
 				CreateIdentifier("range"),
+				test.Arguments,
+			),
+		}
+
+		actualError := getEvaluatorError(t, ast)
+		expectedError := test.Error
+
+		AssertErrorEqual(t, i, expectedError, actualError)
+	}
+}
+
+func TestBuiltin_RandomErrors(t *testing.T) {
+	tests := []struct {
+		Arguments []node.Node
+		Error     string
+	}{
+		{
+			Arguments: []node.Node{},
+			Error:     "error at line 1: incorrect number of arguments. expected 2, got 0",
+		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1"),
+			},
+			Error: "error at line 1: incorrect number of arguments. expected 2, got 1",
+		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1"),
+				CreateNumber("1"),
+				CreateNumber("1"),
+			},
+			Error: "error at line 1: incorrect number of arguments. expected 2, got 3",
+		},
+		{
+			Arguments: []node.Node{
+				CreateRawString("hello, world!"),
+				CreateNumber("1"),
+			},
+			Error: "error at line 1: expected Number, got String",
+		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1"),
+				CreateList([]node.Node{}),
+			},
+			Error: "error at line 1: expected Number, got List",
+		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1"),
+				CreateNumber("0"),
+			},
+			Error: "error at line 1: the minimum number, 1, cannot be greater than the maximum number, 0",
+		},
+	}
+
+	for i, test := range tests {
+
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateIdentifier("random"),
 				test.Arguments,
 			),
 		}

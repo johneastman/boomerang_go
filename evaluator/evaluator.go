@@ -5,8 +5,10 @@ import (
 	"boomerang/tokens"
 	"boomerang/utils"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type evaluator struct {
@@ -15,6 +17,9 @@ type evaluator struct {
 }
 
 func NewEvaluator(ast []node.Node) evaluator {
+
+	rand.Seed(time.Now().UnixNano()) // for builtin "random" function
+
 	return evaluator{
 		ast: ast,
 		env: CreateEnvironment(nil),
@@ -308,7 +313,7 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 			return nil, utils.CreateError(expression.LineNum, "invalid type for minus operator: %s", expression.ErrorDisplay())
 		}
 		expressionValue := -e.toFloat(expression.Value)
-		return e.createNumberNode(expressionValue, unaryExpression.LineNum).Ptr(), nil
+		return node.CreateNumber(unaryExpression.LineNum, utils.FloatToString(expressionValue)).Ptr(), nil
 
 	} else if operator.Type == tokens.NOT {
 
@@ -532,7 +537,7 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) + e.toFloat(right.Value)
 
-		return e.createNumberNode(result, left.LineNum).Ptr(), nil
+		return node.CreateNumber(left.LineNum, utils.FloatToString(result)).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -545,7 +550,7 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) - e.toFloat(right.Value)
-		return e.createNumberNode(result, left.LineNum).Ptr(), nil
+		return node.CreateNumber(left.LineNum, utils.FloatToString(result)).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -559,7 +564,7 @@ func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 		result := e.toFloat(left.Value) * e.toFloat(right.Value)
 
-		return e.createNumberNode(result, left.LineNum).Ptr(), nil
+		return node.CreateNumber(left.LineNum, utils.FloatToString(result)).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -576,7 +581,7 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 			return nil, utils.CreateError(left.LineNum, "cannot divide by zero")
 		}
 		result := e.toFloat(left.Value) / e.toFloat(right.Value)
-		return e.createNumberNode(result, left.LineNum).Ptr(), nil
+		return node.CreateNumber(left.LineNum, utils.FloatToString(result)).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,
@@ -677,10 +682,6 @@ func (e *evaluator) toFloat(s string) float64 {
 		panic(fmt.Sprintf("Cannot convert string to number: %s", s))
 	}
 	return floatVal
-}
-
-func (e *evaluator) createNumberNode(value float64, lineNum int) node.Node {
-	return node.CreateNumber(lineNum, fmt.Sprint(value))
 }
 
 func (e *evaluator) evaluateAndCheckType(expression node.Node, expectedType string) (*node.Node, error) {

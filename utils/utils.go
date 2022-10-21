@@ -29,6 +29,22 @@ func ConvertStringToInteger(lineNum int, value string) (*int, error) {
 	return &integer, nil
 }
 
+func FloatToString(value float64) string {
+	return fmt.Sprint(value)
+}
+
+func IntToString(value int) string {
+	return fmt.Sprint(value)
+}
+
+func StringToInt(value string) *int {
+	integer, err := strconv.Atoi(value)
+	if err != nil {
+		return nil
+	}
+	return &integer
+}
+
 func CheckOutOfRange(lineNum int, index int, listLen int) error {
 	if index < 0 || index > listLen-1 {
 		return CreateError(

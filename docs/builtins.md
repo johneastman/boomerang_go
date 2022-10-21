@@ -69,3 +69,16 @@
   range <- (0, 0)    # (0)
   range <- (0, -1)   # ()
   ```
+
+## random
+* **Description:** generate a random number between "min" and "max" (inclusive). The values of "min" and "max" can be negative or positive, but "min" must be less than "max".
+* **Arguments:**
+    * min: the minimum value the random number can be
+    * max: the maximum value the random number can be
+* **Examples:**
+  ```
+  random <- (0, 5)    # [0 to 5]
+  random <- (10, 20)  # [10 to 20]
+  random <- (0, 0)    # 0
+  random <- (-10, -5)  # [-10 to -5]
+  ```

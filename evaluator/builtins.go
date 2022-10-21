@@ -6,6 +6,7 @@ import (
 	"boomerang/utils"
 	"fmt"
 	"math"
+	"math/rand"
 )
 
 const (
@@ -15,6 +16,7 @@ const (
 	BUILTIN_SLICE      = "slice"
 	BUILTIN_UNWRAP_ALL = "unwrap_all"
 	BUILTIN_RANGE      = "range"
+	BUILTIN_RANDOM     = "random"
 
 	// Variables
 	BUILTIN_PI = "pi"
@@ -51,6 +53,7 @@ func init() {
 		BUILTIN_UNWRAP_ALL: {NumArgs: 2, Function: evaluateBuiltinUnwrapAll},
 		BUILTIN_SLICE:      {NumArgs: 3, Function: evaluateBuiltinSlice},
 		BUILTIN_RANGE:      {NumArgs: 2, Function: evaluateBuiltinRange},
+		BUILTIN_RANDOM:     {NumArgs: 2, Function: evaluateBuiltinRandom},
 	}
 
 	builtinVariables = map[string]BuiltinVariable{
@@ -232,7 +235,7 @@ func evaluateBuiltinUnwrapAll(eval *evaluator, lineNum int, callParameters []nod
 
 func evaluateBuiltinLen(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
 	value := len(callParameters)
-	return node.CreateNumber(lineNum, fmt.Sprint(value)).Ptr(), nil
+	return node.CreateNumber(lineNum, utils.IntToString(value)).Ptr(), nil
 }
 
 func evaluateBuiltinRange(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
@@ -267,9 +270,52 @@ func evaluateBuiltinRange(eval *evaluator, lineNum int, callParameters []node.No
 
 	numbersNodeValues := []node.Node{}
 	for i := *startValue; i <= *endValue; i++ {
-		numberNode := node.CreateNumber(lineNum, fmt.Sprint(i))
+		numberNode := node.CreateNumber(lineNum, utils.IntToString(i))
 		numbersNodeValues = append(numbersNodeValues, numberNode)
 	}
 
 	return node.CreateList(lineNum, numbersNodeValues).Ptr(), nil
+}
+
+func evaluateBuiltinRandom(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+	minNumber, err := eval.evaluateExpression(callParameters[0])
+	if err != nil {
+		return nil, err
+	}
+
+	if err := utils.CheckTypeError(lineNum, minNumber.Type, node.NUMBER); err != nil {
+		return nil, err
+	}
+
+	minValue, err := utils.ConvertStringToInteger(lineNum, minNumber.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	maxNumber, err := eval.evaluateExpression(callParameters[1])
+	if err != nil {
+		return nil, err
+	}
+
+	if err := utils.CheckTypeError(lineNum, maxNumber.Type, node.NUMBER); err != nil {
+		return nil, err
+	}
+
+	maxValue, err := utils.ConvertStringToInteger(lineNum, maxNumber.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	if *minValue > *maxValue {
+		return nil, utils.CreateError(
+			minNumber.LineNum,
+			"the minimum number, %d, cannot be greater than the maximum number, %d",
+			*minValue,
+			*maxValue,
+		)
+	}
+
+	// "+ 1" ensures the generated number includes the maximum value
+	randomValue := rand.Intn(*maxValue-*minValue+1) + *minValue
+	return node.CreateNumber(minNumber.LineNum, utils.IntToString(randomValue)).Ptr(), nil
 }
