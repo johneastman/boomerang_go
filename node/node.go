@@ -131,11 +131,13 @@ const (
 	FOR_LOOP_ELEMENT       = "ForLoopElement"
 
 	// Factors
-	NUMBER     = "Number"
-	STRING     = "String"
-	BOOLEAN    = "Boolean"
-	IDENTIFIER = "Identifier"
-	LIST       = "List"
+	NUMBER           = "Number"
+	STRING           = "String"
+	BOOLEAN          = "Boolean"
+	IDENTIFIER       = "Identifier"
+	BUILTIN_VARIABLE = "BuiltinVariable"
+	BUILTIN_FUNCTION = "BuiltinFunction"
+	LIST             = "List"
 )
 
 /*
@@ -230,6 +232,14 @@ func CreateRawString(lineNum int, literal string) Node {
 
 func CreateIdentifier(lineNum int, name string) Node {
 	return Node{Type: IDENTIFIER, Value: name, LineNum: lineNum}
+}
+
+func CreateBuiltinFunctionIdentifier(lineNum int, name string) Node {
+	return Node{Type: BUILTIN_FUNCTION, Value: name, LineNum: lineNum}
+}
+
+func CreateBuiltinVariableIdentifier(lineNum int, name string) Node {
+	return Node{Type: BUILTIN_VARIABLE, Value: name, LineNum: lineNum}
 }
 
 func CreateList(lineNum int, parameters []Node) Node {

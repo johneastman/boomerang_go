@@ -11,7 +11,7 @@ import (
 func TestBuiltin_Len(t *testing.T) {
 	ast := []node.Node{
 		CreateFunctionCall(
-			CreateIdentifier("len"),
+			CreateBuiltinFunctionIdentifier("len"),
 			[]node.Node{
 				CreateNumber("1"),
 				CreateNumber("2"),
@@ -68,7 +68,7 @@ func TestBuiltin_Unwrap(t *testing.T) {
 		)
 
 		unwrapFunctionCall := CreateFunctionCall(
-			CreateIdentifier("unwrap"),
+			CreateBuiltinFunctionIdentifier("unwrap"),
 			[]node.Node{
 				CreateIdentifier(resultVariableName),
 				CreateRawString("hello, world!"),
@@ -136,7 +136,7 @@ func TestBuiltin_UnwrapAll(t *testing.T) {
 	for i, test := range tests {
 		ast := []node.Node{
 			CreateFunctionCall(
-				CreateIdentifier("unwrap_all"),
+				CreateBuiltinFunctionIdentifier("unwrap_all"),
 				[]node.Node{
 					test.BlockStatementReturnValues,
 					CreateNumber("-1"),
@@ -154,7 +154,7 @@ func TestBuiltin_UnwrapAll(t *testing.T) {
 func TestBuiltin_Slice(t *testing.T) {
 	ast := []node.Node{
 		CreateFunctionCall(
-			CreateIdentifier("slice"),
+			CreateBuiltinFunctionIdentifier("slice"),
 			[]node.Node{
 				CreateList([]node.Node{
 					CreateNumber("0"),
@@ -230,7 +230,7 @@ func TestBuiltin_Range(t *testing.T) {
 	for i, test := range tests {
 		ast := []node.Node{
 			CreateFunctionCall(
-				CreateIdentifier("range"),
+				CreateBuiltinFunctionIdentifier("range"),
 				[]node.Node{
 					CreateNumber(test.StartNumber),
 					CreateNumber(test.EndNumber),
@@ -262,7 +262,7 @@ func TestBuiltin_Random(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			ast := []node.Node{
 				CreateFunctionCall(
-					CreateIdentifier("random"),
+					CreateBuiltinFunctionIdentifier("random"),
 					[]node.Node{
 						CreateNumber(utils.IntToString(test.Min)),
 						CreateNumber(utils.IntToString(test.Max)),
@@ -337,7 +337,7 @@ func TestBuiltin_RangeErrors(t *testing.T) {
 
 		ast := []node.Node{
 			CreateFunctionCall(
-				CreateIdentifier("range"),
+				CreateBuiltinFunctionIdentifier("range"),
 				test.Arguments,
 			),
 		}
@@ -399,7 +399,7 @@ func TestBuiltin_RandomErrors(t *testing.T) {
 
 		ast := []node.Node{
 			CreateFunctionCall(
-				CreateIdentifier("random"),
+				CreateBuiltinFunctionIdentifier("random"),
 				test.Arguments,
 			),
 		}
@@ -444,7 +444,7 @@ func TestBuiltin_SliceInvalidNumberOfArgumentsError(t *testing.T) {
 
 		ast := []node.Node{
 			CreateFunctionCall(
-				CreateIdentifier("slice"),
+				CreateBuiltinFunctionIdentifier("slice"),
 				test.Args,
 			),
 		}
@@ -501,7 +501,7 @@ func TestBuiltin_UnwrapErrors(t *testing.T) {
 	for i, test := range tests {
 		ast := []node.Node{
 			CreateFunctionCall(
-				CreateIdentifier("unwrap"),
+				CreateBuiltinFunctionIdentifier("unwrap"),
 				test.Args,
 			),
 		}
@@ -545,7 +545,7 @@ func TestBuiltin_UnwrapAllErrors(t *testing.T) {
 	for i, test := range tests {
 		ast := []node.Node{
 			CreateFunctionCall(
-				CreateIdentifier("unwrap_all"),
+				CreateBuiltinFunctionIdentifier("unwrap_all"),
 				test.Args,
 			),
 		}
@@ -613,7 +613,7 @@ func TestBuiltin_SliceIndexErrors(t *testing.T) {
 
 		ast := []node.Node{
 			CreateFunctionCall(
-				CreateIdentifier("slice"),
+				CreateBuiltinFunctionIdentifier("slice"),
 				[]node.Node{
 					list,
 					test.StartIndex,
@@ -632,7 +632,7 @@ func TestBuiltin_SliceIndexErrors(t *testing.T) {
 func TestBuiltin_SliceInvalidTypeError(t *testing.T) {
 	ast := []node.Node{
 		CreateFunctionCall(
-			CreateIdentifier("slice"),
+			CreateBuiltinFunctionIdentifier("slice"),
 			[]node.Node{
 				CreateBooleanTrue(),
 				CreateNumber("0"),

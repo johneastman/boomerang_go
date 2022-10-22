@@ -692,7 +692,7 @@ func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {
 		"value",
 		node.CreateBinaryExpression(
 			CreateFunctionCall(
-				CreateIdentifier("unwrap"),
+				CreateBuiltinFunctionIdentifier("unwrap"),
 				[]node.Node{
 					CreateIdentifier("sum"),
 					CreateNumber("0"),

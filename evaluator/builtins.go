@@ -61,6 +61,20 @@ func init() {
 	}
 }
 
+func IsBuiltinVariable(value string) bool {
+	if _, ok := builtinVariables[value]; ok {
+		return true
+	}
+	return false
+}
+
+func IsBuiltinFunction(value string) bool {
+	if _, ok := builtinFunctions[value]; ok {
+		return true
+	}
+	return false
+}
+
 func getBuiltinVariable(identifierNode node.Node) *node.Node {
 	if value, ok := builtinVariables[identifierNode.Value]; ok {
 		switch value.Type {
@@ -71,13 +85,6 @@ func getBuiltinVariable(identifierNode node.Node) *node.Node {
 		}
 	}
 	return nil
-}
-
-func isBuiltinFunction(value string) bool {
-	if _, ok := builtinFunctions[value]; ok {
-		return true
-	}
-	return false
 }
 
 func evaluateBuiltinFunction(name string, eval *evaluator, lineNum int, callParam []node.Node) (*node.Node, error) {

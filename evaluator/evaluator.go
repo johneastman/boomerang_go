@@ -179,6 +179,13 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 	case node.IDENTIFIER:
 		return e.evaluateIdentifier(expr)
 
+	case node.BUILTIN_VARIABLE:
+		return getBuiltinVariable(expr), nil
+
+	case node.BUILTIN_FUNCTION:
+		// These will be evaluated later during a function call
+		return &expr, nil
+
 	case node.UNARY_EXPR:
 		return e.evaluateUnaryExpression(expr)
 
@@ -201,23 +208,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 }
 
 func (e *evaluator) evaluateIdentifier(identifierExpression node.Node) (*node.Node, error) {
-
-	// Check for builtin variables
-	builtinVariable := getBuiltinVariable(identifierExpression)
-	if builtinVariable != nil {
-		return builtinVariable, nil
-	}
-
-	/*
-		If the identifier is a builtin function, simply return the identifier token, and the
-		builtin function will be evaluated later.
-	*/
-	if isBuiltinFunction(identifierExpression.Value) {
-		return &identifierExpression, nil
-	}
-
-	// Get the user-defined variable from the environment
-	return e.env.GetIdentifier(identifierExpression)
+	return e.env.GetIdentifier(identifierExpression) // Get the user-defined variable from the environment
 }
 
 func (e *evaluator) evaluateParameter(parameterExpression node.Node) (*node.Node, error) {
@@ -405,19 +396,17 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 	function := functionCallExpression.GetParamByKeys([]string{node.IDENTIFIER, node.FUNCTION})
 
+	if function.Type == node.BUILTIN_FUNCTION {
+		return evaluateBuiltinFunction(function.Value, e, function.LineNum, callParams.Params)
+	}
+
 	if function.Type == node.IDENTIFIER {
-
-		if isBuiltinFunction(function.Value) {
-			return evaluateBuiltinFunction(function.Value, e, function.LineNum, callParams.Params)
-
-		} else {
-			// If the function object is an identifier, retireve the actual function object from the environment
-			identifierFunction, err := e.env.GetIdentifier(function)
-			if err != nil {
-				return nil, err
-			}
-			function = *identifierFunction
+		// If the function object is an identifier, retireve the actual function object from the environment
+		identifierFunction, err := e.env.GetIdentifier(function)
+		if err != nil {
+			return nil, err
 		}
+		function = *identifierFunction
 	}
 
 	// Assert that the function object is, in fact, a callable function
@@ -611,7 +600,7 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 }
 
 func (e *evaluator) send(left node.Node, right node.Node) (*node.Node, error) {
-	if (left.Type == node.FUNCTION || left.Type == node.IDENTIFIER) && right.Type == node.LIST {
+	if (left.Type == node.FUNCTION || left.Type == node.BUILTIN_FUNCTION) && right.Type == node.LIST {
 		// Need to include "node.IDENTIFIER" check for builtin functions
 		functionCall := node.CreateFunctionCall(left.LineNum, left, right.Params)
 		return e.evaluateExpression(functionCall)

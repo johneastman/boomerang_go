@@ -102,6 +102,14 @@ func CreateIdentifier(value string) node.Node {
 	return node.CreateIdentifier(TEST_LINE_NUM, value)
 }
 
+func CreateBuiltinFunctionIdentifier(value string) node.Node {
+	return node.CreateBuiltinFunctionIdentifier(TEST_LINE_NUM, value)
+}
+
+func CreateBuiltinVariableIdentifier(value string) node.Node {
+	return node.CreateBuiltinVariableIdentifier(TEST_LINE_NUM, value)
+}
+
 func CreateList(values []node.Node) node.Node {
 	return node.CreateList(TEST_LINE_NUM, values)
 }

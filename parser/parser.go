@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"boomerang/evaluator"
 	"boomerang/node"
 	"boomerang/tokens"
 	"boomerang/utils"
@@ -305,8 +306,14 @@ func (p *Parser) parseIdentifier() (*node.Node, error) {
 		return nil, err
 	}
 
-	identifierNode := node.CreateIdentifier(identifierToken.LineNumber, identifierToken.Literal)
-	return &identifierNode, nil
+	if evaluator.IsBuiltinVariable(identifierToken.Literal) {
+		return node.CreateBuiltinVariableIdentifier(identifierToken.LineNumber, identifierToken.Literal).Ptr(), nil
+
+	} else if evaluator.IsBuiltinFunction(identifierToken.Literal) {
+		return node.CreateBuiltinFunctionIdentifier(identifierToken.LineNumber, identifierToken.Literal).Ptr(), nil
+	}
+
+	return node.CreateIdentifier(identifierToken.LineNumber, identifierToken.Literal).Ptr(), nil
 }
 
 func (p *Parser) parseNumber() (*node.Node, error) {
