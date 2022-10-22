@@ -82,7 +82,7 @@ print(i)
 * `BOOLEAN or BOOLEAN`: `true` if left or right are `true`; `false` otherwise
 
 #### In
-* `EXPRESSION in LIST`: `true` if the left value is in the list on the right
+* `EXPRESSION in LIST`: `true` if the left value is in the list on the right; `false` otherwise
 
 
 ### Unary (Prefix) Operators
