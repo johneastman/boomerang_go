@@ -290,7 +290,7 @@ func TestBuiltin_Random(t *testing.T) {
 	}
 }
 
-func TestBuiltin_PrintStatement(t *testing.T) {
+func TestBuiltin_Print(t *testing.T) {
 	ast := []node.Node{
 		CreateFunctionCall(
 			CreateBuiltinFunctionIdentifier("print"),
@@ -307,14 +307,14 @@ func TestBuiltin_PrintStatement(t *testing.T) {
 		CreateBlockStatementReturnValue(nil),
 	}
 
-	AssertExpectedOutput(t, "1 2 3\n", func() {
+	AssertExpectedOutput(t, 0, "1 2 3\n", func() {
 		actualResults = getEvaluatorResults(ast)
 	})
 
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
-func TestBuiltin_PrintStatementNoArguments(t *testing.T) {
+func TestBuiltin_PrintNoArguments(t *testing.T) {
 	ast := []node.Node{
 		CreateFunctionCall(
 			CreateBuiltinFunctionIdentifier("print"),
@@ -327,11 +327,55 @@ func TestBuiltin_PrintStatementNoArguments(t *testing.T) {
 		CreateBlockStatementReturnValue(nil),
 	}
 
-	AssertExpectedOutput(t, "", func() {
+	AssertExpectedOutput(t, 0, "", func() {
 		actualResults = getEvaluatorResults(ast)
 	})
 
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
+func TestBuiltin_Input(t *testing.T) {
+
+	tests := []struct {
+		InputString string
+		Prompt      string
+	}{
+		{
+			InputString: "hello",
+			Prompt:      "Input",
+		},
+		{
+			InputString: "John Doe",
+			Prompt:      "Enter your name",
+		},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateBuiltinFunctionIdentifier("input"),
+				[]node.Node{
+					CreateRawString(test.Prompt),
+				},
+			),
+		}
+
+		actualResults := []node.Node{}
+		expectedResults := []node.Node{
+			CreateRawString(test.InputString),
+		}
+
+		// Mock user input
+		AssertExpectedInput(t, i, test.InputString, func() {
+			actualResults = getEvaluatorResults(ast)
+		})
+		AssertNodesEqual(t, i, expectedResults, actualResults)
+
+		// Check prompt output
+		AssertExpectedOutput(t, i, fmt.Sprintf("%s: ", test.Prompt), func() {
+			actualResults = getEvaluatorResults(ast)
+		})
+	}
 }
 
 /* * * * * * * *

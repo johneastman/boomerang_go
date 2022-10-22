@@ -263,7 +263,21 @@ func assertNodeEqual(expected node.Node, actual node.Node) error {
 	return nil
 }
 
-func AssertExpectedOutput(t *testing.T, expectedOutput string, f func()) {
+func AssertExpectedOutput(t *testing.T, testNumber int, expectedOutput string, f func()) {
+	testName := fmt.Sprintf("Test #%d", testNumber)
+
+	t.Run(testName, func(t *testing.T) {
+		actualOutput, err := assertExpectedOutput(expectedOutput, f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if expectedOutput != *actualOutput {
+			t.Fatalf("Expected %#v, got %#v", expectedOutput, *actualOutput)
+		}
+	})
+}
+
+func assertExpectedOutput(expectedOutput string, f func()) (*string, error) {
 	rescueStdout := os.Stdout
 
 	defer func() {
@@ -271,18 +285,62 @@ func AssertExpectedOutput(t *testing.T, expectedOutput string, f func()) {
 		os.Stdout = rescueStdout
 	}()
 
-	r, w, _ := os.Pipe()
+	r, w, err := os.Pipe()
+	if err != nil {
+		return nil, err
+	}
 	os.Stdout = w
 
 	// Execute code that should print to console
 	f()
 
 	w.Close()
-	actualOutput, _ := io.ReadAll(r)
-
-	if expectedOutput != string(actualOutput) {
-		t.Fatalf("Expected %#v, got %#v", "1 2 3\n", actualOutput)
+	outputBytes, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
 	}
+
+	actualOutput := string(outputBytes)
+	return &actualOutput, nil
+}
+
+func AssertExpectedInput(t *testing.T, testNumber int, expectedOutput string, f func()) {
+	testName := fmt.Sprintf("Test #%d", testNumber)
+
+	t.Run(testName, func(t *testing.T) {
+		if err := assertExpectedInput(expectedOutput, f); err != nil {
+			t.Fatal(err)
+		}
+	})
+}
+
+func assertExpectedInput(inputString string, f func()) error {
+
+	rescueStdin := os.Stdin
+
+	defer func() {
+		// Reset STDIN after function runs/if any errors occur
+		os.Stdin = rescueStdin
+	}()
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		return err
+	}
+	os.Stdin = r
+
+	// Write to stdin
+	input := []byte(inputString)
+	_, err = w.Write(input)
+	if err != nil {
+		return err
+	}
+	w.Close()
+
+	// Execute code that performs IO operations
+	f()
+
+	return nil
 }
 
 func AssertErrorEqual(t *testing.T, testNumber int, expected string, actual string) {

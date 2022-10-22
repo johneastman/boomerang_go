@@ -18,6 +18,7 @@ const (
 	BUILTIN_RANGE      = "range"
 	BUILTIN_RANDOM     = "random"
 	BUILTIN_PRINT      = "print"
+	BUILTIN_INPUT      = "input"
 
 	// Variables
 	BUILTIN_PI = "pi"
@@ -56,6 +57,7 @@ func init() {
 		BUILTIN_RANGE:      {NumArgs: 2, Function: evaluateBuiltinRange},
 		BUILTIN_RANDOM:     {NumArgs: 2, Function: evaluateBuiltinRandom},
 		BUILTIN_PRINT:      {NumArgs: nArgsValue, Function: evaluateBuiltinPrint},
+		BUILTIN_INPUT:      {NumArgs: 1, Function: evaluateBuiltinInput},
 	}
 
 	builtinVariables = map[string]BuiltinVariable{
@@ -330,8 +332,8 @@ func evaluateBuiltinRandom(eval *evaluator, lineNum int, callParameters []node.N
 }
 
 func evaluateBuiltinPrint(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
-	for i, node := range callParameters {
-		evaluatedParam, err := eval.evaluateExpression(node)
+	for i, value := range callParameters {
+		evaluatedParam, err := eval.evaluateExpression(value)
 		if err != nil {
 			return nil, err
 		}
@@ -343,4 +345,20 @@ func evaluateBuiltinPrint(eval *evaluator, lineNum int, callParameters []node.No
 		}
 	}
 	return node.CreateBlockStatementReturnValue(lineNum, nil).Ptr(), nil
+}
+
+func evaluateBuiltinInput(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+
+	prompt, err := eval.evaluateExpression(callParameters[0])
+	if err != nil {
+		return nil, err
+	}
+
+	if err := utils.CheckTypeError(lineNum, prompt.Type, node.STRING); err != nil {
+		return nil, err
+	}
+
+	inputValue := utils.UserInput(prompt.Value)
+
+	return node.CreateString(lineNum, inputValue, []node.Node{}).Ptr(), nil
 }

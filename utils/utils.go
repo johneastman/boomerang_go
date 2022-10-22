@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -54,4 +56,15 @@ func CheckOutOfRange(lineNum int, index int, listLen int) error {
 		)
 	}
 	return nil
+}
+
+func UserInput(prompt string) string {
+	fmt.Printf("%s: ", prompt)
+
+	scanner := bufio.NewScanner(os.Stdin)
+	if scanner.Scan() {
+		line := scanner.Text()
+		return line
+	}
+	return ""
 }

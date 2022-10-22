@@ -102,6 +102,34 @@ func TestTokenizer_Strings(t *testing.T) {
 	}
 }
 
+func TestTokenizer_StringsInList(t *testing.T) {
+	/*
+		Test to fix bug with how strings are interpreted in the tokenizer.
+
+		OLD (BEFORE FIX):
+		`("hello", "world")` would get interpreted as a string: `"hello\", \"world"`
+
+		NEW (AFTER FIX):
+		`("hello", "world")` will get interpreted as a list: `("hello", "world")`
+	*/
+	expectedTokens := []tokens.Token{
+		CreateTokenFromValues(tokens.OPEN_PAREN, "("),
+		CreateTokenFromValues(tokens.STRING, "hello"),
+		CreateTokenFromValues(tokens.COMMA, ","),
+		CreateTokenFromValues(tokens.STRING, "world"),
+		CreateTokenFromValues(tokens.CLOSED_PAREN, ")"),
+	}
+
+	source := "(\"hello\", \"world\");"
+	tokenizer := getTokenizer(source)
+
+	for i, expectedToken := range expectedTokens {
+		actualToken, _ := tokenizer.Next()
+
+		AssertTokenEqual(t, i, expectedToken, *actualToken)
+	}
+}
+
 func TestTokenizer_Identifiers(t *testing.T) {
 
 	variables := []string{

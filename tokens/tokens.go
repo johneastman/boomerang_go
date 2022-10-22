@@ -122,7 +122,7 @@ var (
 var tokenData = []TokenMetaData{
 	// Data types/misc
 	{Type: NUMBER, Literal: "[0-9]*[.]?[0-9]+"},
-	{Type: STRING, Literal: "\"(.*)\""},
+	{Type: STRING, Literal: "\"(.*?)\""},
 	{Type: BOOLEAN, Literal: "(true|false)"},
 
 	// Keywords. Need to be defined before "IDENTIFIER" in this list so they are not misclassified
