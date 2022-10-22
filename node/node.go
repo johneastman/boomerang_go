@@ -72,9 +72,11 @@ func (n Node) Equals(other Node) bool {
 		The line number is not checked because two values could be equal but defined on different lines.
 		Also, the line number is for debugging/error handling, so that value is not relevant here.
 
+		If the object type and string representation match, we can assume the objects are equal.
+
 		Do not use this method for testing.
 	*/
-	return n.Type == other.Type && n.Value == other.Value
+	return n.Type == other.Type && n.String() == other.String()
 }
 
 func (n Node) Ptr() *Node {

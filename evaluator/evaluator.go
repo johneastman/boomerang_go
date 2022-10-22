@@ -611,7 +611,7 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 }
 
 func (e *evaluator) send(left node.Node, right node.Node) (*node.Node, error) {
-	if left.Type == node.FUNCTION && right.Type == node.LIST {
+	if (left.Type == node.FUNCTION || left.Type == node.IDENTIFIER) && right.Type == node.LIST {
 		functionCall := node.CreateFunctionCall(left.LineNum, left, right.Params)
 		return e.evaluateExpression(functionCall)
 

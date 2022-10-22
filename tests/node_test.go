@@ -28,12 +28,22 @@ func TestNode_Equals(t *testing.T) {
 			CreateRawString("true"),
 			false,
 		},
+		{
+			CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
+			CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
+			true,
+		},
+		{
+			CreateList([]node.Node{CreateNumber("2"), CreateNumber("4"), CreateNumber("6")}),
+			CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
+			false,
+		},
 	}
 
 	for i, test := range tests {
 		isEqual := test.First.Equals(test.Second)
 		if isEqual != test.IsEqual {
-			t.Fatalf("Test #%d - Nodes not equal", i)
+			t.Fatalf("Test #%d - Nodes not equal. Left: %s, Right: %s", i, &test.First, &test.Second)
 		}
 	}
 }
