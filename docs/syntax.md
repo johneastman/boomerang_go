@@ -6,7 +6,6 @@
     * [Unary (Prefix) Operators](#unary-prefix-operators)
 * [Statements](#statements)
     * [Variable Assignment](#variable-assignment)
-    * [Print](#print)
     * [While Loop](#while-loop)
     * [Break](#break)
     * [Block Statements](#block-statements)
@@ -104,20 +103,6 @@ Examples:
 number = 1;
 number = 1 + (2 * 2) - 3;
 number = -1 + 1;
-```
-
-### Print
-Syntax: `print(EXPRESSION, EXPRESSION, ..., EXPRESSION)`
-
-
-Examples:
-```
-print(1, 2, 3 + 4);
-
-number = 3 + 4 / 2;
-print(number, number * 2);
-
-print(); # Does nothing
 ```
 
 ### While Loop

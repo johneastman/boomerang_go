@@ -301,28 +301,6 @@ func TestParser_Identifier(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
-func TestParser_PrintStatement(t *testing.T) {
-	actualAST := getParserAST("print(1, 2, variable);")
-	expectedAST := []node.Node{
-		CreatePrintStatement(
-			[]node.Node{
-				CreateNumber("1"),
-				CreateNumber("2"),
-				CreateIdentifier("variable"),
-			},
-		),
-	}
-	AssertNodesEqual(t, 0, expectedAST, actualAST)
-}
-
-func TestParser_PrintStatementNoArguments(t *testing.T) {
-	actualAST := getParserAST("print();")
-	expectedAST := []node.Node{
-		CreatePrintStatement([]node.Node{}),
-	}
-	AssertNodesEqual(t, 0, expectedAST, actualAST)
-}
-
 func TestParser_Function(t *testing.T) {
 	actualAST := getParserAST("func(a, b) { a + b; };")
 	expectedAST := []node.Node{
@@ -561,15 +539,19 @@ func TestParser_WhileLoop(t *testing.T) {
 }
 
 func TestParser_ForLoop(t *testing.T) {
-	actualAST := getParserAST("for e in list { print(e); };")
+	actualAST := getParserAST("for e in list { print <- (e,); };")
 	expectedAST := []node.Node{
 		CreateForLoop(
 			CreateIdentifier("e"),
 			CreateIdentifier("list"),
 			[]node.Node{
-				CreatePrintStatement([]node.Node{
-					CreateIdentifier("e"),
-				}),
+				node.CreateBinaryExpression(
+					CreateBuiltinFunctionIdentifier("print"),
+					CreateTokenFromToken(tokens.SEND_TOKEN),
+					CreateList([]node.Node{
+						CreateIdentifier("e"),
+					}),
+				),
 			},
 		),
 	}

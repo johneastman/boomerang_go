@@ -111,9 +111,6 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER) && tokens.TokenTypesEqual(p.peek, tokens.ASSIGN) {
 		returnNode, err = p.parseAssignmentStatement()
 
-	} else if tokens.TokenTypesEqual(p.current, tokens.PRINT) {
-		returnNode, err = p.parsePrintStatement()
-
 	} else if tokens.TokenTypesEqual(p.current, tokens.WHILE) {
 		returnNode, err = p.parseWhileLoop()
 
@@ -156,27 +153,6 @@ func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
 
 	assignmentNode := node.CreateAssignmentStatement(identifierToken.LineNumber, identifierToken.Literal, *variableExpression)
 	return &assignmentNode, nil
-}
-
-func (p *Parser) parsePrintStatement() (*node.Node, error) {
-
-	lineNumber := p.current.LineNumber
-
-	if err := p.advance(); err != nil {
-		return nil, err
-	}
-
-	if err := p.expectToken(tokens.OPEN_PAREN_TOKEN); err != nil {
-		return nil, err
-	}
-
-	parameters, err := p.parseParameters()
-	if err != nil {
-		return nil, err
-	}
-
-	printNode := node.CreatePrintStatement(lineNumber, parameters.Params)
-	return &printNode, nil
 }
 
 func (p *Parser) parseBreakStatement() (*node.Node, error) {

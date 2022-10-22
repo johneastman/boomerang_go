@@ -114,10 +114,6 @@ func CreateList(values []node.Node) node.Node {
 	return node.CreateList(TEST_LINE_NUM, values)
 }
 
-func CreatePrintStatement(params []node.Node) node.Node {
-	return node.CreatePrintStatement(TEST_LINE_NUM, params)
-}
-
 func CreateAssignmentStatement(variableName string, value node.Node) node.Node {
 	return node.CreateAssignmentStatement(TEST_LINE_NUM, variableName, value)
 }

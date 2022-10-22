@@ -43,7 +43,6 @@ const (
 	COMMA                = "COMMA"
 	OPEN_CURLY_BRACKET   = "OPEN_CURLY_BRACKET"
 	CLOSED_CURLY_BRACKET = "CLOSED_CURLY_BRACKET"
-	PRINT                = "PRINT"
 	FUNCTION             = "FUNCTION"
 	NUMBER               = "NUMBER"
 	STRING               = "STRING"
@@ -96,7 +95,6 @@ var (
 	LT_TOKEN                   = getToken(LT)
 
 	// Keywords
-	PRINT_TOKEN    = getToken(PRINT)
 	FUNCTION_TOKEN = getToken(FUNCTION)
 	TRUE_TOKEN     = Token{Type: BOOLEAN, Literal: "true"}
 	FALSE_TOKEN    = Token{Type: BOOLEAN, Literal: "false"}
@@ -134,7 +132,6 @@ var tokenData = []TokenMetaData{
 	{Type: OR, Literal: "or", IsKeyword: true},
 	{Type: AND, Literal: "and", IsKeyword: true},
 	{Type: ELSE, Literal: "else", IsKeyword: true},
-	{Type: PRINT, Literal: "print", IsKeyword: true},
 	{Type: FUNCTION, Literal: "func", IsKeyword: true},
 	{Type: FOR, Literal: "for", IsKeyword: true},
 	{Type: IN, Literal: "in", IsKeyword: true},

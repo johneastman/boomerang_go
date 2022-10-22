@@ -35,7 +35,6 @@ func TestTokenizer_Symbols(t *testing.T) {
 
 func TestTokenizer_Keywords(t *testing.T) {
 	keywordTokens := []tokens.Token{
-		{Type: tokens.PRINT, Literal: "print", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.FUNCTION, Literal: "func", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.BOOLEAN, Literal: "true", LineNumber: TEST_LINE_NUM},
 		{Type: tokens.BOOLEAN, Literal: "false", LineNumber: TEST_LINE_NUM},

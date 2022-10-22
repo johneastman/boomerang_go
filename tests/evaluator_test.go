@@ -416,42 +416,6 @@ func TestEvaluator_Variable(t *testing.T) {
 	AssertNodesEqual(t, 0, actualResults, expectedResults)
 }
 
-func TestEvaluator_PrintStatement(t *testing.T) {
-	ast := []node.Node{
-		CreatePrintStatement(
-			[]node.Node{
-				CreateNumber("1"),
-				CreateNumber("2"),
-				CreateNumber("3"),
-			},
-		),
-	}
-
-	actualResults := []node.Node{}
-	expectedResults := []node.Node{}
-
-	AssertExpectedOutput(t, "1 2 3\n", func() {
-		actualResults = getEvaluatorResults(ast)
-	})
-
-	AssertNodesEqual(t, 0, expectedResults, actualResults)
-}
-
-func TestEvaluator_PrintStatementNoArguments(t *testing.T) {
-	ast := []node.Node{
-		CreatePrintStatement([]node.Node{}),
-	}
-
-	actualResults := []node.Node{}
-	expectedResults := []node.Node{}
-
-	AssertExpectedOutput(t, "", func() {
-		actualResults = getEvaluatorResults(ast)
-	})
-
-	AssertNodesEqual(t, 0, expectedResults, actualResults)
-}
-
 func TestEvaluator_Function(t *testing.T) {
 	ast := []node.Node{
 		CreateFunction(

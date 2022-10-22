@@ -17,6 +17,7 @@ const (
 	BUILTIN_UNWRAP_ALL = "unwrap_all"
 	BUILTIN_RANGE      = "range"
 	BUILTIN_RANDOM     = "random"
+	BUILTIN_PRINT      = "print"
 
 	// Variables
 	BUILTIN_PI = "pi"
@@ -54,6 +55,7 @@ func init() {
 		BUILTIN_SLICE:      {NumArgs: 3, Function: evaluateBuiltinSlice},
 		BUILTIN_RANGE:      {NumArgs: 2, Function: evaluateBuiltinRange},
 		BUILTIN_RANDOM:     {NumArgs: 2, Function: evaluateBuiltinRandom},
+		BUILTIN_PRINT:      {NumArgs: nArgsValue, Function: evaluateBuiltinPrint},
 	}
 
 	builtinVariables = map[string]BuiltinVariable{
@@ -325,4 +327,20 @@ func evaluateBuiltinRandom(eval *evaluator, lineNum int, callParameters []node.N
 	// "+ 1" ensures the generated number includes the maximum value
 	randomValue := rand.Intn(*maxValue-*minValue+1) + *minValue
 	return node.CreateNumber(minNumber.LineNum, utils.IntToString(randomValue)).Ptr(), nil
+}
+
+func evaluateBuiltinPrint(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+	for i, node := range callParameters {
+		evaluatedParam, err := eval.evaluateExpression(node)
+		if err != nil {
+			return nil, err
+		}
+
+		if i < len(callParameters)-1 {
+			fmt.Printf("%s ", evaluatedParam.String())
+		} else {
+			fmt.Println(evaluatedParam.String())
+		}
+	}
+	return node.CreateBlockStatementReturnValue(lineNum, nil).Ptr(), nil
 }

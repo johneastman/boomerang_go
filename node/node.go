@@ -98,7 +98,6 @@ const (
 	// Statements
 	STMTS                 = "Statements"
 	RETURN_VALUE          = "ReturnValue"
-	PRINT_STMT            = "PrintStatement"
 	ASSIGN_STMT           = "Assign"
 	TRUE_BRANCH           = "TrueBranch"
 	FALSE_BRANCH          = "FalseBranch"
@@ -244,14 +243,6 @@ func CreateBuiltinVariableIdentifier(lineNum int, name string) Node {
 
 func CreateList(lineNum int, parameters []Node) Node {
 	return Node{Type: LIST, Params: parameters, LineNum: lineNum}
-}
-
-func CreatePrintStatement(lineNum int, params []Node) Node {
-	return Node{
-		Type:    PRINT_STMT,
-		Params:  params,
-		LineNum: lineNum,
-	}
 }
 
 func CreateUnaryExpression(operator tokens.Token, expression Node) Node {

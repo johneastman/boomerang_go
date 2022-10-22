@@ -290,6 +290,50 @@ func TestBuiltin_Random(t *testing.T) {
 	}
 }
 
+func TestBuiltin_PrintStatement(t *testing.T) {
+	ast := []node.Node{
+		CreateFunctionCall(
+			CreateBuiltinFunctionIdentifier("print"),
+			[]node.Node{
+				CreateNumber("1"),
+				CreateNumber("2"),
+				CreateNumber("3"),
+			},
+		),
+	}
+
+	actualResults := []node.Node{}
+	expectedResults := []node.Node{
+		CreateBlockStatementReturnValue(nil),
+	}
+
+	AssertExpectedOutput(t, "1 2 3\n", func() {
+		actualResults = getEvaluatorResults(ast)
+	})
+
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
+func TestBuiltin_PrintStatementNoArguments(t *testing.T) {
+	ast := []node.Node{
+		CreateFunctionCall(
+			CreateBuiltinFunctionIdentifier("print"),
+			[]node.Node{},
+		),
+	}
+
+	actualResults := []node.Node{}
+	expectedResults := []node.Node{
+		CreateBlockStatementReturnValue(nil),
+	}
+
+	AssertExpectedOutput(t, "", func() {
+		actualResults = getEvaluatorResults(ast)
+	})
+
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */

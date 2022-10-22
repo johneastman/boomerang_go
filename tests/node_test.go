@@ -133,37 +133,6 @@ func TestNode_CreateIdentifier(t *testing.T) {
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
-func TestNode_CreatePrintStatement(t *testing.T) {
-	token := tokens.MINUS_TOKEN
-	token.LineNumber = TEST_LINE_NUM
-
-	actualNode := CreatePrintStatement([]node.Node{
-		node.CreateNumber(TEST_LINE_NUM, "1"),
-		node.CreateIdentifier(TEST_LINE_NUM, "variable"),
-		node.CreateBinaryExpression(
-			node.CreateNumber(TEST_LINE_NUM, "3"),
-			token,
-			node.CreateNumber(TEST_LINE_NUM, "4"),
-		),
-	})
-
-	expectedNode := node.Node{
-		Type:    node.PRINT_STMT,
-		LineNum: TEST_LINE_NUM,
-		Params: []node.Node{
-			{Type: node.NUMBER, Value: "1", LineNum: TEST_LINE_NUM},
-			{Type: node.IDENTIFIER, Value: "variable", LineNum: TEST_LINE_NUM},
-			{Type: node.BIN_EXPR, LineNum: TEST_LINE_NUM, Params: []node.Node{
-				{Type: node.NUMBER, Value: "3", LineNum: TEST_LINE_NUM},
-				{Type: token.Type, Value: token.Literal, LineNum: TEST_LINE_NUM},
-				{Type: node.NUMBER, Value: "4", LineNum: TEST_LINE_NUM},
-			}},
-		},
-	}
-
-	AssertNodeEqual(t, 0, expectedNode, actualNode)
-}
-
 func TestNode_CreateUnaryExpression(t *testing.T) {
 	token := tokens.MINUS_TOKEN
 	token.LineNumber = TEST_LINE_NUM
@@ -534,9 +503,7 @@ func TestNode_ForLoop(t *testing.T) {
 			},
 		),
 		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
-			node.CreatePrintStatement(TEST_LINE_NUM, []node.Node{
-				node.CreateIdentifier(TEST_LINE_NUM, "element"),
-			}),
+			node.CreateIdentifier(TEST_LINE_NUM, "element"),
 		}),
 	)
 
@@ -551,9 +518,7 @@ func TestNode_ForLoop(t *testing.T) {
 				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "3"},
 			}},
 			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
-				{Type: node.PRINT_STMT, LineNum: TEST_LINE_NUM, Params: []node.Node{
-					{Type: node.IDENTIFIER, LineNum: TEST_LINE_NUM, Value: "element"},
-				}},
+				{Type: node.IDENTIFIER, LineNum: TEST_LINE_NUM, Value: "element"},
 			}},
 		},
 	}
@@ -565,9 +530,7 @@ func TestNode_WhileLoop(t *testing.T) {
 		TEST_LINE_NUM,
 		node.CreateBooleanTrue(TEST_LINE_NUM),
 		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
-			node.CreatePrintStatement(TEST_LINE_NUM, []node.Node{
-				node.CreateRawString(TEST_LINE_NUM, "hello, world!"),
-			}),
+			node.CreateRawString(TEST_LINE_NUM, "hello, world!"),
 		}),
 	)
 	expectedNode := node.Node{
@@ -576,9 +539,7 @@ func TestNode_WhileLoop(t *testing.T) {
 		Params: []node.Node{
 			{Type: node.BOOLEAN, Value: "true", LineNum: TEST_LINE_NUM},
 			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
-				{Type: node.PRINT_STMT, LineNum: TEST_LINE_NUM, Params: []node.Node{
-					{Type: node.STRING, Value: "hello, world!", LineNum: TEST_LINE_NUM},
-				}},
+				{Type: node.STRING, Value: "hello, world!", LineNum: TEST_LINE_NUM},
 			}},
 		},
 	}

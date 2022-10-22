@@ -85,12 +85,6 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 		}
 		return nil, nil
 
-	case node.PRINT_STMT:
-		if err := e.evaluatePrintStatement(stmt); err != nil {
-			return nil, err
-		}
-		return nil, nil
-
 	case node.WHILE_LOOP:
 		if err := e.evaluateWhileLoop(stmt); err != nil {
 			return nil, err
@@ -112,22 +106,6 @@ func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
 		return err
 	}
 	e.env.SetIdentifier(variable.Value, *value)
-	return nil
-}
-
-func (e *evaluator) evaluatePrintStatement(stmt node.Node) error {
-	for i, node := range stmt.Params {
-		evaluatedParam, err := e.evaluateExpression(node)
-		if err != nil {
-			return err
-		}
-
-		if i < len(stmt.Params)-1 {
-			fmt.Printf("%s ", evaluatedParam.String())
-		} else {
-			fmt.Println(evaluatedParam.String())
-		}
-	}
 	return nil
 }
 
