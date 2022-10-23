@@ -5,7 +5,7 @@ Boomerang is:
 * **Interpreted.** Code executes in the runtime of another language (in this case, Go).
 * **Multi-paradigm** 
     * **Procedural.** Commands execute in the order they are defined.
-    * **Functional.** Most constructs return a value/produce no side effects. However, the language does support several statements that return no values/produce side effects (variable assignment, printing, etc.).
+    * **Functional.** Nothing is mutable, and constructs that return values (e.g., functions) return monads (there is no `nil` or `null` in the language).
     * **Imperative:** Explicitly define a series of commands to execute (what to do, as opposed to what to achieve).
 * **Dynamically Typed.** Variable, function, parameter, etc. types are not declared explicitly; rather, they are interpreted from literal characters in the code (e.g., `1` and `3.14159` are numbers, `"hello world!"` is a string, `true` and `false` are booleans, etc.).
 * **Strongly Typed.** The language has strict rules for how different types interact (e.g. `1 + 1` or `1 + 1.5` are valid, but `1 + "hello world!"` is invalid).
