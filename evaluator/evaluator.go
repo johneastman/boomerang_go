@@ -101,6 +101,16 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
 	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
+
+	// Check that the user hasn't created a variable with the same name as a builtin function or variable
+	if IsBuiltinFunction(variable.Value) || IsBuiltinVariable(variable.Value) {
+		return utils.CreateError(
+			stmt.LineNum,
+			"%#v is a builtin function or variable",
+			variable.Value,
+		)
+	}
+
 	value, err := e.evaluateExpression(stmt.GetParam(node.EXPR))
 	if err != nil {
 		return err

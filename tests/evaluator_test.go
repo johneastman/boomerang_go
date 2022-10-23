@@ -1,8 +1,10 @@
 package tests
 
 import (
+	"boomerang/evaluator"
 	"boomerang/node"
 	"boomerang/tokens"
+	"fmt"
 	"testing"
 )
 
@@ -1257,6 +1259,35 @@ func TestEvaluator_BreakStatementOutsideLoopError(t *testing.T) {
 		}
 		actualError := getEvaluatorError(t, ast)
 		expectedError := "error at line 1: break statements not allowed outside loops"
+
+		AssertErrorEqual(t, i, expectedError, actualError)
+	}
+}
+
+func TestEvaluator_VariableNameSameAsBuiltinsError(t *testing.T) {
+
+	builtinIdentifiers := []string{
+		// Functions
+		evaluator.BUILTIN_LEN,
+		evaluator.BUILTIN_UNWRAP,
+		evaluator.BUILTIN_SLICE,
+		evaluator.BUILTIN_UNWRAP_ALL,
+		evaluator.BUILTIN_RANGE,
+		evaluator.BUILTIN_RANDOM,
+		evaluator.BUILTIN_PRINT,
+		evaluator.BUILTIN_INPUT,
+
+		// Variables
+		evaluator.BUILTIN_PI,
+	}
+
+	for i, identifier := range builtinIdentifiers {
+		ast := []node.Node{
+			CreateAssignmentStatement(identifier, CreateNumber("20")),
+		}
+
+		actualError := getEvaluatorError(t, ast)
+		expectedError := fmt.Sprintf("error at line 1: \"%s\" is a builtin function or variable", identifier)
 
 		AssertErrorEqual(t, i, expectedError, actualError)
 	}
