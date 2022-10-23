@@ -181,7 +181,7 @@ func evaluateBuiltinUnwrap(eval *evaluator, lineNum int, callParameters []node.N
 		return nil, err
 	}
 
-	// Check that the first value in the block statement return value is a boolean value
+	// Check that the first value in the  value monad is a boolean value
 	if err := utils.CheckTypeError(lineNum, returnValueListFirst.Type, node.BOOLEAN); err != nil {
 		return nil, err
 	}
@@ -229,7 +229,7 @@ func evaluateBuiltinUnwrapAll(eval *evaluator, lineNum int, callParameters []nod
 
 	for _, param := range list.Params {
 		/*
-			"param" is the block statement return value ("(false)" or "(true, <VALUE>)"), so to utilize "evaluateBuiltinUnwrap",
+			"param" is a monad ("(false)" or "(true, <VALUE>)"), so to utilize "evaluateBuiltinUnwrap",
 			"param" and the default value are sent to "evaluateBuiltinUnwrap" as the call parameters.
 
 			unwrap_all is essentially just calling "unwrap" on every element in the list (see example in comment above).

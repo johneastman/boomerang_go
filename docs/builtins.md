@@ -50,7 +50,7 @@ Get the actual return value from a block statement. If no return value is found,
 ### Arguments
 |Name|Type|Description|
 |----|----|-----------|
-|list|LIST|the return value from a block statement (function call, if-else expression, etc.). This list will either be `(true, <VALUE>)` or `(false)`, depending on whether the block statement returned a value|
+|list|LIST|A monad (either `(true, <VALUE>)` or `(false)`, depending on whether the block statement returned a value)|
 |default_value|ANY|the value returned if `list` is `(false)`|
 
 ### Returns
@@ -70,7 +70,7 @@ unwrap <- (list, defaultValue);  # returns "-1" because the list contains "false
 ## unwrap_all
 
 ### Description
-Get a list of values from a list of block statement return values.
+Get a list of values from a list of monads.
 
 ### Arguments
 |Name|Type|Description|

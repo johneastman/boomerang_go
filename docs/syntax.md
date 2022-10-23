@@ -153,9 +153,9 @@ for i in range <- (0, 10) {
 ```
 
 ### Block Statements
-Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, when expressions, etc.). Block statements return the result of the last statement/expression wrapped in a list.
+Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, when-expressions, for-loops, etc.). Block statements return a monad. 
 
-If the block statement returns a value, the block statement will return `(true, <VALUE>)`, where `<VALUE>` is the returned value, and `true` indicates that a value was returned. For example, the below function utilizes a block statement that returns `a + b`, and because that statement/expression returns a value, the function will return `(true, a + b)`.
+If the monad contains a value, the block statement will return `(true, <VALUE>)`, where `<VALUE>` is the actual return value, and `true` indicates that a value was returned. For example, the below function utilizes a block statement that returns `a + b`, and because that expression returns a value, the function will return `(true, a + b)`.
 ```
 add = func(a, b) {
   a + b;
@@ -164,14 +164,13 @@ add = func(a, b) {
 value = add <- (2, 3); # value: (true, 5)
 ```
 
-However, block statements that return nothing simply return `(false)`, indicating that the block statement returned no value. For example, the below function takes a value and prints it to the output stream. But but because `print`, the last statement in the block statement, returns no value, the function returns `(false)`.
+However, block statements that return nothing simply return `(false)`, indicating that no value was returned from the block statement. For example, the below function takes a value assigns that value to another variable. But but because variable assignment is a statement that returns no values, the function returns `(false)`.
 ```
-printVal = func(v) {
-  print("The value is {v}");
+assign_val = func(v) {
+  new_v = v;
 };
 
-# "The value is 2" is printed to output stream, and value equals (false)
-value = printVal <- (2);
+value = assign_val <- (2);  # "value" will be "(false)"
 ```
 
 To extract the actual return value of a block statement, use the builtin `unwrap` method. See [builtin functions](../docs/builtins.md) for more information.
