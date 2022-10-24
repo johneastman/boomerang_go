@@ -69,7 +69,8 @@ print(i)
 * `LIST <- LIST`: combine the two lists, adding the values in the list on the right to the end of the list on the left
 
 #### At
-* `LIST @ NUMBER`: get the element at a given position (right) in the list (left)
+* `LIST @ NUMBER`: get the element at the given position (right) in the list (left)
+* `STRING @ NUMBER`: get the character at the given position (right) in the list (left). The character returned will be of type STRING.
 
 #### Equal
 * `EXPRESSION == EXPRESSION`: Compare two values and return `true` if they are the same; `false` otherwise

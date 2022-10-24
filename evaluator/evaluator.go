@@ -544,21 +544,32 @@ func (e *evaluator) compareIn(left node.Node, right node.Node) (*node.Node, erro
 }
 
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
-	if left.Type == node.LIST && right.Type == node.NUMBER {
 
+	if right.Type == node.NUMBER {
 		index, err := utils.ConvertStringToInteger(right.LineNum, right.Value)
 		if err != nil {
 			return nil, err
 		}
 		indexLiteral := *index
 
-		if indexLiteral >= len(left.Params) {
-			return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of list: %d", indexLiteral, len(left.Params))
+		switch left.Type {
+		case node.LIST:
+			if indexLiteral >= len(left.Params) || indexLiteral < 0 {
+				return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of list: %d", indexLiteral, len(left.Params))
+			}
+			return left.Params[indexLiteral].Ptr(), nil
+		case node.STRING:
+			if indexLiteral >= len(left.Value) || indexLiteral < 0 {
+				return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of string: %d", indexLiteral, len(left.Value))
+			}
+
+			character := left.Value[indexLiteral : indexLiteral+1]
+			return node.CreateString(left.LineNum, character, []node.Node{}).Ptr(), nil
 		}
-		return left.Params[indexLiteral].Ptr(), nil
 	}
+
 	return nil, utils.CreateError(
-		left.LineNum,
+		right.LineNum,
 		"invalid types for index: %s and %s",
 		left.ErrorDisplay(),
 		right.ErrorDisplay(),

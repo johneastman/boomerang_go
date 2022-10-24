@@ -634,26 +634,42 @@ func TestEvaluator_FunctionCallNoReturn(t *testing.T) {
 }
 
 func TestEvaluator_ListIndex(t *testing.T) {
-	ast := []node.Node{
-		CreateAssignmentStatement(
-			"numbers",
-			CreateList([]node.Node{
+
+	tests := []struct {
+		Collection    node.Node
+		Index         node.Node
+		ExpectedValue node.Node
+	}{
+		{
+			Collection: CreateList([]node.Node{
 				CreateNumber("1"),
 				CreateNumber("2"),
 				CreateNumber("3"),
 			}),
-		),
-		node.CreateBinaryExpression(
-			CreateIdentifier("numbers"),
-			tokens.AT_TOKEN,
-			CreateNumber("1"),
-		),
+			Index:         CreateNumber("1"),
+			ExpectedValue: CreateNumber("2"),
+		},
+		{
+			Collection:    CreateRawString("hello, world!"),
+			Index:         CreateNumber("2"),
+			ExpectedValue: CreateRawString("l"),
+		},
 	}
-	actualResults := getEvaluatorResults(ast)
-	expectedResults := []node.Node{
-		CreateNumber("2"),
+
+	for i, test := range tests {
+		ast := []node.Node{
+			node.CreateBinaryExpression(
+				test.Collection,
+				tokens.AT_TOKEN,
+				test.Index,
+			),
+		}
+		actualResults := getEvaluatorResults(ast)
+		expectedResults := []node.Node{
+			test.ExpectedValue,
+		}
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
-	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {

@@ -152,34 +152,57 @@ func TestBuiltin_UnwrapAll(t *testing.T) {
 }
 
 func TestBuiltin_Slice(t *testing.T) {
-	ast := []node.Node{
-		CreateFunctionCall(
-			CreateBuiltinFunctionIdentifier("slice"),
-			[]node.Node{
-				CreateList([]node.Node{
-					CreateNumber("0"),
-					CreateNumber("1"),
-					CreateNumber("2"),
-					CreateNumber("3"),
-					CreateNumber("4"),
-					CreateNumber("5"),
-				}),
+
+	tests := []struct {
+		Collection    node.Node
+		StartIndex    node.Node
+		EndIndex      node.Node
+		ExpectedValue node.Node
+	}{
+		{
+			Collection: CreateList([]node.Node{
+				CreateNumber("0"),
 				CreateNumber("1"),
+				CreateNumber("2"),
+				CreateNumber("3"),
 				CreateNumber("4"),
-			},
-		),
+				CreateNumber("5"),
+			}),
+			StartIndex: CreateNumber("1"),
+			EndIndex:   CreateNumber("4"),
+			ExpectedValue: CreateList([]node.Node{
+				CreateNumber("1"),
+				CreateNumber("2"),
+				CreateNumber("3"),
+				CreateNumber("4"),
+			}),
+		},
+		{
+			Collection:    CreateRawString("hello, world!"),
+			StartIndex:    CreateNumber("1"),
+			EndIndex:      CreateNumber("4"),
+			ExpectedValue: CreateRawString("ello"),
+		},
 	}
 
-	actualResults := getEvaluatorResults(ast)
-	expectedResults := []node.Node{
-		CreateList([]node.Node{
-			CreateNumber("1"),
-			CreateNumber("2"),
-			CreateNumber("3"),
-			CreateNumber("4"),
-		}),
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateBuiltinFunctionIdentifier("slice"),
+				[]node.Node{
+					test.Collection,
+					test.StartIndex,
+					test.EndIndex,
+				},
+			),
+		}
+
+		actualResults := getEvaluatorResults(ast)
+		expectedResults := []node.Node{
+			test.ExpectedValue,
+		}
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
-	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestBuiltin_Range(t *testing.T) {
@@ -730,7 +753,7 @@ func TestBuiltin_SliceInvalidTypeError(t *testing.T) {
 	}
 
 	actualError := getEvaluatorError(t, ast)
-	expectedError := "error at line 1: expected List, got Boolean (\"true\")"
+	expectedError := "error at line 1: invalid type for slice: Boolean (\"true\")"
 
 	AssertErrorEqual(t, 0, expectedError, actualError)
 }

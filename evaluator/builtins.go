@@ -112,18 +112,24 @@ func evaluateBuiltinFunction(name string, eval *evaluator, lineNum int, callPara
 
 func evaluateBuiltinSlice(eval *evaluator, lineNum int, callParam []node.Node) (*node.Node, error) {
 
-	list, err := eval.evaluateAndCheckType(callParam[0], node.LIST)
+	collection, err := eval.evaluateExpression(callParam[0])
 	if err != nil {
 		return nil, err
 	}
-	listValues := list.Params
 
+	// Get the length of the collection based on the type. This is for verifying the indices are not out of range
+	var collectionLength int
+	switch collection.Type {
+	case node.LIST:
+		collectionLength = len(collection.Params)
+	case node.STRING:
+		collectionLength = len(collection.Value)
+	default:
+		return nil, utils.CreateError(collection.LineNum, "invalid type for slice: %s", collection.ErrorDisplay())
+	}
+
+	// Start Index
 	startIndex, err := eval.evaluateAndCheckType(callParam[1], node.NUMBER)
-	if err != nil {
-		return nil, err
-	}
-
-	endIndex, err := eval.evaluateAndCheckType(callParam[2], node.NUMBER)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +140,13 @@ func evaluateBuiltinSlice(eval *evaluator, lineNum int, callParam []node.Node) (
 	}
 	startLiteral := *start
 
-	if err := utils.CheckOutOfRange(startIndex.LineNum, startLiteral, len(listValues)); err != nil {
+	if err := utils.CheckOutOfRange(startIndex.LineNum, startLiteral, collectionLength); err != nil {
+		return nil, err
+	}
+
+	// End Index
+	endIndex, err := eval.evaluateAndCheckType(callParam[2], node.NUMBER)
+	if err != nil {
 		return nil, err
 	}
 
@@ -144,7 +156,7 @@ func evaluateBuiltinSlice(eval *evaluator, lineNum int, callParam []node.Node) (
 	}
 	endLiteral := *end
 
-	if err := utils.CheckOutOfRange(endIndex.LineNum, endLiteral, len(listValues)); err != nil {
+	if err := utils.CheckOutOfRange(endIndex.LineNum, endLiteral, collectionLength); err != nil {
 		return nil, err
 	}
 
@@ -152,8 +164,26 @@ func evaluateBuiltinSlice(eval *evaluator, lineNum int, callParam []node.Node) (
 		return nil, utils.CreateError(startIndex.LineNum, "start index cannot be greater than end index")
 	}
 
-	slicedList := listValues[startLiteral : endLiteral+1]
-	return node.CreateList(list.LineNum, slicedList).Ptr(), nil
+	var returnNode node.Node
+
+	/*
+		This switch does not need a default case because that is handled in the above in the switch statement that
+		gets the collection length
+	*/
+	switch collection.Type {
+
+	case node.LIST:
+		listValues := collection.Params
+		slicedList := listValues[startLiteral : endLiteral+1]
+		returnNode = node.CreateList(collection.LineNum, slicedList)
+
+	case node.STRING:
+		listValues := collection.Value
+		slicedString := listValues[startLiteral : endLiteral+1]
+		returnNode = node.CreateString(collection.LineNum, slicedString, []node.Node{})
+	}
+
+	return returnNode.Ptr(), nil
 }
 
 func evaluateBuiltinUnwrap(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {

@@ -127,7 +127,7 @@ Retrieve a sublist of `list` from `startPos` to `endPos` (inclusive).
 ### Arguments
 |Name|Type|Description|
 |----|----|-----------|
-|list|LIST|any LIST object|
+|list|LIST or STRING|any LIST or STRING object|
 |start_pos|NUMBER|index associated with the first element of the new list|
 |end_pos|NUMBER|index associated with the last element of the new list|
 
