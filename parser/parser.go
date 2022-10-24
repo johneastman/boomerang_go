@@ -405,7 +405,7 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		}
 		stmts := []node.Node{*expression}
 
-		additionalParams, err := p.parseParameters()
+		additionalParams, err := p.parseList()
 		if err != nil {
 			return nil, err
 		}
@@ -425,8 +425,66 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 	)
 }
 
-func (p *Parser) parseParameters() (*node.Node, error) {
+func (p *Parser) parseFunctionParameters() (*node.Node, error) {
 
+	lineNumber := p.current.LineNumber
+
+	params := []node.Node{}
+	for {
+		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
+			if err := p.advance(); err != nil {
+				return nil, err
+			}
+			break
+		}
+
+		if p.current.Type == tokens.IDENTIFIER && p.peek.Type == tokens.ASSIGN {
+			identifierNode := node.CreateIdentifier(p.current.LineNumber, p.current.Literal)
+
+			// Advance past identifier
+			if err := p.advance(); err != nil {
+				return nil, err
+			}
+
+			// Advance past assignment operator
+			if err := p.advance(); err != nil {
+				return nil, err
+			}
+
+			value, err := p.parseExpression(LOWEST)
+			if err != nil {
+				return nil, err
+			}
+
+			keywordArgumentNode := node.CreateAssignmentStatement(p.current.LineNumber, identifierNode.Value, *value)
+			params = append(params, keywordArgumentNode)
+
+		} else if p.current.Type == tokens.IDENTIFIER {
+			identifierNode := node.CreateIdentifier(p.current.LineNumber, p.current.Literal)
+
+			if err := p.advance(); err != nil {
+				return nil, err
+			}
+
+			params = append(params, identifierNode)
+
+		} else {
+			return nil, utils.CreateError(p.current.LineNumber, "invalid type for function parameter: %s", p.current.Type)
+		}
+
+		if tokens.TokenTypesEqual(p.current, tokens.COMMA) {
+			if err := p.advance(); err != nil {
+				return nil, err
+			}
+			continue
+		}
+	}
+
+	paramNode := node.CreateList(lineNumber, params)
+	return &paramNode, nil
+}
+
+func (p *Parser) parseList() (*node.Node, error) {
 	lineNumber := p.current.LineNumber
 
 	params := []node.Node{}
@@ -469,7 +527,7 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 		return nil, err
 	}
 
-	parameters, err := p.parseParameters()
+	parameters, err := p.parseFunctionParameters()
 	if err != nil {
 		return nil, err
 	}

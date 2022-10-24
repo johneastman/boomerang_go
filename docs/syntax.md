@@ -203,7 +203,7 @@ names = names <- ("Jimmy", "Jack", "Jacob"); # names: ("John", "Joe", "Jerry", "
 ```
 
 ### Functions
-Syntax: `func(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) { STATEMENT; STATEMENT; ...; STATEMENT };`
+Syntax: `func(IDENTIFIER|ASSIGN, IDENTIFIER|ASSIGN, ..., IDENTIFIER|ASSIGN) { STATEMENT; STATEMENT; ...; STATEMENT };`
 
 
 Functions return the result of their associated block statement (see [Block Statements](#block-statements) for more information).
@@ -231,6 +231,23 @@ value = unwrap <- (value, 0) # value: 24
 value = func() {} <- ();  # value: (false)
 
 result = unwrap <- (value, 2) # result: 2
+```
+
+Functions can also be created with default parameter values. These default values will be used if no values is provided in the function call, but providing a value for that parameter in the function call will override the default value. Additionally, default values must be declared after any non-default parameters. Below are some examples:
+```
+add = func(a, b = 2) {
+  a + b;
+};
+
+sum = add <- (5,); # sum equals 7
+sum = add <- (5, 10); # sum equals 15
+
+add = func(a = 1, b) {
+  a + b;
+};
+
+sum = add <- (5,); # this will cause an error because "5" will override "a", but "b" will have no value.
+sum = add <- (5, 10); # "5" overrides "a", and "10" is passed for "b", so sum equals 15.
 ```
 
 ### When Expressions

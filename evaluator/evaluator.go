@@ -408,28 +408,64 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 	// Check that the number of arguments passed to the function matches the number of arguments in the function definition
 	functionParams := function.GetParam(node.LIST) // Parameters included in function definition
-	if len(callParams.Params) != len(functionParams.Params) {
-		return nil, utils.CreateError(
-			function.LineNum,
-			"expected %d arguments, got %d",
-			len(functionParams.Params),
-			len(callParams.Params),
-		)
-	}
 
 	oldEnv := e.env
 	e.env = CreateEnvironment(&oldEnv)
 
-	// Set parameters to environment
-	for i := range callParams.Params {
-		functionParam := functionParams.Params[i]
-		callParam := callParams.Params[i]
+	// Keyword arguments do not count as arguments passed to the function
+	callParamsIndex := 0
+	for _, functionParam := range functionParams.Params {
+		if functionParam.Type == node.IDENTIFIER {
 
-		value, err := e.evaluateExpression(callParam)
-		if err != nil {
-			return nil, err
+			if callParamsIndex >= len(callParams.Params) {
+				return nil, utils.CreateError(
+					function.LineNum,
+					"Function paramter %#v does not have a value. Either add %d more parameters to the function call or assign %#v a default value in the function definition.",
+					functionParam.Value,
+					callParamsIndex-len(callParams.Params)+1,
+					functionParam.Value,
+				)
+			}
+
+			parameterValue := callParams.Params[callParamsIndex]
+
+			evaluatedParameterValue, err := e.evaluateExpression(parameterValue)
+			if err != nil {
+				return nil, err
+			}
+			e.env.SetIdentifier(functionParam.Value, *evaluatedParameterValue)
+
+		} else if functionParam.Type == node.ASSIGN_STMT {
+
+			if callParamsIndex < len(callParams.Params) {
+				parameterValue := callParams.Params[callParamsIndex]
+
+				evaluatedParameterValue, err := e.evaluateExpression(parameterValue)
+				if err != nil {
+					return nil, err
+				}
+				parameterName := functionParam.GetParam(node.ASSIGN_STMT_IDENTIFIER).Value
+				e.env.SetIdentifier(parameterName, *evaluatedParameterValue)
+
+			} else {
+				e.evaluateStatement(functionParam)
+			}
 		}
-		e.env.SetIdentifier(functionParam.Value, *value)
+
+		callParamsIndex += 1
+	}
+
+	if callParamsIndex < len(callParams.Params) {
+		/*
+			After evaluating each expression, the value of "callParamsIndex" will be the expected number of call parameters,
+			and "len(callParams.Params)" will be the number of call parameters provided.
+		*/
+		return nil, utils.CreateError(
+			function.LineNum,
+			"expected %d arguments, got %d",
+			callParamsIndex,
+			len(callParams.Params),
+		)
 	}
 
 	functionStatements := function.GetParam(node.STMTS)

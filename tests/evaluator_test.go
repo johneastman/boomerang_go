@@ -471,37 +471,78 @@ func TestEvaluator_FunctionCallWithFunctionLiteral(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
-func TestEvaluator_FunctionCallReturnStatement(t *testing.T) {
+func TestEvaluator_FunctionCallKeywordArgs(t *testing.T) {
 	functionNode := CreateFunction(
 		[]node.Node{
-			CreateIdentifier("c"),
-			CreateIdentifier("d"),
+			CreateIdentifier("a"),
+			CreateAssignmentStatement("b", CreateNumber("1")),
 		},
 		[]node.Node{
 			node.CreateBinaryExpression(
-				CreateIdentifier("c"),
-				tokens.MINUS_TOKEN,
-				CreateIdentifier("d"),
+				CreateIdentifier("a"),
+				tokens.PLUS_TOKEN,
+				CreateIdentifier("b"),
 			),
-			CreateNumber("777"),
 		},
 	)
 
-	ast := []node.Node{
-		CreateFunctionCall(functionNode, []node.Node{
-			CreateNumber("10"),
-			CreateNumber("2"),
-		}),
+	tests := []struct {
+		Function      node.Node
+		CallParams    []node.Node
+		ExpectedValue node.Node
+	}{
+		{
+			Function: functionNode,
+			CallParams: []node.Node{
+				CreateNumber("10"),
+			},
+			ExpectedValue: CreateNumber("11"),
+		},
+		{
+			Function: functionNode,
+			CallParams: []node.Node{
+				CreateNumber("10"),
+				CreateNumber("5"),
+			},
+			ExpectedValue: CreateNumber("15"),
+		},
+		{
+			// A function where the first parameter has a default value
+			Function: CreateFunction(
+				[]node.Node{
+					CreateAssignmentStatement("a", CreateNumber("1")),
+					CreateIdentifier("b"),
+				},
+				[]node.Node{
+					node.CreateBinaryExpression(
+						CreateIdentifier("a"),
+						tokens.PLUS_TOKEN,
+						CreateIdentifier("b"),
+					),
+				},
+			),
+			CallParams: []node.Node{
+				CreateNumber("4"),
+				CreateNumber("3"),
+			},
+			ExpectedValue: CreateNumber("7"),
+		},
 	}
 
-	actualResults := getEvaluatorResults(ast)
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(test.Function, test.CallParams),
+		}
 
-	expectedReturnValue := CreateNumber("777")
-	expectedResults := []node.Node{
-		CreateBlockStatementReturnValue(&expectedReturnValue),
+		actualResults := getEvaluatorResults(ast)
+
+		expectedReturnValue := test.ExpectedValue
+		expectedResults := []node.Node{
+			CreateBlockStatementReturnValue(&expectedReturnValue),
+		}
+
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
-
-	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
@@ -1017,22 +1058,78 @@ func TestEvaluator_InvalidBinaryOperatorError(t *testing.T) {
 	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
-func TestEvaluator_FunctionCallError(t *testing.T) {
-	// an if-statement in the global scope containing a return statement should throw an error
-	ast := []node.Node{
-		CreateFunctionCall(
-			CreateNumber("1"),
-			[]node.Node{
+func TestEvaluator_FunctionCallErrors(t *testing.T) {
+
+	tests := []struct {
+		FunctionCall node.Node
+		Error        string
+	}{
+		{
+			FunctionCall: CreateFunctionCall(
 				CreateNumber("1"),
-				CreateNumber("2"),
-			},
-		),
+				[]node.Node{
+					CreateNumber("1"),
+					CreateNumber("2"),
+				},
+			),
+			Error: "error at line 1: cannot make function call on type Number (\"1\")",
+		},
+		{
+			FunctionCall: CreateFunctionCall(
+				CreateFunction(
+					[]node.Node{
+						CreateAssignmentStatement("a", CreateNumber("1")),
+						CreateIdentifier("b"),
+					},
+					[]node.Node{},
+				),
+				[]node.Node{
+					CreateNumber("1"),
+				},
+			),
+			Error: "error at line 1: Function paramter \"b\" does not have a value. Either add 1 more parameters to the function call or assign \"b\" a default value in the function definition.",
+		},
+		{
+			FunctionCall: CreateFunctionCall(
+				CreateFunction(
+					[]node.Node{
+						CreateAssignmentStatement("a", CreateNumber("1")),
+						CreateAssignmentStatement("b", CreateNumber("2")),
+						CreateIdentifier("c"),
+					},
+					[]node.Node{},
+				),
+				[]node.Node{
+					CreateNumber("1"),
+				},
+			),
+			Error: "error at line 1: Function paramter \"c\" does not have a value. Either add 2 more parameters to the function call or assign \"c\" a default value in the function definition.",
+		},
+		{
+			FunctionCall: CreateFunctionCall(
+				CreateFunction(
+					[]node.Node{
+						CreateAssignmentStatement("a", CreateNumber("1")),
+						CreateAssignmentStatement("b", CreateNumber("2")),
+						CreateIdentifier("c"),
+					},
+					[]node.Node{},
+				),
+				[]node.Node{
+					CreateNumber("5"),
+					CreateNumber("5"),
+				},
+			),
+			Error: "error at line 1: Function paramter \"c\" does not have a value. Either add 1 more parameters to the function call or assign \"c\" a default value in the function definition.",
+		},
 	}
 
-	actualError := getEvaluatorError(t, ast)
-	expectedError := "error at line 1: cannot make function call on type Number (\"1\")"
+	for i, test := range tests {
+		ast := []node.Node{test.FunctionCall}
 
-	AssertErrorEqual(t, 0, expectedError, actualError)
+		actualError := getEvaluatorError(t, ast)
+		AssertErrorEqual(t, i, test.Error, actualError)
+	}
 }
 
 func TestEvaluator_FunctionCallWrongNumberOfArgumentsError(t *testing.T) {

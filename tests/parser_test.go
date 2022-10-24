@@ -349,6 +349,21 @@ func TestParser_FunctionNoParametersNoStatements(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
+func TestParser_FunctionKeywordArguments(t *testing.T) {
+	actualAST := getParserAST("func(a, b=2, c=3) {};")
+	expectedAST := []node.Node{
+		CreateFunction(
+			[]node.Node{
+				CreateIdentifier("a"),
+				CreateAssignmentStatement("b", CreateNumber("2")),
+				CreateAssignmentStatement("c", CreateNumber("3")),
+			},
+			[]node.Node{},
+		),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
 func TestParser_FunctionCallWithNoParameters(t *testing.T) {
 	actualAST := getParserAST("divide <- ();")
 	expectedAST := []node.Node{
