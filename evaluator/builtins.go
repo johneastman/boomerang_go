@@ -50,7 +50,7 @@ var nArgsValue = -1
 
 func init() {
 	builtinFunctions = map[string]BuiltinFunction{
-		BUILTIN_LEN:        {NumArgs: nArgsValue, Function: evaluateBuiltinLen},
+		BUILTIN_LEN:        {NumArgs: 1, Function: evaluateBuiltinLen},
 		BUILTIN_UNWRAP:     {NumArgs: 2, Function: evaluateBuiltinUnwrap},
 		BUILTIN_UNWRAP_ALL: {NumArgs: 2, Function: evaluateBuiltinUnwrapAll},
 		BUILTIN_SLICE:      {NumArgs: 3, Function: evaluateBuiltinSlice},
@@ -275,8 +275,12 @@ func evaluateBuiltinUnwrapAll(eval *evaluator, lineNum int, callParameters []nod
 }
 
 func evaluateBuiltinLen(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
-	value := len(callParameters)
-	return node.CreateNumber(lineNum, utils.IntToString(value)).Ptr(), nil
+
+	value, err := eval.evaluateExpression(callParameters[0])
+	if err != nil {
+		return nil, err
+	}
+	return value.Length()
 }
 
 func evaluateBuiltinRange(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {

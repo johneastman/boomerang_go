@@ -103,20 +103,22 @@ Get the length of a list.
 ### Arguments
 |Name|Type|Description|
 |----|----|-----------|
-|nArgs|LIST|list of object to be printed to the console|
+|sequence|LIST or STRING|A LIST or STRING object|
 
 ### Returns:
 * **Type:** NUMBER
-* **Value:** the length of the given list
+* **Value:** the length of the given sequence
 
 ### Examples
 ```
 len <- (1, 2, 3);  # 3
 
 list = ("hello", "world");
-len <- list;  # 2
-len <- ();    # 0
-len <- (9,);  # 1
+len <- (list,);  # 2
+
+len <- ((),);    # 0
+len <- ((9,),);  # 1
+len <- ("hello, world!");  # 13
 ```
 
 ## slice

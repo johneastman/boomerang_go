@@ -2,6 +2,7 @@ package node
 
 import (
 	"boomerang/tokens"
+	"boomerang/utils"
 	"fmt"
 	"strings"
 )
@@ -121,6 +122,19 @@ func (n Node) Equals(other Node) bool {
 		}
 	}
 	return true
+}
+
+func (n *Node) Length() (*Node, error) {
+	var length int
+	switch n.Type {
+	case LIST:
+		length = len(n.Params)
+	case STRING:
+		length = len(n.Value)
+	default:
+		return nil, utils.CreateError(n.LineNum, "Type %s does not have a length", n.Type)
+	}
+	return CreateNumber(n.LineNum, fmt.Sprint(length)).Ptr(), nil
 }
 
 func (n Node) Ptr() *Node {

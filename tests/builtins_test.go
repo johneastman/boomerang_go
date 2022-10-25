@@ -9,22 +9,49 @@ import (
 )
 
 func TestBuiltin_Len(t *testing.T) {
-	ast := []node.Node{
-		CreateFunctionCall(
-			CreateBuiltinFunctionIdentifier("len"),
-			[]node.Node{
+
+	tests := []struct {
+		Sequence node.Node
+		Length   string
+	}{
+		{
+			Sequence: CreateList([]node.Node{
 				CreateNumber("1"),
 				CreateNumber("2"),
 				CreateNumber("3"),
-			},
-		),
+			}),
+			Length: "3",
+		},
+		{
+			Sequence: CreateList([]node.Node{}),
+			Length:   "0",
+		},
+		{
+			Sequence: CreateRawString("hello, world!"),
+			Length:   "13",
+		},
+		{
+			Sequence: CreateRawString(""),
+			Length:   "0",
+		},
 	}
 
-	actualResults := getEvaluatorResults(ast)
-	expectedResults := []node.Node{
-		CreateNumber("3"),
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateBuiltinFunctionIdentifier("len"),
+				[]node.Node{
+					test.Sequence,
+				},
+			),
+		}
+
+		actualResults := getEvaluatorResults(ast)
+		expectedResults := []node.Node{
+			CreateNumber(test.Length),
+		}
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
-	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
 func TestBuiltin_Unwrap(t *testing.T) {
