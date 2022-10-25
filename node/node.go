@@ -82,6 +82,9 @@ func (n *Node) String() string {
 
 		return s
 
+	case BUILTIN_FUNCTION:
+		return fmt.Sprintf("<built-in function %s>", n.Value)
+
 	default:
 		// NUMBER, BOOLEAN
 		return n.Value

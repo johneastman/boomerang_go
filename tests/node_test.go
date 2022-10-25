@@ -404,6 +404,10 @@ func TestNode_String(t *testing.T) {
 			),
 			String: "func(a,b,c){...}",
 		},
+		{
+			Node:   CreateBuiltinFunctionIdentifier("print"),
+			String: "<built-in function print>",
+		},
 	}
 
 	for i, test := range tests {

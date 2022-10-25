@@ -149,13 +149,8 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 	switch expr.Type {
 
-	case node.NUMBER:
-		return &expr, nil
-
-	case node.BOOLEAN:
-		return &expr, nil
-
-	case node.FUNCTION:
+	case node.NUMBER, node.BOOLEAN, node.FUNCTION, node.BUILTIN_FUNCTION:
+		// Builtin functions will be evaluated later during a function call
 		return &expr, nil
 
 	case node.STRING:
@@ -169,10 +164,6 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 	case node.BUILTIN_VARIABLE:
 		return getBuiltinVariable(expr), nil
-
-	case node.BUILTIN_FUNCTION:
-		// These will be evaluated later during a function call
-		return &expr, nil
 
 	case node.UNARY_EXPR:
 		return e.evaluateUnaryExpression(expr)
