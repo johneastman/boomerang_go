@@ -244,9 +244,41 @@ func TestBuiltin_Range(t *testing.T) {
 			}),
 		},
 		{
-			StartNumber:  "5",
-			EndNumber:    "4",
-			ExpectedList: CreateList([]node.Node{}),
+			StartNumber: "5",
+			EndNumber:   "4",
+			ExpectedList: CreateList([]node.Node{
+				CreateNumber("5"),
+				CreateNumber("4"),
+			}),
+		},
+		{
+			StartNumber: "5",
+			EndNumber:   "-5",
+			ExpectedList: CreateList([]node.Node{
+				CreateNumber("5"),
+				CreateNumber("4"),
+				CreateNumber("3"),
+				CreateNumber("2"),
+				CreateNumber("1"),
+				CreateNumber("0"),
+				CreateNumber("-1"),
+				CreateNumber("-2"),
+				CreateNumber("-3"),
+				CreateNumber("-4"),
+				CreateNumber("-5"),
+			}),
+		},
+		{
+			StartNumber: "-5",
+			EndNumber:   "0",
+			ExpectedList: CreateList([]node.Node{
+				CreateNumber("-5"),
+				CreateNumber("-4"),
+				CreateNumber("-3"),
+				CreateNumber("-2"),
+				CreateNumber("-1"),
+				CreateNumber("0"),
+			}),
 		},
 	}
 

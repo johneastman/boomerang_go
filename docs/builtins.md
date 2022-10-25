@@ -146,7 +146,7 @@ slice <- (list, 4, 2);  # error because the start index cannot be greater than t
 ## range
 
 ### Description
-Return a list of numbers incrementing from `start_value` to `end_value` (inclusive).
+Return a list of numbers incrementing or decrementing from `start_value` to `end_value` (inclusive). If `start_value` is less than `end_value`, the numbers will increment; if `start_value` is greater than `end_value`, the numbers will decrement.
 
 ### Arguments
 |Name|Type|Description|
@@ -161,9 +161,11 @@ Return a list of numbers incrementing from `start_value` to `end_value` (inclusi
 ### Examples
 ```
 range <- (0, 5)    # (0, 1, 2, 3, 4, 5)
+range <- (5, 0)    # (5, 4, 3, 2, 1, 0)
 range <- (10, 20)  # (10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 range <- (0, 0)    # (0)
-range <- (0, -1)   # ()
+range <- (0, -1)   # (0, -1)
+range <- (5, -5)    # (5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5)
 ```
 
 ## random

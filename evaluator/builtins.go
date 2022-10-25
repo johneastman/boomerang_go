@@ -309,12 +309,25 @@ func evaluateBuiltinRange(eval *evaluator, lineNum int, callParameters []node.No
 		return nil, utils.CreateError(lineNum, "end value must be an integer")
 	}
 
+	/*
+		If startValue is greater than endValue, the list created goes in descending order; otherwise, the list
+		goes in ascending order. For example:
+
+		range <- (5, 0)  == (5, 4, 3, 2, 1, 0)
+		range <- (5, 10) == (5, 6, 7, 8, 9, 10)
+	*/
+	var direction int
+	if *startValue > *endValue {
+		direction = -1
+	} else {
+		direction = 1
+	}
+
 	numbersNodeValues := []node.Node{}
-	for i := *startValue; i <= *endValue; i++ {
+	for i := *startValue; i != *endValue+direction; i = i + (1 * direction) {
 		numberNode := node.CreateNumber(lineNum, utils.IntToString(i))
 		numbersNodeValues = append(numbersNodeValues, numberNode)
 	}
-
 	return node.CreateList(lineNum, numbersNodeValues).Ptr(), nil
 }
 
