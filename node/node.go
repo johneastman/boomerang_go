@@ -61,6 +61,27 @@ func (n *Node) String() string {
 		doubleQuoteLiteral := "\""
 		return fmt.Sprintf("%s%s%s", doubleQuoteLiteral, n.Value, doubleQuoteLiteral)
 
+	case FUNCTION:
+		funcKeyword := tokens.FUNCTION_TOKEN.Literal
+		openParen := tokens.OPEN_PAREN_TOKEN.Literal
+		closedParen := tokens.CLOSED_PAREN_TOKEN.Literal
+		openCurlyBracket := tokens.OPEN_CURLY_BRACKET_TOKEN.Literal
+		closedCurlyBracket := tokens.CLOSED_CURLY_BRACKET_TOKEN.Literal
+
+		s := fmt.Sprintf("%s%s", funcKeyword, openParen)
+
+		parameterStrings := []string{}
+		for _, param := range n.GetParam(LIST).Params {
+			parameterStrings = append(parameterStrings, param.String())
+		}
+		s += strings.Join(parameterStrings, ",")
+
+		s += closedParen
+
+		s += fmt.Sprintf("%s...%s", openCurlyBracket, closedCurlyBracket)
+
+		return s
+
 	default:
 		// NUMBER, BOOLEAN
 		return n.Value

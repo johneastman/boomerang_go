@@ -354,6 +354,17 @@ func TestNode_String(t *testing.T) {
 			}),
 			String: "(1, 2, 3, (5, 7, 6), 4)",
 		},
+		{
+			Node: CreateFunction(
+				[]node.Node{
+					CreateIdentifier("a"),
+					CreateIdentifier("b"),
+					CreateIdentifier("c"),
+				},
+				[]node.Node{},
+			),
+			String: "func(a,b,c){...}",
+		},
 	}
 
 	for i, test := range tests {
