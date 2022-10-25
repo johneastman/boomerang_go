@@ -134,9 +134,9 @@ func evaluateBuiltinSlice(eval *evaluator, lineNum int, callParam []node.Node) (
 		return nil, err
 	}
 
-	start, err := utils.ConvertStringToInteger(startIndex.LineNum, startIndex.Value)
-	if err != nil {
-		return nil, err
+	start := utils.ConvertStringToInteger(startIndex.Value)
+	if start == nil {
+		return nil, utils.CreateError(startIndex.LineNum, "start index must be an integer")
 	}
 	startLiteral := *start
 
@@ -150,9 +150,9 @@ func evaluateBuiltinSlice(eval *evaluator, lineNum int, callParam []node.Node) (
 		return nil, err
 	}
 
-	end, err := utils.ConvertStringToInteger(endIndex.LineNum, endIndex.Value)
-	if err != nil {
-		return nil, err
+	end := utils.ConvertStringToInteger(endIndex.Value)
+	if end == nil {
+		return nil, utils.CreateError(endIndex.LineNum, "end index must be an integer")
 	}
 	endLiteral := *end
 
@@ -290,9 +290,9 @@ func evaluateBuiltinRange(eval *evaluator, lineNum int, callParameters []node.No
 		return nil, err
 	}
 
-	startValue, err := utils.ConvertStringToInteger(lineNum, startNumber.Value)
-	if err != nil {
-		return nil, err
+	startValue := utils.ConvertStringToInteger(startNumber.Value)
+	if startValue == nil {
+		return nil, utils.CreateError(lineNum, "start value must be an integer")
 	}
 
 	endNumber, err := eval.evaluateExpression(callParameters[1])
@@ -304,9 +304,9 @@ func evaluateBuiltinRange(eval *evaluator, lineNum int, callParameters []node.No
 		return nil, err
 	}
 
-	endValue, err := utils.ConvertStringToInteger(lineNum, endNumber.Value)
-	if err != nil {
-		return nil, err
+	endValue := utils.ConvertStringToInteger(endNumber.Value)
+	if endValue == nil {
+		return nil, utils.CreateError(lineNum, "end value must be an integer")
 	}
 
 	numbersNodeValues := []node.Node{}
@@ -328,9 +328,9 @@ func evaluateBuiltinRandom(eval *evaluator, lineNum int, callParameters []node.N
 		return nil, err
 	}
 
-	minValue, err := utils.ConvertStringToInteger(lineNum, minNumber.Value)
-	if err != nil {
-		return nil, err
+	minValue := utils.ConvertStringToInteger(minNumber.Value)
+	if minValue == nil {
+		return nil, utils.CreateError(lineNum, "min value must be an integer")
 	}
 
 	maxNumber, err := eval.evaluateExpression(callParameters[1])
@@ -342,9 +342,9 @@ func evaluateBuiltinRandom(eval *evaluator, lineNum int, callParameters []node.N
 		return nil, err
 	}
 
-	maxValue, err := utils.ConvertStringToInteger(lineNum, maxNumber.Value)
-	if err != nil {
-		return nil, err
+	maxValue := utils.ConvertStringToInteger(maxNumber.Value)
+	if maxValue == nil {
+		return nil, utils.CreateError(lineNum, "max value must be an integer")
 	}
 
 	if *minValue > *maxValue {

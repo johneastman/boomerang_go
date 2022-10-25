@@ -300,7 +300,7 @@ func TestBuiltin_Random(t *testing.T) {
 			}
 
 			randomNumber := actualResults[0]
-			randomNumberValue := utils.StringToInt(randomNumber.Value)
+			randomNumberValue := utils.ConvertStringToInteger(randomNumber.Value)
 			if randomNumberValue == nil {
 				t.Fatalf("Could not convert %s to an integer", randomNumber.Value)
 			}
@@ -442,6 +442,20 @@ func TestBuiltin_RangeErrors(t *testing.T) {
 			},
 			Error: "error at line 1: expected Number, got List",
 		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1.5"),
+				CreateNumber("2"),
+			},
+			Error: "error at line 1: start value must be an integer",
+		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1"),
+				CreateNumber("2.5"),
+			},
+			Error: "error at line 1: end value must be an integer",
+		},
 	}
 
 	for i, test := range tests {
@@ -503,6 +517,20 @@ func TestBuiltin_RandomErrors(t *testing.T) {
 				CreateNumber("0"),
 			},
 			Error: "error at line 1: the minimum number, 1, cannot be greater than the maximum number, 0",
+		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1.5"),
+				CreateNumber("2"),
+			},
+			Error: "error at line 1: min value must be an integer",
+		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1"),
+				CreateNumber("2.5"),
+			},
+			Error: "error at line 1: max value must be an integer",
 		},
 	}
 
@@ -687,12 +715,12 @@ func TestBuiltin_SliceIndexErrors(t *testing.T) {
 		{
 			StartIndex: CreateNumber("4.5"),
 			EndIndex:   CreateNumber("6"),
-			Error:      "error at line 1: list index must be an integer",
+			Error:      "error at line 1: start index must be an integer",
 		},
 		{
 			StartIndex: CreateNumber("4"),
 			EndIndex:   CreateNumber("6.6"),
-			Error:      "error at line 1: list index must be an integer",
+			Error:      "error at line 1: end index must be an integer",
 		},
 		{
 			StartIndex: CreateRawString("hello!"),

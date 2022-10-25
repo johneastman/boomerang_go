@@ -23,38 +23,6 @@ func CheckTypeError(lineNum int, actualType string, expectedType string) error {
 	return nil
 }
 
-func ConvertStringToInteger(lineNum int, value string) (*int, error) {
-	integer, err := strconv.Atoi(value)
-	if err != nil {
-		return nil, CreateError(lineNum, "list index must be an integer")
-	}
-	return &integer, nil
-}
-
-func ConvertStringToFloat(lineNum int, value string) (*float64, error) {
-	float, err := strconv.ParseFloat(value, 64)
-	if err != nil {
-		return nil, CreateError(lineNum, "list index must be an integer")
-	}
-	return &float, nil
-}
-
-func FloatToString(value float64) string {
-	return fmt.Sprint(value)
-}
-
-func IntToString(value int) string {
-	return fmt.Sprint(value)
-}
-
-func StringToInt(value string) *int {
-	integer, err := strconv.Atoi(value)
-	if err != nil {
-		return nil
-	}
-	return &integer
-}
-
 func CheckOutOfRange(lineNum int, index int, listLen int) error {
 	if index < 0 || index > listLen-1 {
 		return CreateError(
@@ -64,6 +32,30 @@ func CheckOutOfRange(lineNum int, index int, listLen int) error {
 		)
 	}
 	return nil
+}
+
+func ConvertStringToInteger(value string) *int {
+	integer, err := strconv.Atoi(value)
+	if err != nil {
+		return nil
+	}
+	return &integer
+}
+
+func ConvertStringToFloat(value string) *float64 {
+	float, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return nil
+	}
+	return &float
+}
+
+func FloatToString(value float64) string {
+	return fmt.Sprint(value)
+}
+
+func IntToString(value int) string {
+	return fmt.Sprint(value)
 }
 
 func UserInput(prompt string) string {

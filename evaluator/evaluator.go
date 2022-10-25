@@ -500,14 +500,14 @@ func (e *evaluator) compareLT(left node.Node, right node.Node) (*node.Node, erro
 
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
 
-		leftNum, err := utils.ConvertStringToFloat(left.LineNum, left.Value)
-		if err != nil {
-			return nil, err
+		leftNum := utils.ConvertStringToFloat(left.Value)
+		if leftNum == nil {
+			return nil, utils.CreateError(left.LineNum, "cannot convert %s to float64", left.Value)
 		}
 
-		rightNum, err := utils.ConvertStringToFloat(right.LineNum, right.Value)
-		if err != nil {
-			return nil, err
+		rightNum := utils.ConvertStringToFloat(right.Value)
+		if rightNum == nil {
+			return nil, utils.CreateError(right.LineNum, "cannot convert %s to float64", left.Value)
 		}
 
 		if *leftNum < *rightNum {
@@ -542,9 +542,9 @@ func (e *evaluator) compareIn(left node.Node, right node.Node) (*node.Node, erro
 func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 
 	if right.Type == node.NUMBER {
-		index, err := utils.ConvertStringToInteger(right.LineNum, right.Value)
-		if err != nil {
-			return nil, err
+		index := utils.ConvertStringToInteger(right.Value)
+		if index == nil {
+			return nil, utils.CreateError(right.LineNum, "list index must be an integer")
 		}
 		indexLiteral := *index
 
