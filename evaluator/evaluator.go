@@ -550,15 +550,14 @@ func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 
 		switch left.Type {
 		case node.LIST:
-			if indexLiteral >= len(left.Params) || indexLiteral < 0 {
-				return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of list: %d", indexLiteral, len(left.Params))
+			if err := utils.CheckOutOfRange(left.LineNum, indexLiteral, len(left.Params)); err != nil {
+				return nil, err
 			}
 			return left.Params[indexLiteral].Ptr(), nil
 		case node.STRING:
-			if indexLiteral >= len(left.Value) || indexLiteral < 0 {
-				return nil, utils.CreateError(left.LineNum, "index %d out of range. Length of string: %d", indexLiteral, len(left.Value))
+			if err := utils.CheckOutOfRange(left.LineNum, indexLiteral, len(left.Value)); err != nil {
+				return nil, err
 			}
-
 			character := left.Value[indexLiteral : indexLiteral+1]
 			return node.CreateRawString(left.LineNum, character).Ptr(), nil
 		}

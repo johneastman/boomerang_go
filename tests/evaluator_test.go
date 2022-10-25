@@ -1223,21 +1223,38 @@ func TestEvaluator_IndexValueNotIntegerError(t *testing.T) {
 }
 
 func TestEvaluator_IndexOutOfRangeError(t *testing.T) {
-	// an if-statement in the global scope containing a return statement should throw an error
-	ast := []node.Node{
-		node.CreateBinaryExpression(
-			CreateList([]node.Node{
+	tests := []struct {
+		Sequence node.Node
+		Index    node.Node
+		Error    string
+	}{
+		{
+			Sequence: CreateList([]node.Node{
 				CreateNumber("1"),
 			}),
-			CreateTokenFromToken(tokens.AT_TOKEN),
-			CreateNumber("3"),
-		),
+			Index: CreateNumber("3"),
+			Error: "error at line 1: index of 3 out of range (0 to 0)",
+		},
+		{
+			Sequence: CreateRawString("test string"),
+			Index:    CreateNumber("-1"),
+			Error:    "error at line 1: index of -1 out of range (0 to 10)",
+		},
 	}
 
-	actualError := getEvaluatorError(t, ast)
-	expectedError := "error at line 1: index 3 out of range. Length of list: 1"
+	for i, test := range tests {
+		ast := []node.Node{
+			node.CreateBinaryExpression(
+				test.Sequence,
+				CreateTokenFromToken(tokens.AT_TOKEN),
+				test.Index,
+			),
+		}
 
-	AssertErrorEqual(t, 0, expectedError, actualError)
+		actualError := getEvaluatorError(t, ast)
+
+		AssertErrorEqual(t, i, test.Error, actualError)
+	}
 }
 
 func TestEvaluator_IndexInvalidTypeError(t *testing.T) {
