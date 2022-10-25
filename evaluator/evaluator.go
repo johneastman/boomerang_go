@@ -499,25 +499,21 @@ func (e *evaluator) compareEQ(left node.Node, right node.Node) (*node.Node, erro
 func (e *evaluator) compareLT(left node.Node, right node.Node) (*node.Node, error) {
 
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
-		var booleanValue string
 
-		leftNum, err := utils.ConvertStringToInteger(left.LineNum, left.Value)
+		leftNum, err := utils.ConvertStringToFloat(left.LineNum, left.Value)
 		if err != nil {
 			return nil, err
 		}
 
-		rightNum, err := utils.ConvertStringToInteger(right.LineNum, right.Value)
+		rightNum, err := utils.ConvertStringToFloat(right.LineNum, right.Value)
 		if err != nil {
 			return nil, err
 		}
 
 		if *leftNum < *rightNum {
-			booleanValue = tokens.TRUE_TOKEN.Literal
-		} else {
-			booleanValue = tokens.FALSE_TOKEN.Literal
+			return node.CreateBooleanTrue(left.LineNum).Ptr(), nil
 		}
-
-		return node.CreateBoolean(left.LineNum, booleanValue).Ptr(), nil
+		return node.CreateBooleanFalse(left.LineNum).Ptr(), nil
 	}
 	return nil, utils.CreateError(
 		left.LineNum,

@@ -770,6 +770,40 @@ func TestEvaluator_CompareOperators(t *testing.T) {
 			),
 			ExpectedResult: CreateBooleanFalse(),
 		},
+
+		// Less than
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateNumber("5"),
+				CreateTokenFromToken(tokens.LT_TOKEN),
+				CreateNumber("5"),
+			),
+			ExpectedResult: CreateBooleanFalse(),
+		},
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateNumber("4"),
+				CreateTokenFromToken(tokens.LT_TOKEN),
+				CreateNumber("5"),
+			),
+			ExpectedResult: CreateBooleanTrue(),
+		},
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateNumber("3.14159"),
+				CreateTokenFromToken(tokens.LT_TOKEN),
+				CreateNumber("36.9"),
+			),
+			ExpectedResult: CreateBooleanTrue(),
+		},
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateNumber("3.14159"),
+				CreateTokenFromToken(tokens.LT_TOKEN),
+				CreateNumber("3.14159"),
+			),
+			ExpectedResult: CreateBooleanFalse(),
+		},
 	}
 
 	for i, test := range tests {

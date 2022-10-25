@@ -31,6 +31,14 @@ func ConvertStringToInteger(lineNum int, value string) (*int, error) {
 	return &integer, nil
 }
 
+func ConvertStringToFloat(lineNum int, value string) (*float64, error) {
+	float, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return nil, CreateError(lineNum, "list index must be an integer")
+	}
+	return &float, nil
+}
+
 func FloatToString(value float64) string {
 	return fmt.Sprint(value)
 }
