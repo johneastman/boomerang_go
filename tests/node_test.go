@@ -14,29 +14,68 @@ func TestNode_Equals(t *testing.T) {
 		IsEqual bool
 	}{
 		{
-			CreateNumber("5"),
-			CreateNumber("5"),
-			true,
+			First:   CreateNumber("5"),
+			Second:  CreateNumber("5"),
+			IsEqual: true,
 		},
 		{
-			CreateNumber("5"),
-			CreateNumber("6"),
-			false,
+			First:   CreateNumber("5"),
+			Second:  CreateNumber("6"),
+			IsEqual: false,
 		},
 		{
-			CreateBooleanTrue(),
-			CreateRawString("true"),
-			false,
+			First:   CreateBooleanTrue(),
+			Second:  CreateRawString("true"),
+			IsEqual: false,
 		},
 		{
-			CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
-			CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
-			true,
+			First:   CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
+			Second:  CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
+			IsEqual: true,
 		},
 		{
-			CreateList([]node.Node{CreateNumber("2"), CreateNumber("4"), CreateNumber("6")}),
-			CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
-			false,
+			First:   CreateList([]node.Node{CreateNumber("2"), CreateNumber("4"), CreateNumber("6")}),
+			Second:  CreateList([]node.Node{CreateNumber("1"), CreateNumber("2")}),
+			IsEqual: false,
+		},
+		{
+			First: CreateFunction(
+				[]node.Node{
+					CreateIdentifier("a"),
+					CreateIdentifier("b"),
+					CreateIdentifier("c"),
+				},
+				[]node.Node{
+					node.CreateBinaryExpression(
+						node.CreateBinaryExpression(
+							CreateIdentifier("a"),
+							CreateTokenFromToken(tokens.PLUS_TOKEN),
+							CreateIdentifier("b"),
+						),
+						CreateTokenFromToken(tokens.PLUS_TOKEN),
+						CreateIdentifier("c"),
+					),
+				},
+			),
+			Second: CreateFunction(
+				[]node.Node{
+					CreateIdentifier("a"),
+					CreateIdentifier("b"),
+					CreateIdentifier("c"),
+				},
+				[]node.Node{
+					node.CreateBinaryExpression(
+						node.CreateBinaryExpression(
+							CreateIdentifier("a"),
+							CreateTokenFromToken(tokens.PLUS_TOKEN),
+							CreateIdentifier("b"),
+						),
+						CreateTokenFromToken(tokens.PLUS_TOKEN),
+						CreateIdentifier("c"),
+					),
+				},
+			),
+			IsEqual: true,
 		},
 	}
 

@@ -97,7 +97,27 @@ func (n Node) Equals(other Node) bool {
 
 		Do not use this method for testing.
 	*/
-	return n.Type == other.Type && n.String() == other.String()
+	if n.Type != other.Type {
+		return false
+	}
+
+	if n.Value != other.Value {
+		return false
+	}
+
+	if len(n.Params) != len(other.Params) {
+		return false
+	}
+
+	for i := 0; i < len(n.Params); i++ {
+		selfParam := n.Params[i]
+		otherParam := other.Params[i]
+
+		if !selfParam.Equals(otherParam) {
+			return false
+		}
+	}
+	return true
 }
 
 func (n Node) Ptr() *Node {
