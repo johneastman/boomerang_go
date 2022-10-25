@@ -560,7 +560,7 @@ func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 			}
 
 			character := left.Value[indexLiteral : indexLiteral+1]
-			return node.CreateString(left.LineNum, character, []node.Node{}).Ptr(), nil
+			return node.CreateRawString(left.LineNum, character).Ptr(), nil
 		}
 	}
 

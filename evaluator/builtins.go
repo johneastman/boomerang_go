@@ -180,7 +180,7 @@ func evaluateBuiltinSlice(eval *evaluator, lineNum int, callParam []node.Node) (
 	case node.STRING:
 		listValues := collection.Value
 		slicedString := listValues[startLiteral : endLiteral+1]
-		returnNode = node.CreateString(collection.LineNum, slicedString, []node.Node{})
+		returnNode = node.CreateRawString(collection.LineNum, slicedString)
 	}
 
 	return returnNode.Ptr(), nil
@@ -390,5 +390,5 @@ func evaluateBuiltinInput(eval *evaluator, lineNum int, callParameters []node.No
 
 	inputValue := utils.UserInput(prompt.Value)
 
-	return node.CreateString(lineNum, inputValue, []node.Node{}).Ptr(), nil
+	return node.CreateRawString(lineNum, inputValue).Ptr(), nil
 }
