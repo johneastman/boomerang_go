@@ -62,7 +62,7 @@ func init() {
 	}
 }
 
-func IsBuiltinType(builtinType string, value string) bool {
+func IsBuiltinOfType(builtinType string, value string) bool {
 	// Check if a value is a builtin identifier with a specific type (variable, function, object, etc.)
 	if builtin, ok := builtins[value]; ok {
 		return builtin.Type == builtinType

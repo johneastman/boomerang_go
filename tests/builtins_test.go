@@ -460,6 +460,40 @@ func TestBuiltin_Input(t *testing.T) {
 	}
 }
 
+func TestBuiltin_Monad(t *testing.T) {
+
+	tests := []struct {
+		Arguments     []node.Node
+		ExpectedValue node.Node
+	}{
+		{
+			Arguments:     []node.Node{},
+			ExpectedValue: CreateMonad(nil),
+		},
+		{
+			Arguments: []node.Node{
+				CreateNumber("1"),
+			},
+			ExpectedValue: CreateMonad(CreateNumber("1").Ptr()),
+		},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateBuiltinFunctionIdentifier("monad"),
+				test.Arguments,
+			),
+		}
+
+		actualResults := getEvaluatorResults(ast)
+		expectedResults := []node.Node{
+			test.ExpectedValue,
+		}
+		AssertNodesEqual(t, i, expectedResults, actualResults)
+	}
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */

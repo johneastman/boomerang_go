@@ -282,10 +282,10 @@ func (p *Parser) parseIdentifier() (*node.Node, error) {
 		return nil, err
 	}
 
-	if evaluator.IsBuiltinType(node.BUILTIN_VARIABLE, identifierToken.Literal) {
+	if evaluator.IsBuiltinOfType(node.BUILTIN_VARIABLE, identifierToken.Literal) {
 		return node.CreateBuiltinVariableIdentifier(identifierToken.LineNumber, identifierToken.Literal).Ptr(), nil
 
-	} else if evaluator.IsBuiltinType(node.BUILTIN_FUNCTION, identifierToken.Literal) {
+	} else if evaluator.IsBuiltinOfType(node.BUILTIN_FUNCTION, identifierToken.Literal) {
 		return node.CreateBuiltinFunctionIdentifier(identifierToken.LineNumber, identifierToken.Literal).Ptr(), nil
 	}
 
