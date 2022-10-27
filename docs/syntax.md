@@ -174,6 +174,8 @@ assign_val = func(v) {
 value = assign_val <- (2);  # value: Monad{}
 ```
 
+Monad objects cannot be independently instantiated.
+
 To extract the actual return value of a Monad object, use the builtin `unwrap` method. See [builtin functions](../docs/builtins.md) for more information.
 
 ## Expressions
