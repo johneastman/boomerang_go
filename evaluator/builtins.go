@@ -21,9 +21,6 @@ const (
 
 	// Variables
 	BUILTIN_PI = "pi"
-
-	// Objects
-	BUILTIN_MONAD = "monad"
 )
 
 type Builtin struct {
@@ -56,9 +53,6 @@ func init() {
 
 		// Variables
 		BUILTIN_PI: {Type: node.BUILTIN_VARIABLE, NumArgs: 0, Function: evaluateBuiltinPi},
-
-		// Builtin objects (TODO: create builtin object node type)
-		BUILTIN_MONAD: {Type: node.BUILTIN_FUNCTION, NumArgs: nArgsValue, Function: evaluateBuiltinMonad},
 	}
 }
 
@@ -404,25 +398,4 @@ func evaluateBuiltinInput(eval *evaluator, lineNum int, callParameters []node.No
 	inputValue := utils.UserInput(prompt.Value)
 
 	return node.CreateRawString(lineNum, inputValue).Ptr(), nil
-}
-
-/* * * * * * * * * *
- * BUILTIN OBJECTS *
- * * * * * * * * * */
-
-func evaluateBuiltinMonad(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
-
-	var monadValue *node.Node
-
-	if len(callParameters) == 0 {
-		monadValue = nil
-
-	} else {
-		value, err := eval.evaluateExpression(callParameters[0])
-		if err != nil {
-			return nil, err
-		}
-		monadValue = value
-	}
-	return node.CreateMonad(lineNum, monadValue).Ptr(), nil
 }
