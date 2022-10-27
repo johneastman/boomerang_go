@@ -58,7 +58,7 @@ func init() {
 		BUILTIN_PI: {Type: node.BUILTIN_VARIABLE, NumArgs: 0, Function: evaluateBuiltinPi},
 
 		// Builtin objects (TODO: create builtin object node type)
-		BUILTIN_MONAD: {Type: node.BUILTIN_OBJECT, NumArgs: nArgsValue, Function: evaluateBuiltinMonad},
+		BUILTIN_MONAD: {Type: node.BUILTIN_FUNCTION, NumArgs: nArgsValue, Function: evaluateBuiltinMonad},
 	}
 }
 

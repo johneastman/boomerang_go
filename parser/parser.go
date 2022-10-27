@@ -287,9 +287,6 @@ func (p *Parser) parseIdentifier() (*node.Node, error) {
 
 	} else if evaluator.IsBuiltinType(node.BUILTIN_FUNCTION, identifierToken.Literal) {
 		return node.CreateBuiltinFunctionIdentifier(identifierToken.LineNumber, identifierToken.Literal).Ptr(), nil
-
-	} else if evaluator.IsBuiltinType(node.BUILTIN_OBJECT, identifierToken.Literal) {
-		return node.CreateBuiltinObjectIdentifier(identifierToken.LineNumber, identifierToken.Literal).Ptr(), nil
 	}
 
 	return node.CreateIdentifier(identifierToken.LineNumber, identifierToken.Literal).Ptr(), nil

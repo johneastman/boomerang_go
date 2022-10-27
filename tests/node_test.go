@@ -623,12 +623,6 @@ func TestNode_MonadWithoutValue(t *testing.T) {
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
-func TestNode_TestCreateBuiltinObjectIdentifier(t *testing.T) {
-	actualNode := node.CreateBuiltinObjectIdentifier(TEST_LINE_NUM, "object")
-	expectedNode := node.Node{Type: node.BUILTIN_OBJECT, Value: "object", LineNum: TEST_LINE_NUM}
-	AssertNodeEqual(t, 0, expectedNode, actualNode)
-}
-
 func TestNode_TestCreateBuiltinFunctionIdentifier(t *testing.T) {
 	actualNode := node.CreateBuiltinFunctionIdentifier(TEST_LINE_NUM, "function")
 	expectedNode := node.Node{Type: node.BUILTIN_FUNCTION, Value: "function", LineNum: TEST_LINE_NUM}

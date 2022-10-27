@@ -202,7 +202,6 @@ const (
 	IDENTIFIER       = "Identifier"
 	BUILTIN_VARIABLE = "BuiltinVariable"
 	BUILTIN_FUNCTION = "BuiltinFunction"
-	BUILTIN_OBJECT   = "BuiltinObject"
 	LIST             = "List"
 	MONAD            = "Monad"
 	MONAD_VALUE      = "MonadValue"
@@ -311,10 +310,6 @@ func CreateBuiltinVariableIdentifier(lineNum int, name string) Node {
 
 func CreateBuiltinFunctionIdentifier(lineNum int, name string) Node {
 	return Node{Type: BUILTIN_FUNCTION, Value: name, LineNum: lineNum}
-}
-
-func CreateBuiltinObjectIdentifier(lineNum int, name string) Node {
-	return Node{Type: BUILTIN_OBJECT, Value: name, LineNum: lineNum}
 }
 
 func CreateList(lineNum int, parameters []Node) Node {
