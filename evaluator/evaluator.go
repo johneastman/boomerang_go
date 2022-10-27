@@ -6,7 +6,6 @@ import (
 	"boomerang/utils"
 	"fmt"
 	"math/rand"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -282,8 +281,11 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 		if expression.Type != node.NUMBER {
 			return nil, utils.CreateError(expression.LineNum, "invalid type for minus operator: %s", expression.ErrorDisplay())
 		}
-		expressionValue := -e.toFloat(expression.Value)
-		return node.CreateNumber(unaryExpression.LineNum, utils.FloatToString(expressionValue)).Ptr(), nil
+		floatValue := utils.ConvertStringToFloat(expression.Value)
+		if floatValue == nil {
+			return nil, utils.NotANumberError(expression.LineNum, expression.Value)
+		}
+		return node.CreateNumber(unaryExpression.LineNum, utils.FloatToString(-*floatValue)).Ptr(), nil
 
 	} else if operator.Type == tokens.NOT {
 
@@ -564,7 +566,18 @@ func (e *evaluator) index(left node.Node, right node.Node) (*node.Node, error) {
 
 func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
-		result := e.toFloat(left.Value) + e.toFloat(right.Value)
+
+		leftValue := utils.ConvertStringToFloat(left.Value)
+		if leftValue == nil {
+			return nil, utils.NotANumberError(left.LineNum, left.Value)
+		}
+
+		rightValue := utils.ConvertStringToFloat(right.Value)
+		if rightValue == nil {
+			return nil, utils.NotANumberError(right.LineNum, right.Value)
+		}
+
+		result := *leftValue + *rightValue
 
 		return node.CreateNumber(left.LineNum, utils.FloatToString(result)).Ptr(), nil
 	}
@@ -578,7 +591,19 @@ func (e *evaluator) add(left node.Node, right node.Node) (*node.Node, error) {
 
 func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
-		result := e.toFloat(left.Value) - e.toFloat(right.Value)
+
+		leftValue := utils.ConvertStringToFloat(left.Value)
+		if leftValue == nil {
+			return nil, utils.NotANumberError(left.LineNum, left.Value)
+		}
+
+		rightValue := utils.ConvertStringToFloat(right.Value)
+		if rightValue == nil {
+			return nil, utils.NotANumberError(right.LineNum, right.Value)
+		}
+
+		result := *leftValue - *rightValue
+
 		return node.CreateNumber(left.LineNum, utils.FloatToString(result)).Ptr(), nil
 	}
 	return nil, utils.CreateError(
@@ -591,7 +616,18 @@ func (e *evaluator) subtract(left node.Node, right node.Node) (*node.Node, error
 
 func (e *evaluator) multuply(left node.Node, right node.Node) (*node.Node, error) {
 	if left.Type == node.NUMBER && right.Type == node.NUMBER {
-		result := e.toFloat(left.Value) * e.toFloat(right.Value)
+
+		leftValue := utils.ConvertStringToFloat(left.Value)
+		if leftValue == nil {
+			return nil, utils.NotANumberError(left.LineNum, left.Value)
+		}
+
+		rightValue := utils.ConvertStringToFloat(right.Value)
+		if rightValue == nil {
+			return nil, utils.NotANumberError(right.LineNum, right.Value)
+		}
+
+		result := *leftValue * *rightValue
 
 		return node.CreateNumber(left.LineNum, utils.FloatToString(result)).Ptr(), nil
 	}
@@ -609,7 +645,18 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 		if right.Value == "0" {
 			return nil, utils.CreateError(left.LineNum, "cannot divide by zero")
 		}
-		result := e.toFloat(left.Value) / e.toFloat(right.Value)
+
+		leftValue := utils.ConvertStringToFloat(left.Value)
+		if leftValue == nil {
+			return nil, utils.NotANumberError(left.LineNum, left.Value)
+		}
+
+		rightValue := utils.ConvertStringToFloat(right.Value)
+		if rightValue == nil {
+			return nil, utils.NotANumberError(right.LineNum, right.Value)
+		}
+
+		result := *leftValue / *rightValue
 		return node.CreateNumber(left.LineNum, utils.FloatToString(result)).Ptr(), nil
 	}
 	return nil, utils.CreateError(
@@ -703,15 +750,6 @@ func (e *evaluator) evaluateWhenExpression(whenExpression node.Node) (*node.Node
 
 	// If none of the cases match, the else/default case will be returned.
 	return e.evaluateBlockStatements(whenExpression.GetParam(node.WHEN_CASES_DEFAULT))
-}
-
-func (e *evaluator) toFloat(s string) float64 {
-	floatVal, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		// TODO: in this error message, may need to replace "number" with "float" if type conversion is introduced
-		panic(fmt.Sprintf("Cannot convert string to number: %s", s))
-	}
-	return floatVal
 }
 
 func (e *evaluator) evaluateAndCheckType(expression node.Node, expectedType string) (*node.Node, error) {

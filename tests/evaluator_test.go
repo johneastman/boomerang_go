@@ -260,6 +260,30 @@ func TestEvaluator_BinaryExpressions(t *testing.T) {
 			),
 			Result: CreateNumber("2"),
 		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateNumber("2"),
+				CreateTokenFromToken(tokens.ASTERISK_TOKEN),
+				CreateNumber("2"),
+			),
+			Result: CreateNumber("4"),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateNumber("5"),
+				CreateTokenFromToken(tokens.MINUS_TOKEN),
+				CreateNumber("2"),
+			),
+			Result: CreateNumber("3"),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateNumber("10"),
+				CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
+				CreateNumber("2"),
+			),
+			Result: CreateNumber("5"),
+		},
 
 		// List append
 		{
@@ -390,7 +414,7 @@ func TestEvaluator_BinaryExpressions(t *testing.T) {
 			test.Result,
 		}
 
-		AssertNodesEqual(t, i, actualResults, expectedResults)
+		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
 }
 
@@ -1430,5 +1454,38 @@ func TestEvaluator_VariableNameSameAsBuiltinsError(t *testing.T) {
 		expectedError := fmt.Sprintf("error at line 1: \"%s\" is a builtin function or variable", identifier)
 
 		AssertErrorEqual(t, i, expectedError, actualError)
+	}
+}
+
+func TestEvaluator_BinaryExpressionErrors(t *testing.T) {
+
+	tests := []struct {
+		Left  node.Node
+		Right node.Node
+		Error string
+	}{
+		{
+			Left:  CreateNumber("hello"),
+			Right: CreateNumber("1"),
+			Error: "error at line 1: cannot convert \"hello\" to a number",
+		},
+		{
+			Left:  CreateNumber("1"),
+			Right: CreateNumber("world"),
+			Error: "error at line 1: cannot convert \"world\" to a number",
+		},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			node.CreateBinaryExpression(
+				test.Left,
+				CreateTokenFromToken(tokens.PLUS_TOKEN),
+				test.Right,
+			),
+		}
+
+		actualError := getEvaluatorError(t, ast)
+		AssertErrorEqual(t, i, test.Error, actualError)
 	}
 }

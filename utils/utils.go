@@ -16,6 +16,10 @@ func CreateError(lineNum int, errorMessage string, args ...any) error {
 	return fmt.Errorf(fullErrorMessage)
 }
 
+func NotANumberError(lineNum int, value string) error {
+	return CreateError(lineNum, "cannot convert %#v to a number", value)
+}
+
 func CheckTypeError(lineNum int, actualType string, expectedType string) error {
 	if expectedType != actualType {
 		return CreateError(lineNum, "expected %s, got %s", expectedType, actualType)
