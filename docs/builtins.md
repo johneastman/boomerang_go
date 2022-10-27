@@ -46,17 +46,17 @@ user_input = input <- ("input",);
 ## unwrap
 
 ### Description
-Get the actual return value from a block statement. If no return value is found, return `defaultValue`.
+Get the actual return value from a monad. If no return value is found, return `defaultValue`.
 
 ### Arguments
 |Name|Type|Description|
 |----|----|-----------|
-|list|LIST|A monad (either `(true, <VALUE>)` or `(false)`, depending on whether the block statement returned a value)|
-|default_value|ANY|the value returned if `list` is `(false)`|
+|monad|MONAD|A monad object|
+|default_value|ANY|the value returned if `monad` contains a value|
 
 ### Returns
 * **Type:** ANY
-* **Value:** `VALUE` if `list` is `(true, <VALUE>)`; default_value if `list` is `(false)`.
+* **Value:** `VALUE` if `monad` contains a value; the default value of `monad` contains no value.
 
 ### Examples
 ```
@@ -76,12 +76,12 @@ Get a list of values from a list of monads.
 ### Arguments
 |Name|Type|Description|
 |----|----|-----------|
-|list|LIST|a list of values returned from a block statement (function call, if-else expression, for-loop, etc.). The values in this list will either be `(true, <VALUE>)` or `(false)`|
-|default_value|ANY|the value used if any of the values in `list` are `(false)`|
+|list|LIST|a list of monads|
+|default_value|ANY|the value used when any of the monads contain no values|
 
 ### Returns
 * **Type:** ANY
-* **Value:** a list of unwrapped values from block statements
+* **Value:** a list of unwrapped monads
 
 ### Examples
 ```

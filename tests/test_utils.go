@@ -98,6 +98,10 @@ func CreateRawString(value string) node.Node {
 	return node.CreateRawString(TEST_LINE_NUM, value)
 }
 
+func CreateMonad(value *node.Node) node.Node {
+	return node.CreateMonad(TEST_LINE_NUM, value)
+}
+
 func CreateIdentifier(value string) node.Node {
 	return node.CreateIdentifier(TEST_LINE_NUM, value)
 }

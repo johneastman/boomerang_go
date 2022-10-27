@@ -102,8 +102,8 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
 	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
 
-	// Check that the user hasn't created a variable with the same name as a builtin function or variable
-	if IsBuiltinFunction(variable.Value) || IsBuiltinVariable(variable.Value) {
+	// Check that the user hasn't created a variable with the same name as a builtin construct
+	if IsBuiltin(variable.Value) {
 		return utils.CreateError(
 			stmt.LineNum,
 			"%#v is a builtin function or variable",
@@ -149,7 +149,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 	switch expr.Type {
 
-	case node.NUMBER, node.BOOLEAN, node.FUNCTION, node.BUILTIN_FUNCTION:
+	case node.NUMBER, node.BOOLEAN, node.FUNCTION, node.BUILTIN_FUNCTION, node.MONAD:
 		// Builtin functions will be evaluated later during a function call
 		return &expr, nil
 
@@ -163,7 +163,7 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 		return e.evaluateIdentifier(expr)
 
 	case node.BUILTIN_VARIABLE:
-		return getBuiltinVariable(expr), nil
+		return evaluateBuiltinFunction(expr.Value, e, expr.LineNum, []node.Node{})
 
 	case node.UNARY_EXPR:
 		return e.evaluateUnaryExpression(expr)

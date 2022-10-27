@@ -86,6 +86,14 @@ func (n *Node) String() string {
 	case BUILTIN_FUNCTION:
 		return fmt.Sprintf("<built-in function %s>", n.Value)
 
+	case MONAD:
+		s := "Monad{"
+		if len(n.Params) == 1 {
+			s += n.Params[0].String()
+		}
+		s += "}"
+		return s
+
 	default:
 		// NUMBER, BOOLEAN
 		return n.Value
@@ -194,7 +202,10 @@ const (
 	IDENTIFIER       = "Identifier"
 	BUILTIN_VARIABLE = "BuiltinVariable"
 	BUILTIN_FUNCTION = "BuiltinFunction"
+	BUILTIN_OBJECT   = "BuiltinObject"
 	LIST             = "List"
+	MONAD            = "Monad"
+	MONAD_VALUE      = "MonadValue"
 )
 
 /*
@@ -255,6 +266,9 @@ var indexMap = map[string]map[string]int{
 		WHILE_LOOP_CONDITION:  0,
 		WHILE_LOOP_STATEMENTS: 1,
 	},
+	MONAD: {
+		MONAD_VALUE: 0,
+	},
 }
 
 func CreateTokenNode(token tokens.Token) Node {
@@ -291,12 +305,16 @@ func CreateIdentifier(lineNum int, name string) Node {
 	return Node{Type: IDENTIFIER, Value: name, LineNum: lineNum}
 }
 
+func CreateBuiltinVariableIdentifier(lineNum int, name string) Node {
+	return Node{Type: BUILTIN_VARIABLE, Value: name, LineNum: lineNum}
+}
+
 func CreateBuiltinFunctionIdentifier(lineNum int, name string) Node {
 	return Node{Type: BUILTIN_FUNCTION, Value: name, LineNum: lineNum}
 }
 
-func CreateBuiltinVariableIdentifier(lineNum int, name string) Node {
-	return Node{Type: BUILTIN_VARIABLE, Value: name, LineNum: lineNum}
+func CreateBuiltinObjectIdentifier(lineNum int, name string) Node {
+	return Node{Type: BUILTIN_OBJECT, Value: name, LineNum: lineNum}
 }
 
 func CreateList(lineNum int, parameters []Node) Node {
@@ -361,22 +379,11 @@ func CreateFunctionCall(lineNum int, function Node, callParams []Node) Node {
 
 func CreateBlockStatementReturnValue(linenum int, statement *Node) Node {
 	/*
-		Because some statements return no values (assignment, print, etc,), "statement" needs to be a reference value/send.
-		If that value is nil, "(false)" is returned. Otherwise, "(true, <statement>)" is returned.
+	 Keep this method because the name, CreateBlockStatementReturnValue, makes it clear that this is what
+	 block statements return. And if I never change what block statements return in the future, I will
+	 only have to change this method.
 	*/
-	var parameters []Node
-
-	if statement == nil {
-		parameters = []Node{
-			CreateBooleanFalse(linenum),
-		}
-	} else {
-		parameters = []Node{
-			CreateBooleanTrue(linenum),
-			*statement,
-		}
-	}
-	return CreateList(linenum, parameters)
+	return CreateMonad(linenum, statement)
 }
 
 func CreateBlockStatements(lineNum int, statements []Node) Node {
@@ -435,4 +442,24 @@ func CreateWhileLoop(lineNum int, conditionExpression Node, statements Node) Nod
 
 func CreateBreakStatement(lineNum int) Node {
 	return Node{Type: BREAK, LineNum: lineNum}
+}
+
+func CreateMonad(lineNum int, value *Node) Node {
+
+	params := []Node{}
+
+	if value != nil {
+
+		// If the value is already a monad, simply return the monad
+		if value.Type == MONAD {
+			return *value
+		}
+		params = append(params, *value)
+	}
+
+	return Node{
+		Type:    MONAD,
+		LineNum: lineNum,
+		Params:  params,
+	}
 }

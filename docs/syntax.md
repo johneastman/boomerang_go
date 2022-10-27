@@ -46,6 +46,7 @@ print(i)
 |BOOLEAN|`true`, `false`|
 |STRING|`"hello, world!"`, `"1234567890"`, `"abcdefghijklmnopqrstuvwxyz"`, `"My number is {1 + 1}"`|
 |LIST|`(1, 2)`, `(1, 2, 3)`, `(1, 2, 3 (6, 7, 8), 4, 5)`|
+|MONAD|`Monad{}`, `Monad{5}`, `Monad{"hello, world"}`, `Monad{true}`, `Monad{false}`, `Monad{(1, 2, 3)}`|
 
 ## Operators
 
@@ -154,27 +155,26 @@ for i in range <- (0, 10) {
 ```
 
 ### Block Statements
-Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, when-expressions, for-loops, etc.). Block statements return a monad. 
+Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, when-expressions, for-loops, etc.). Block statements return the value of the last statement wrapped in a builtin Monad object.
 
-If the monad contains a value, the block statement will return `(true, <VALUE>)`, where `<VALUE>` is the actual return value, and `true` indicates that a value was returned. For example, the below function utilizes a block statement that returns `a + b`, and because that expression returns a value, the function will return `(true, a + b)`.
+Monad objects may or may not contain a value. Monads containing a value will be represented as `Monad{<VALUE>}`, whereas monads without a value are represented as `Monad{}`. Below are some examples:
 ```
+# Monad from a function that does return a value
 add = func(a, b) {
   a + b;
 };
 
-value = add <- (2, 3); # value: (true, 5)
-```
+value = add <- (2, 3); # value: Monad{5}
 
-However, block statements that return nothing simply return `(false)`, indicating that no value was returned from the block statement. For example, the below function takes a value assigns that value to another variable. But but because variable assignment is a statement that returns no values, the function returns `(false)`.
-```
+# Monad from function that does not return a value
 assign_val = func(v) {
   new_v = v;
 };
 
-value = assign_val <- (2);  # "value" will be "(false)"
+value = assign_val <- (2);  # value: Monad{}
 ```
 
-To extract the actual return value of a block statement, use the builtin `unwrap` method. See [builtin functions](../docs/builtins.md) for more information.
+To extract the actual return value of a Monad object, use the builtin `unwrap` method. See [builtin functions](../docs/builtins.md) for more information.
 
 ## Expressions
 
@@ -207,7 +207,7 @@ names = names <- ("Jimmy", "Jack", "Jacob"); # names: ("John", "Joe", "Jerry", "
 Syntax: `func(IDENTIFIER|ASSIGN, IDENTIFIER|ASSIGN, ..., IDENTIFIER|ASSIGN) { STATEMENT; STATEMENT; ...; STATEMENT };`
 
 
-Functions return the result of their associated block statement (see [Block Statements](#block-statements) for more information).
+Functions return monads (see [Block Statements](#block-statements) for more information).
 
 
 Examples:
@@ -278,7 +278,7 @@ when [EXPRESSION | not | NOTHING] {
   }
 };
 ```
-The block statement associated with the case matching the `when` expression is run and the value of the last statement or expression is returned (see [Block Statements](#block-statements) for more information).
+The block statement associated with the matching case is run and a monad is returned (see [Block Statements](#block-statements) for more information).
 
 
 `when` expressions act as both "if-'else if'-else" and switch statements, depending on how they are implemented (although in Boomerang, `when` is an expression and can return a value). When the implementation acts as a switch statement, an expression is provided after `when` and the `is` keyword comes before each case. For example:
@@ -346,20 +346,21 @@ when num {
 Syntax: `for IDENTIFIER in LIST { STATEMENT, STATEMENT, ..., STATEMENT }`
 
 
-For loops act similar to the `map` function in other languages. A new list is returned containing the result of the last expression or statement in the block statement. The resulting list will be a list of lists as a result of evaluating a block statement (see [Block Statements](#block-statements) for more information).
+For loops act similar to `map` functions in other languages. For each value in the list, the block statement is run, and a monad is returned (see [Block Statements](#block-statements) for more information).
 
 
 Examples:
 ```
 # Use for-loop as a regular loop
 list = (1, 2, 3, 4, 5);
-for element in list {  # for loop returns ((false), (false), (false), (false), (false))
-  print(element);
+new_list = for element in list {
+  print <- (element,);
 };
+print <- (new_list,)  # new_list: (Monad{}, Monad{}, Monad{}, Monad{}, Monad{})
 
 # use for-loop as map
 squared = for element in list {
   element * element;
 };
-print(squared); # squared: ((true, 1), (true, 4), (true, 9), (true, 16), (true, 25))
+print <- (squared,); # squared: (Monad{1}, Monad{4}, Monad{9}, Monad{16}, Monad{25})
 ```

@@ -426,15 +426,9 @@ func TestNode_String(t *testing.T) {
 func TestNode_CreateBlockStatementReturnValueNoParams(t *testing.T) {
 	actualNode := node.CreateBlockStatementReturnValue(TEST_LINE_NUM, nil)
 	expectedNode := node.Node{
-		Type:    node.LIST,
+		Type:    node.MONAD,
 		LineNum: TEST_LINE_NUM,
-		Params: []node.Node{
-			{
-				Type:    node.BOOLEAN,
-				Value:   tokens.FALSE_TOKEN.Literal,
-				LineNum: TEST_LINE_NUM,
-			},
-		},
+		Params:  []node.Node{},
 	}
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
@@ -444,14 +438,9 @@ func TestNode_CreateBlockStatementReturnValueParams(t *testing.T) {
 	actualReturnValue := node.CreateNumber(TEST_LINE_NUM, "5")
 	actualNode := node.CreateBlockStatementReturnValue(TEST_LINE_NUM, &actualReturnValue)
 	expectedNode := node.Node{
-		Type:    node.LIST,
+		Type:    node.MONAD,
 		LineNum: TEST_LINE_NUM,
 		Params: []node.Node{
-			{
-				Type:    node.BOOLEAN,
-				Value:   tokens.TRUE_TOKEN.Literal,
-				LineNum: TEST_LINE_NUM,
-			},
 			{
 				Type:    node.NUMBER,
 				Value:   "5",
@@ -603,5 +592,51 @@ func TestNode_WhileLoop(t *testing.T) {
 func TestNode_BreakStatement(t *testing.T) {
 	actualNode := node.CreateBreakStatement(TEST_LINE_NUM)
 	expectedNode := node.Node{Type: node.BREAK, LineNum: TEST_LINE_NUM}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
+func TestNode_MonadWithValue(t *testing.T) {
+	actualNode := node.CreateMonad(
+		TEST_LINE_NUM,
+		node.CreateNumber(TEST_LINE_NUM, "5").Ptr(),
+	)
+	expectedNode := node.Node{
+		Type:    node.MONAD,
+		LineNum: TEST_LINE_NUM,
+		Params: []node.Node{
+			{Type: node.NUMBER, Value: "5", LineNum: TEST_LINE_NUM},
+		},
+	}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
+func TestNode_MonadWithoutValue(t *testing.T) {
+	actualNode := node.CreateMonad(
+		TEST_LINE_NUM,
+		nil,
+	)
+	expectedNode := node.Node{
+		Type:    node.MONAD,
+		LineNum: TEST_LINE_NUM,
+		Params:  []node.Node{},
+	}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
+func TestNode_TestCreateBuiltinObjectIdentifier(t *testing.T) {
+	actualNode := node.CreateBuiltinObjectIdentifier(TEST_LINE_NUM, "object")
+	expectedNode := node.Node{Type: node.BUILTIN_OBJECT, Value: "object", LineNum: TEST_LINE_NUM}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
+func TestNode_TestCreateBuiltinFunctionIdentifier(t *testing.T) {
+	actualNode := node.CreateBuiltinFunctionIdentifier(TEST_LINE_NUM, "function")
+	expectedNode := node.Node{Type: node.BUILTIN_FUNCTION, Value: "function", LineNum: TEST_LINE_NUM}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
+func TestNode_TestCreateBuiltinVariableIdentifier(t *testing.T) {
+	actualNode := node.CreateBuiltinVariableIdentifier(TEST_LINE_NUM, "variable")
+	expectedNode := node.Node{Type: node.BUILTIN_VARIABLE, Value: "variable", LineNum: TEST_LINE_NUM}
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }

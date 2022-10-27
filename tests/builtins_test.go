@@ -667,14 +667,14 @@ func TestBuiltin_UnwrapErrors(t *testing.T) {
 				}),
 				CreateNumber("-1"),
 			},
-			Error: "error at line 1: expected Boolean, got Number",
+			Error: "error at line 1: expected Monad, got List",
 		},
 		{
 			Args: []node.Node{
 				CreateNumber("-1"),
 				CreateNumber("-1"),
 			},
-			Error: "error at line 1: expected List, got Number",
+			Error: "error at line 1: expected Monad, got Number",
 		},
 		{
 			Args:  []node.Node{},

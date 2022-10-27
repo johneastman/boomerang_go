@@ -854,10 +854,7 @@ func TestEvaluator_WhenExpression(t *testing.T) {
 
 		actualResults := getEvaluatorResults(ast)
 		expectedResults := []node.Node{
-			CreateList([]node.Node{
-				CreateBooleanTrue(),
-				CreateNumber(test.ExpectedValue),
-			}),
+			CreateMonad(CreateNumber(test.ExpectedValue).Ptr()),
 		}
 		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
@@ -908,10 +905,7 @@ func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
 
 		actualResults := getEvaluatorResults(ast)
 		expectedResults := []node.Node{
-			CreateList([]node.Node{
-				CreateBooleanTrue(),
-				CreateNumber(test.ExpectedValue),
-			}),
+			CreateMonad(CreateNumber(test.ExpectedValue).Ptr()),
 		}
 		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}
@@ -945,10 +939,7 @@ func TestEvaluator_VariablesFromOuterScopes(t *testing.T) {
 
 	actualResults := getEvaluatorResults(ast)
 	expectedResults := []node.Node{
-		CreateList([]node.Node{
-			CreateBooleanTrue(),
-			CreateNumber("12"),
-		}),
+		CreateMonad(CreateNumber("12").Ptr()),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
@@ -1430,22 +1421,7 @@ func TestEvaluator_BreakStatementOutsideLoopError(t *testing.T) {
 
 func TestEvaluator_VariableNameSameAsBuiltinsError(t *testing.T) {
 
-	builtinIdentifiers := []string{
-		// Functions
-		evaluator.BUILTIN_LEN,
-		evaluator.BUILTIN_UNWRAP,
-		evaluator.BUILTIN_SLICE,
-		evaluator.BUILTIN_UNWRAP_ALL,
-		evaluator.BUILTIN_RANGE,
-		evaluator.BUILTIN_RANDOM,
-		evaluator.BUILTIN_PRINT,
-		evaluator.BUILTIN_INPUT,
-
-		// Variables
-		evaluator.BUILTIN_PI,
-	}
-
-	for i, identifier := range builtinIdentifiers {
+	for i, identifier := range evaluator.GetBuiltinNames() {
 		ast := []node.Node{
 			CreateAssignmentStatement(identifier, CreateNumber("20")),
 		}

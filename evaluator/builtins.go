@@ -2,7 +2,6 @@ package evaluator
 
 import (
 	"boomerang/node"
-	"boomerang/tokens"
 	"boomerang/utils"
 	"fmt"
 	"math"
@@ -22,77 +21,86 @@ const (
 
 	// Variables
 	BUILTIN_PI = "pi"
+
+	// Objects
+	BUILTIN_MONAD = "monad"
 )
 
-type BuiltinFunction struct {
+type Builtin struct {
+	Type     string
 	NumArgs  int
 	Function func(*evaluator, int, []node.Node) (*node.Node, error)
 }
 
-type BuiltinVariable struct {
-	Literal string
-	Type    string
-}
-
 /*
-Initializing builtin functions with init() method to avoid initialization cycle error, in which the keys
-in "builtinFunctions" call methods that use "builtinFunctions".
+Initializing builtins with init() method to avoid initialization cycle error, in which values in
+in "builtin" call methods that use "builtin".
 
 More info: https://go.dev/ref/spec#Package_initialization
-
-For consistency, builtin variables are declared in "init" as well.
 */
-var builtinFunctions map[string]BuiltinFunction
-var builtinVariables map[string]BuiltinVariable
+var builtins map[string]Builtin
 
 // Value for "BuiltinFunction.NumArgs" for function that can take any number of arguments (like "len").
 var nArgsValue = -1
 
 func init() {
-	builtinFunctions = map[string]BuiltinFunction{
-		BUILTIN_LEN:        {NumArgs: 1, Function: evaluateBuiltinLen},
-		BUILTIN_UNWRAP:     {NumArgs: 2, Function: evaluateBuiltinUnwrap},
-		BUILTIN_UNWRAP_ALL: {NumArgs: 2, Function: evaluateBuiltinUnwrapAll},
-		BUILTIN_SLICE:      {NumArgs: 3, Function: evaluateBuiltinSlice},
-		BUILTIN_RANGE:      {NumArgs: 2, Function: evaluateBuiltinRange},
-		BUILTIN_RANDOM:     {NumArgs: 2, Function: evaluateBuiltinRandom},
-		BUILTIN_PRINT:      {NumArgs: nArgsValue, Function: evaluateBuiltinPrint},
-		BUILTIN_INPUT:      {NumArgs: 1, Function: evaluateBuiltinInput},
-	}
+	builtins = map[string]Builtin{
+		BUILTIN_LEN:        {Type: node.BUILTIN_FUNCTION, NumArgs: 1, Function: evaluateBuiltinLen},
+		BUILTIN_UNWRAP:     {Type: node.BUILTIN_FUNCTION, NumArgs: 2, Function: evaluateBuiltinUnwrap},
+		BUILTIN_UNWRAP_ALL: {Type: node.BUILTIN_FUNCTION, NumArgs: 2, Function: evaluateBuiltinUnwrapAll},
+		BUILTIN_SLICE:      {Type: node.BUILTIN_FUNCTION, NumArgs: 3, Function: evaluateBuiltinSlice},
+		BUILTIN_RANGE:      {Type: node.BUILTIN_FUNCTION, NumArgs: 2, Function: evaluateBuiltinRange},
+		BUILTIN_RANDOM:     {Type: node.BUILTIN_FUNCTION, NumArgs: 2, Function: evaluateBuiltinRandom},
+		BUILTIN_PRINT:      {Type: node.BUILTIN_FUNCTION, NumArgs: nArgsValue, Function: evaluateBuiltinPrint},
+		BUILTIN_INPUT:      {Type: node.BUILTIN_FUNCTION, NumArgs: 1, Function: evaluateBuiltinInput},
 
-	builtinVariables = map[string]BuiltinVariable{
-		BUILTIN_PI: {Literal: fmt.Sprintf("%v", math.Pi), Type: node.NUMBER},
+		// Variables
+		BUILTIN_PI: {Type: node.BUILTIN_VARIABLE, NumArgs: 0, Function: evaluateBuiltinPi},
+
+		// Builtin objects (TODO: create builtin object node type)
+		BUILTIN_MONAD: {Type: node.BUILTIN_OBJECT, NumArgs: nArgsValue, Function: evaluateBuiltinMonad},
 	}
 }
 
-func IsBuiltinVariable(value string) bool {
-	if _, ok := builtinVariables[value]; ok {
+func IsBuiltinType(builtinType string, value string) bool {
+	// Check if a value is a builtin identifier with a specific type (variable, function, object, etc.)
+	if builtin, ok := builtins[value]; ok {
+		return builtin.Type == builtinType
+	}
+	return false
+}
+
+func IsBuiltin(value string) bool {
+	// Check if a value is a builtin identifier regardless of type
+	if _, ok := builtins[value]; ok {
 		return true
 	}
 	return false
 }
 
-func IsBuiltinFunction(value string) bool {
-	if _, ok := builtinFunctions[value]; ok {
-		return true
+func GetBuiltinNames() []string {
+	builtinNames := []string{}
+
+	for key := range builtins {
+		builtinNames = append(builtinNames, key)
 	}
-	return false
+	return builtinNames
 }
 
-func getBuiltinVariable(identifierNode node.Node) *node.Node {
-	if value, ok := builtinVariables[identifierNode.Value]; ok {
-		switch value.Type {
-		case node.NUMBER:
-			return node.CreateNumber(identifierNode.LineNum, value.Literal).Ptr()
-		default:
-			panic(fmt.Sprintf("invalid type: %s", value.Type))
-		}
-	}
-	return nil
+/* * * * * * * * * * *
+ * BUILTIN VARIABLES *
+ * * * * * * * * * * */
+
+func evaluateBuiltinPi(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+	return node.CreateNumber(lineNum, fmt.Sprintf("%v", math.Pi)).Ptr(), nil
 }
+
+/* * * * * * * * * * *
+ * BUILTIN FUNCTIONS *
+ * * * * * * * * * * */
 
 func evaluateBuiltinFunction(name string, eval *evaluator, lineNum int, callParam []node.Node) (*node.Node, error) {
-	builtinFunction := builtinFunctions[name]
+	builtinFunction := builtins[name]
 
 	/*
 		Check that the number of arguments passed to the builtin function is correct. Functions where the value
@@ -192,7 +200,7 @@ func evaluateBuiltinUnwrap(eval *evaluator, lineNum int, callParameters []node.N
 		return a list and the purpose of unwrap is to extract the return value from that list, this implementation
 		needs to be a builtin method.
 
-		callParameters[0] contains the list returned by the function ("(true, <VALUE>)" or "(false)")
+		callParameters[0] contains the monad returned by the function ("Monad{<VALUE>}" or "Monad{}")
 		callParameters[1] contains the default value, if the function returns "(false)"
 	*/
 	returnValueList, err := eval.evaluateExpression(callParameters[0])
@@ -200,29 +208,17 @@ func evaluateBuiltinUnwrap(eval *evaluator, lineNum int, callParameters []node.N
 		return nil, err
 	}
 
-	// Check that the first value passed to "unwrap" is a list
-	if err := utils.CheckTypeError(lineNum, returnValueList.Type, node.LIST); err != nil {
+	// Check that the first value passed to "unwrap" is a monad
+	if err := utils.CheckTypeError(lineNum, returnValueList.Type, node.MONAD); err != nil {
 		return nil, err
 	}
 
-	// "returnValueList.Params[0]" contains the boolean value, denoting whether the function returned a value
-	returnValueListFirst, err := eval.evaluateExpression(returnValueList.Params[0])
-	if err != nil {
-		return nil, err
+	// If the monad contains a value, return that value
+	if len(returnValueList.Params) == 1 {
+		return eval.evaluateExpression(returnValueList.Params[0])
 	}
 
-	// Check that the first value in the  value monad is a boolean value
-	if err := utils.CheckTypeError(lineNum, returnValueListFirst.Type, node.BOOLEAN); err != nil {
-		return nil, err
-	}
-
-	// If the boolean value in the first element of the list is "true", return the function's actual return value
-	if returnValueListFirst.Value == tokens.TRUE_TOKEN.Literal {
-		// "returnValueList.Params[1]" contains the actual return value, if "returnValueList.Params[0]" is "true"
-		return eval.evaluateExpression(returnValueList.Params[1])
-	}
-
-	// if "returnValueList.Params[0]" is "false", return the default value given to "unwrap".
+	// if the monad contains no value, return the default value given to "unwrap".
 	return eval.evaluateExpression(callParameters[1])
 }
 
@@ -259,7 +255,7 @@ func evaluateBuiltinUnwrapAll(eval *evaluator, lineNum int, callParameters []nod
 
 	for _, param := range list.Params {
 		/*
-			"param" is a monad ("(false)" or "(true, <VALUE>)"), so to utilize "evaluateBuiltinUnwrap",
+			"param" is a monad, so to utilize "evaluateBuiltinUnwrap",
 			"param" and the default value are sent to "evaluateBuiltinUnwrap" as the call parameters.
 
 			unwrap_all is essentially just calling "unwrap" on every element in the list (see example in comment above).
@@ -408,4 +404,25 @@ func evaluateBuiltinInput(eval *evaluator, lineNum int, callParameters []node.No
 	inputValue := utils.UserInput(prompt.Value)
 
 	return node.CreateRawString(lineNum, inputValue).Ptr(), nil
+}
+
+/* * * * * * * * * *
+ * BUILTIN OBJECTS *
+ * * * * * * * * * */
+
+func evaluateBuiltinMonad(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+
+	var monadValue *node.Node
+
+	if len(callParameters) == 0 {
+		monadValue = nil
+
+	} else {
+		value, err := eval.evaluateExpression(callParameters[0])
+		if err != nil {
+			return nil, err
+		}
+		monadValue = value
+	}
+	return node.CreateMonad(lineNum, monadValue).Ptr(), nil
 }
