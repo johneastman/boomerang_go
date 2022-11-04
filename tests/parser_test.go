@@ -110,23 +110,27 @@ func TestParser_TestParameters(t *testing.T) {
 		Source string
 		Params []node.Node
 	}{
+		// Empty list
 		{
 			Source: "()",
 			Params: []node.Node{},
 		},
+		// 1-element list
 		{
 			Source: "(1,)",
 			Params: []node.Node{
 				CreateNumber("1"),
 			},
 		},
+		// 2-element list
 		{
-			Source: "(1,2,)",
+			Source: "(1,2)",
 			Params: []node.Node{
 				CreateNumber("1"),
 				CreateNumber("2"),
 			},
 		},
+		// 3-element list
 		{
 			Source: "(1,2,3)",
 			Params: []node.Node{

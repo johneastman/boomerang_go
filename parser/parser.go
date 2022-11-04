@@ -370,11 +370,13 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 
 	lineNumber := p.current.LineNumber
 
+	// Skip over open parenthesis
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
 
 	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
+		// Create an empty list
 		if err := p.advance(); err != nil {
 			return nil, err
 		}
@@ -387,36 +389,42 @@ func (p *Parser) parseGroupedExpression() (*node.Node, error) {
 		return nil, err
 	}
 
-	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
+	switch p.current.Type {
+
+	// Single expressions between parentheses are grouped expressions
+	case tokens.CLOSED_PAREN:
 		if err := p.advance(); err != nil {
 			return nil, err
 		}
 		return expression, nil
 
-	} else if tokens.TokenTypesEqual(p.current, tokens.COMMA) {
+	// Commas denote list creation
+	case tokens.COMMA:
+		// Skip over comma
 		if err := p.advance(); err != nil {
 			return nil, err
 		}
 		stmts := []node.Node{*expression}
 
-		additionalParams, err := p.parseList()
+		additionalValues, err := p.parseList()
 		if err != nil {
 			return nil, err
 		}
 
-		stmts = append(stmts, additionalParams.Params...)
+		stmts = append(stmts, additionalValues.Params...)
 		listNode := node.CreateList(lineNumber, stmts)
 		return &listNode, nil
-	}
 
-	return nil, expectedMultipleTokens(
-		p.current.LineNumber,
-		p.current,
-		[]tokens.Token{
-			tokens.CLOSED_PAREN_TOKEN,
-			tokens.COMMA_TOKEN,
-		},
-	)
+	default:
+		return nil, expectedMultipleTokens(
+			p.current.LineNumber,
+			p.current,
+			[]tokens.Token{
+				tokens.CLOSED_PAREN_TOKEN,
+				tokens.COMMA_TOKEN,
+			},
+		)
+	}
 }
 
 func (p *Parser) parseFunctionParameters() (*node.Node, error) {
@@ -480,16 +488,18 @@ func (p *Parser) parseFunctionParameters() (*node.Node, error) {
 
 func (p *Parser) parseList() (*node.Node, error) {
 	lineNumber := p.current.LineNumber
-
 	params := []node.Node{}
-	for {
-		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
-			if err := p.advance(); err != nil {
-				return nil, err
-			}
-			break
-		}
 
+	// If the current token is a closed parenthesis, the list only contains one item in it.
+	if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
+		if err := p.advance(); err != nil {
+			return nil, err
+		}
+		paramNode := node.CreateList(lineNumber, params)
+		return &paramNode, nil
+	}
+
+	for {
 		expression, err := p.parseExpression(LOWEST)
 		if err != nil {
 			return nil, err
@@ -497,11 +507,17 @@ func (p *Parser) parseList() (*node.Node, error) {
 
 		params = append(params, *expression)
 
-		if tokens.TokenTypesEqual(p.current, tokens.COMMA) {
+		if tokens.TokenTypesEqual(p.current, tokens.CLOSED_PAREN) {
+			// Skip over closed parenthesis and stop parsing list
 			if err := p.advance(); err != nil {
 				return nil, err
 			}
-			continue
+			break
+		}
+
+		// Assert that a comma is present
+		if err := p.expectToken(tokens.COMMA_TOKEN); err != nil {
+			return nil, err
 		}
 	}
 
