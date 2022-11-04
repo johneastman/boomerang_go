@@ -467,6 +467,24 @@ func TestEvaluator_MultipleVariableAssignment(t *testing.T) {
 			Identifiers: []node.Node{
 				CreateIdentifier("a"),
 				CreateIdentifier("b"),
+			},
+			Values: []node.Node{
+				node.CreateBinaryExpression(
+					CreateNumber("4.5"),
+					CreateTokenFromToken(tokens.PLUS_TOKEN),
+					CreateNumber("5.5"),
+				),
+				CreateNumber("2"),
+			},
+			ReturnValue: CreateList([]node.Node{
+				CreateNumber("10"),
+				CreateNumber("2"),
+			}),
+		},
+		{
+			Identifiers: []node.Node{
+				CreateIdentifier("a"),
+				CreateIdentifier("b"),
 				CreateIdentifier("c"),
 			},
 			Values: []node.Node{

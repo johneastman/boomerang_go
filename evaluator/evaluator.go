@@ -93,8 +93,11 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 }
 
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) (*node.Node, error) {
-	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER) // identifier, list of identifiers
-	value := stmt.GetParam(node.EXPR)                      // actual value(s)
+	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)       // identifier, list of identifiers
+	value, err := e.evaluateExpression(stmt.GetParam(node.EXPR)) // actual value(s)
+	if err != nil {
+		return nil, err
+	}
 
 	if variable.Type == node.IDENTIFIER {
 		// Check that the user hasn't created a variable with the same name as a builtin construct
@@ -106,7 +109,7 @@ func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) (*node.Node, err
 			)
 		}
 
-		value, err := e.evaluateExpression(value)
+		value, err := e.evaluateExpression(*value)
 		if err != nil {
 			return nil, err
 		}
@@ -117,7 +120,7 @@ func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) (*node.Node, err
 
 		evaluatedValues := []node.Node{}
 
-		assignments := e.partitionAssignmentVariables(variable, value)
+		assignments := e.partitionAssignmentVariables(variable, *value)
 		for identifier, identifierValue := range assignments {
 
 			if identifier.Type != node.IDENTIFIER {
