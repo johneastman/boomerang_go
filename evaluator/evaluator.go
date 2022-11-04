@@ -151,54 +151,52 @@ func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) (*node.Node, err
 
 func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) [][]node.Node {
 
-	// TODO: refactor to avoid length checks
-	var assignments = [][]node.Node{}
+	var identifierValuePairs = [][]node.Node{} // Map identifiers to their corresponding values
 
-	if len(identifiers.Params) == len(values.Params) {
-		for index := 0; index < len(identifiers.Params); index++ {
+	/*
+		Iterate though first (n - 1) identifiers. If an identifier has an associated value, pair the identifier with
+		that value. Otherwise, pair the identifier with an empty monad object.
+	*/
+	index := 0
+	for ; index < len(identifiers.Params)-1; index++ {
+		identifier := identifiers.Params[index]
 
-			identifier := identifiers.Params[index]
-			value := values.Params[index]
-
-			assignments = append(assignments, []node.Node{identifier, value})
-		}
-	} else if len(identifiers.Params) > len(values.Params) {
-		for index := 0; index < len(identifiers.Params); index++ {
-
-			identifier := identifiers.Params[index]
-
-			var value node.Node
-			if index >= len(values.Params) {
-				// If the number of identifiers is greater than the number of values, set variables without a value to an empty monad.
-				value = node.CreateMonad(identifier.LineNum, nil)
-			} else {
-				value = values.Params[index]
-			}
-
-			assignments = append(assignments, []node.Node{identifier, value})
-		}
-	} else if len(identifiers.Params) < len(values.Params) {
-		index := 0
-		for ; index < len(identifiers.Params)-1; index++ {
-
-			identifier := identifiers.Params[index]
-			value := values.Params[index]
-
-			assignments = append(assignments, []node.Node{identifier, value})
-		}
-
-		lastIdentifier := identifiers.Params[index]
-
-		var lastIdentifierValue node.Node
-		if len(values.Params[index:]) == 1 {
-			lastIdentifierValue = values.Params[index]
+		var value node.Node
+		if index >= len(values.Params) {
+			// If the number of identifiers is greater than the number of values, set subsequent variables to an empty monad.
+			value = node.CreateMonad(identifier.LineNum, nil)
 		} else {
-			lastIdentifierValue = node.CreateList(lastIdentifier.LineNum, values.Params[index:])
+			value = values.Params[index]
 		}
-		assignments = append(assignments, []node.Node{lastIdentifier, lastIdentifierValue})
+
+		identifierValuePairs = append(identifierValuePairs, []node.Node{identifier, value})
 	}
 
-	return assignments
+	lastIdentifier := identifiers.Params[index]
+	var lastIdentifierValue node.Node
+
+	/*
+		For the last identifier, if the index is greater than or equal the number of values, we can assume there are more
+		identifiers than values, so pair that identifier with an empty monad object.
+	*/
+	if index >= len(values.Params) {
+		lastIdentifierValue = node.CreateMonad(lastIdentifier.LineNum, nil)
+	} else {
+		/*
+			Otherwise, if the length of the remaining values is 1, pair that value with the last identifier. If the number of
+			remaining values is greater than 1, put the remaining values in a list and assign that list to the last identifier.
+		*/
+		remainingNodes := values.Params[index:]
+		switch len(remainingNodes) {
+		case 1:
+			lastIdentifierValue = values.Params[index]
+		default:
+			lastIdentifierValue = node.CreateList(lastIdentifier.LineNum, values.Params[index:])
+		}
+	}
+	identifierValuePairs = append(identifierValuePairs, []node.Node{lastIdentifier, lastIdentifierValue})
+
+	return identifierValuePairs
 }
 
 func (e *evaluator) evaluateWhileLoop(stmt node.Node) error {

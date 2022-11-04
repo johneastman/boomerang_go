@@ -501,6 +501,41 @@ func TestEvaluator_MultipleVariableAssignment(t *testing.T) {
 			Identifiers: []node.Node{
 				CreateIdentifier("a"),
 				CreateIdentifier("b"),
+				CreateIdentifier("c"),
+				CreateIdentifier("d"),
+			},
+			Values: []node.Node{
+				CreateNumber("1"),
+			},
+			ReturnValue: CreateList([]node.Node{
+				CreateNumber("1"),
+				CreateMonad(nil),
+				CreateMonad(nil),
+				CreateMonad(nil),
+			}),
+		},
+		{
+			Identifiers: []node.Node{
+				CreateIdentifier("a"),
+				CreateIdentifier("b"),
+			},
+			Values: []node.Node{
+				CreateNumber("1"),
+				CreateNumber("2"),
+				CreateNumber("3"),
+			},
+			ReturnValue: CreateList([]node.Node{
+				CreateNumber("1"),
+				CreateList([]node.Node{
+					CreateNumber("2"),
+					CreateNumber("3"),
+				}),
+			}),
+		},
+		{
+			Identifiers: []node.Node{
+				CreateIdentifier("a"),
+				CreateIdentifier("b"),
 			},
 			Values: []node.Node{
 				CreateNumber("1"),
