@@ -121,7 +121,10 @@ func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) (*node.Node, err
 		evaluatedValues := []node.Node{}
 
 		assignments := e.partitionAssignmentVariables(variable, *value)
-		for identifier, identifierValue := range assignments {
+		for _, identifierPair := range assignments {
+
+			identifier := identifierPair[0]
+			identifierValue := identifierPair[1]
 
 			if identifier.Type != node.IDENTIFIER {
 				return nil, utils.CreateError(identifier.LineNum, "invalid type for assignment: %s", identifier.ErrorDisplay())
@@ -146,10 +149,10 @@ func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) (*node.Node, err
 	)
 }
 
-func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) map[*node.Node]node.Node {
+func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) [][]node.Node {
 
 	// TODO: refactor to avoid length checks
-	var assignments = make(map[*node.Node]node.Node)
+	var assignments = [][]node.Node{}
 
 	if len(identifiers.Params) == len(values.Params) {
 		for index := 0; index < len(identifiers.Params); index++ {
@@ -157,7 +160,7 @@ func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) 
 			identifier := identifiers.Params[index]
 			value := values.Params[index]
 
-			assignments[&identifier] = value
+			assignments = append(assignments, []node.Node{identifier, value})
 		}
 	} else if len(identifiers.Params) > len(values.Params) {
 		for index := 0; index < len(identifiers.Params); index++ {
@@ -172,7 +175,7 @@ func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) 
 				value = values.Params[index]
 			}
 
-			assignments[&identifier] = value
+			assignments = append(assignments, []node.Node{identifier, value})
 		}
 	} else if len(identifiers.Params) < len(values.Params) {
 		index := 0
@@ -181,7 +184,7 @@ func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) 
 			identifier := identifiers.Params[index]
 			value := values.Params[index]
 
-			assignments[&identifier] = value
+			assignments = append(assignments, []node.Node{identifier, value})
 		}
 
 		lastIdentifier := identifiers.Params[index]
@@ -192,7 +195,7 @@ func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) 
 		} else {
 			lastIdentifierValue = node.CreateList(lastIdentifier.LineNum, values.Params[index:])
 		}
-		assignments[&lastIdentifier] = lastIdentifierValue
+		assignments = append(assignments, []node.Node{lastIdentifier, lastIdentifierValue})
 	}
 
 	return assignments
