@@ -5,11 +5,11 @@
     * [Binary (Infix) Operators](#binary-infix-operators)
     * [Unary (Prefix) Operators](#unary-prefix-operators)
 * [Statements](#statements)
-    * [Variable Assignment](#variable-assignment)
     * [While Loop](#while-loop)
     * [Break](#break)
     * [Block Statements](#block-statements)
 * [Expressions](#expressions)
+    * [Variable Assignment](#variable-assignment)
     * [Lists](#lists)
     * [Functions](#functions)
     * [When Expressions](#when-expressions)
@@ -96,17 +96,6 @@ print(i)
 
 ## Statements
 
-### Variable Assignment
-Syntax: `IDENTIFIER = EXPRESSION`
-
-
-Examples:
-```
-number = 1;
-number = 1 + (2 * 2) - 3;
-number = -1 + 1;
-```
-
 ### While Loop
 Syntax: `while EXPRESSION { STATEMENT; STATEMENT; ...; STATEMENT; };`
 
@@ -179,6 +168,22 @@ Monad objects cannot be independently instantiated.
 To extract the actual return value of a Monad object, use the builtin `unwrap` method. See [builtin functions](../docs/builtins.md) for more information.
 
 ## Expressions
+
+### Variable Assignment
+Syntax: `IDENTIFIER = EXPRESSION`
+
+
+Variable assignments are expression, so they return the value of `EXPRESSION`. This allows users to assign the same value to multiple variables.
+
+
+Examples:
+```
+number = 1;
+number = 1 + (2 * 2) - 3;
+number = -1 + 1;
+
+a = b = c = 20;  # a, b, and c are all assigned to the value "20"
+```
 
 ### Lists
 Syntax: `(EXPRESSION, EXPRESSION, ..., EXPRESSION)`

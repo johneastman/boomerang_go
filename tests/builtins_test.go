@@ -58,7 +58,8 @@ func TestBuiltin_Unwrap(t *testing.T) {
 
 	tests := []struct {
 		Body                []node.Node
-		ExpectedReturnValue node.Node
+		FunctionReturnValue node.Node
+		UnwrapReturnValue   node.Node
 	}{
 		{
 			Body: []node.Node{
@@ -68,17 +69,19 @@ func TestBuiltin_Unwrap(t *testing.T) {
 					CreateNumber("7"),
 				),
 			},
-			ExpectedReturnValue: CreateNumber("20"),
+			FunctionReturnValue: CreateMonad(CreateNumber("20").Ptr()),
+			UnwrapReturnValue:   CreateNumber("20"),
 		},
 		{
 			Body:                []node.Node{},
-			ExpectedReturnValue: CreateRawString("hello, world!"),
+			FunctionReturnValue: CreateMonad(nil),
+			UnwrapReturnValue:   CreateRawString("hello, world!"),
 		},
 	}
 
 	for i, test := range tests {
 		functionName := "function"
-		functionAssignment := CreateAssignmentStatement(
+		functionAssignment := CreateAssignmentNode(
 			functionName,
 			CreateFunction(
 				[]node.Node{},
@@ -87,10 +90,11 @@ func TestBuiltin_Unwrap(t *testing.T) {
 		)
 
 		resultVariableName := "result"
-		functionCallAssignment := CreateAssignmentStatement(
+		functionCallAssignment := CreateAssignmentNode(
 			resultVariableName,
 			CreateFunctionCall(
-				CreateIdentifier(functionName), []node.Node{},
+				CreateIdentifier(functionName),
+				[]node.Node{},
 			),
 		)
 
@@ -110,7 +114,12 @@ func TestBuiltin_Unwrap(t *testing.T) {
 
 		actualResults := getEvaluatorResults(ast)
 		expectedResults := []node.Node{
-			test.ExpectedReturnValue,
+			CreateFunction(
+				[]node.Node{},
+				test.Body,
+			),
+			test.FunctionReturnValue,
+			test.UnwrapReturnValue,
 		}
 		AssertNodesEqual(t, i, expectedResults, actualResults)
 	}

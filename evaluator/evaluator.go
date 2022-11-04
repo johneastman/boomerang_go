@@ -78,12 +78,6 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 
 	switch stmt.Type {
 
-	case node.ASSIGN_STMT:
-		if err := e.evaluateAssignmentStatement(stmt); err != nil {
-			return nil, err
-		}
-		return nil, nil
-
 	case node.WHILE_LOOP:
 		if err := e.evaluateWhileLoop(stmt); err != nil {
 			return nil, err
@@ -98,12 +92,12 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 	}
 }
 
-func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
+func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) (*node.Node, error) {
 	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
 
 	// Check that the user hasn't created a variable with the same name as a builtin construct
 	if IsBuiltin(variable.Value) {
-		return utils.CreateError(
+		return nil, utils.CreateError(
 			stmt.LineNum,
 			"%#v is a builtin function or variable",
 			variable.Value,
@@ -112,10 +106,10 @@ func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) error {
 
 	value, err := e.evaluateExpression(stmt.GetParam(node.EXPR))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	e.env.SetIdentifier(variable.Value, *value)
-	return nil
+	return value, nil
 }
 
 func (e *evaluator) evaluateWhileLoop(stmt node.Node) error {
@@ -169,6 +163,9 @@ func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
 
 	case node.BIN_EXPR:
 		return e.evaluateBinaryExpression(expr)
+
+	case node.ASSIGN_STMT:
+		return e.evaluateAssignmentStatement(expr)
 
 	case node.FUNCTION_CALL:
 		return e.evaluateFunctionCall(expr)
@@ -248,7 +245,7 @@ func (e *evaluator) evaluateForLoop(expr node.Node) (*node.Node, error) {
 
 	for _, element := range evaluatedList.Params {
 		// Assign the placeholder/element variable to the value of the current list element
-		placeHolderVariable := node.CreateAssignmentStatement(lineNum, elementVariableName.Value, element)
+		placeHolderVariable := node.CreateAssignmentNode(elementVariableName, element)
 		_, err = e.evaluateStatement(placeHolderVariable)
 		if err != nil {
 			return nil, err
@@ -316,17 +313,20 @@ func (e *evaluator) evaluateUnaryExpression(unaryExpression node.Node) (*node.No
 }
 
 func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.Node, error) {
-	left, err := e.evaluateExpression(binaryExpression.GetParam(node.LEFT))
-	if err != nil {
-		return nil, err
-	}
 
-	right, err := e.evaluateExpression(binaryExpression.GetParam(node.RIGHT))
-	if err != nil {
-		return nil, err
-	}
-
+	leftNode := binaryExpression.GetParam(node.LEFT)
 	op := binaryExpression.GetParam(node.OPERATOR)
+	rightNode := binaryExpression.GetParam(node.RIGHT)
+
+	left, err := e.evaluateExpression(leftNode)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := e.evaluateExpression(rightNode)
+	if err != nil {
+		return nil, err
+	}
 
 	switch op.Type {
 
@@ -441,7 +441,7 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 				e.env.SetIdentifier(parameterName, *evaluatedParameterValue)
 
 			} else {
-				e.evaluateStatement(functionParam)
+				e.evaluateExpression(functionParam)
 			}
 		}
 

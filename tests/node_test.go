@@ -214,17 +214,16 @@ func TestNode_CreateBinaryExpression(t *testing.T) {
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
-func TestNode_CreateAssignmentStatement(t *testing.T) {
-	actualNode := node.CreateAssignmentStatement(
-		10,
-		"my_number",
+func TestNode_AssignmentNode(t *testing.T) {
+	actualNode := node.CreateAssignmentNode(
+		node.CreateIdentifier(20, "my_number"),
 		node.CreateNumber(20, "789"),
 	)
 	expectedNode := node.Node{
 		Type:    node.ASSIGN_STMT,
-		LineNum: 10,
+		LineNum: 20,
 		Params: []node.Node{
-			{Type: node.IDENTIFIER, Value: "my_number"},
+			{Type: node.IDENTIFIER, LineNum: 20, Value: "my_number"},
 			{Type: node.NUMBER, Value: "789", LineNum: 20},
 		},
 	}

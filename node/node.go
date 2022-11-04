@@ -339,13 +339,13 @@ func CreateBinaryExpression(left Node, op tokens.Token, right Node) Node {
 	}
 }
 
-func CreateAssignmentStatement(lineNum int, variableName string, value Node) Node {
+func CreateAssignmentNode(left, right Node) Node {
 	return Node{
 		Type:    ASSIGN_STMT,
-		LineNum: lineNum,
+		LineNum: left.LineNum,
 		Params: []Node{
-			{Type: IDENTIFIER, Value: variableName},
-			value,
+			left,  // Identifier(s) to assign values to
+			right, // Value(s) assigned to those identifier(s)
 		},
 	}
 }

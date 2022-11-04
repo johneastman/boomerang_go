@@ -12,6 +12,7 @@ import (
 
 const (
 	LOWEST int = iota
+	ASSIGN
 	COMPARE
 	SUM
 	PRODUCT
@@ -32,6 +33,7 @@ var precedenceLevels = map[string]int{
 	tokens.EQ:            COMPARE,
 	tokens.LT:            COMPARE,
 	tokens.IN:            COMPARE,
+	tokens.ASSIGN:        ASSIGN,
 }
 
 type Parser struct {
@@ -108,10 +110,7 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	var returnNode *node.Node
 	var err error
 
-	if tokens.TokenTypesEqual(p.current, tokens.IDENTIFIER) && tokens.TokenTypesEqual(p.peek, tokens.ASSIGN) {
-		returnNode, err = p.parseAssignmentStatement()
-
-	} else if tokens.TokenTypesEqual(p.current, tokens.WHILE) {
+	if tokens.TokenTypesEqual(p.current, tokens.WHILE) {
 		returnNode, err = p.parseWhileLoop()
 
 	} else if tokens.TokenTypesEqual(p.current, tokens.BREAK) {
@@ -135,25 +134,25 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	return returnNode, err
 }
 
-func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
-	identifierToken := p.current
+// func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
+// 	identifierToken := p.current
 
-	if err := p.advance(); err != nil {
-		return nil, err
-	}
+// 	if err := p.advance(); err != nil {
+// 		return nil, err
+// 	}
 
-	if err := p.advance(); err != nil {
-		return nil, err
-	}
+// 	if err := p.advance(); err != nil {
+// 		return nil, err
+// 	}
 
-	variableExpression, err := p.parseExpression(LOWEST)
-	if err != nil {
-		return nil, err
-	}
+// 	variableExpression, err := p.parseExpression(LOWEST)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	assignmentNode := node.CreateAssignmentStatement(identifierToken.LineNumber, identifierToken.Literal, *variableExpression)
-	return &assignmentNode, nil
-}
+// 	assignmentNode := node.CreateAssignmentStatement(identifierToken.LineNumber, identifierToken.Literal, *variableExpression)
+// 	return &assignmentNode, nil
+// }
 
 func (p *Parser) parseBreakStatement() (*node.Node, error) {
 
@@ -256,16 +255,31 @@ func (p *Parser) parsePrefix() (*node.Node, error) {
 
 func (p *Parser) parseInfix(left node.Node) (*node.Node, error) {
 	op := p.current
+
+	// Skip over operator token
 	if err := p.advance(); err != nil {
 		return nil, err
 	}
-	right, err := p.parseExpression(p.getPrecedenceLevel(op))
-	if err != nil {
-		return nil, err
-	}
 
-	binaryNode := node.CreateBinaryExpression(left, op, *right)
-	return &binaryNode, nil
+	switch op.Type {
+
+	case tokens.ASSIGN:
+		right, err := p.parseExpression(LOWEST)
+		if err != nil {
+			return nil, err
+		}
+		assignmentNode := node.CreateAssignmentNode(left, *right)
+		return &assignmentNode, nil
+
+	default:
+		right, err := p.parseExpression(p.getPrecedenceLevel(op))
+		if err != nil {
+			return nil, err
+		}
+
+		binaryNode := node.CreateBinaryExpression(left, op, *right)
+		return &binaryNode, nil
+	}
 }
 
 func (p *Parser) getPrecedenceLevel(operator tokens.Token) int {
@@ -456,7 +470,7 @@ func (p *Parser) parseFunctionParameters() (*node.Node, error) {
 				return nil, err
 			}
 
-			keywordArgumentNode := node.CreateAssignmentStatement(p.current.LineNumber, identifierNode.Value, *value)
+			keywordArgumentNode := node.CreateAssignmentNode(identifierNode, *value)
 			params = append(params, keywordArgumentNode)
 
 		} else if p.current.Type == tokens.IDENTIFIER {

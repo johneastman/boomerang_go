@@ -438,6 +438,7 @@ func TestEvaluator_Variable(t *testing.T) {
 	actualResults := getEvaluatorResults(ast)
 	expectedResults := []node.Node{
 		CreateNumber("4"),
+		CreateNumber("4"),
 	}
 	AssertNodesEqual(t, 0, actualResults, expectedResults)
 }
@@ -499,7 +500,7 @@ func TestEvaluator_FunctionCallKeywordArgs(t *testing.T) {
 	functionNode := CreateFunction(
 		[]node.Node{
 			CreateIdentifier("a"),
-			CreateAssignmentStatement("b", CreateNumber("1")),
+			CreateAssignmentNode("b", CreateNumber("1")),
 		},
 		[]node.Node{
 			node.CreateBinaryExpression(
@@ -534,7 +535,7 @@ func TestEvaluator_FunctionCallKeywordArgs(t *testing.T) {
 			// A function where the first parameter has a default value
 			Function: CreateFunction(
 				[]node.Node{
-					CreateAssignmentStatement("a", CreateNumber("1")),
+					CreateAssignmentNode("a", CreateNumber("1")),
 					CreateIdentifier("b"),
 				},
 				[]node.Node{
@@ -571,22 +572,23 @@ func TestEvaluator_FunctionCallKeywordArgs(t *testing.T) {
 
 func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 
-	ast := []node.Node{
-		CreateAssignmentStatement(
-			"divide",
-			CreateFunction(
-				[]node.Node{
-					CreateIdentifier("a"),
-					CreateIdentifier("b"),
-				},
-				[]node.Node{
-					node.CreateBinaryExpression(
-						CreateIdentifier("a"),
-						tokens.FORWARD_SLASH_TOKEN,
-						CreateIdentifier("b"),
-					),
-				},
+	divideFunction := CreateFunction(
+		[]node.Node{
+			CreateIdentifier("a"),
+			CreateIdentifier("b"),
+		},
+		[]node.Node{
+			node.CreateBinaryExpression(
+				CreateIdentifier("a"),
+				tokens.FORWARD_SLASH_TOKEN,
+				CreateIdentifier("b"),
 			),
+		},
+	)
+	ast := []node.Node{
+		CreateAssignmentNode(
+			"divide",
+			divideFunction,
 		),
 		// Call the same function multiple times with different parameters to ensure a different result is returned each time
 		CreateFunctionCall(
@@ -608,6 +610,7 @@ func TestEvaluator_TestFunctionCallWithIdentifier(t *testing.T) {
 	actualResults := getEvaluatorResults(ast)
 
 	expectedResults := []node.Node{
+		divideFunction,
 		CreateBlockStatementReturnValue(CreateNumber("5").Ptr()),
 		CreateBlockStatementReturnValue(CreateNumber("2").Ptr()),
 	}
@@ -707,58 +710,52 @@ func TestEvaluator_FunctionCallPrecedenceExpression(t *testing.T) {
 			value = unwrap <- (sum, 0) + 7;
 			value;
 	*/
-	addFunction := CreateAssignmentStatement(
-		"add",
-		CreateFunction(
-			[]node.Node{
+	addFunction := CreateFunction(
+		[]node.Node{
+			CreateIdentifier("a"),
+			CreateIdentifier("b"),
+		},
+		[]node.Node{
+			node.CreateBinaryExpression(
 				CreateIdentifier("a"),
+				CreateTokenFromToken(tokens.PLUS_TOKEN),
 				CreateIdentifier("b"),
-			},
-			[]node.Node{
-				node.CreateBinaryExpression(
-					CreateIdentifier("a"),
-					CreateTokenFromToken(tokens.PLUS_TOKEN),
-					CreateIdentifier("b"),
-				),
-			},
-		),
-	)
-
-	addFunctionReturnValue := CreateAssignmentStatement(
-		"sum",
-		CreateFunctionCall(
-			CreateIdentifier("add"),
-			[]node.Node{
-				CreateNumber("3"),
-				CreateNumber("4"),
-			},
-		),
-	)
-
-	actualValue := CreateAssignmentStatement(
-		"value",
-		node.CreateBinaryExpression(
-			CreateFunctionCall(
-				CreateBuiltinFunctionIdentifier("unwrap"),
-				[]node.Node{
-					CreateIdentifier("sum"),
-					CreateNumber("0"),
-				},
 			),
-			CreateTokenFromToken(tokens.PLUS_TOKEN),
+		},
+	)
+
+	addFunctionReturnValue := CreateFunctionCall(
+		CreateIdentifier("add"),
+		[]node.Node{
 			CreateNumber("3"),
+			CreateNumber("4"),
+		},
+	)
+
+	actualValue := node.CreateBinaryExpression(
+		CreateFunctionCall(
+			CreateBuiltinFunctionIdentifier("unwrap"),
+			[]node.Node{
+				CreateIdentifier("sum"),
+				CreateNumber("0"),
+			},
 		),
+		CreateTokenFromToken(tokens.PLUS_TOKEN),
+		CreateNumber("3"),
 	)
 
 	ast := []node.Node{
-		addFunction,
-		addFunctionReturnValue,
-		actualValue,
+		CreateAssignmentNode("add", addFunction),
+		CreateAssignmentNode("sum", addFunctionReturnValue),
+		CreateAssignmentNode("value", actualValue),
 		CreateIdentifier("value"),
 	}
 
 	actualResults := getEvaluatorResults(ast)
 	expectedResults := []node.Node{
+		addFunction,
+		CreateMonad(CreateNumber("7").Ptr()),
+		CreateNumber("10"),
 		CreateNumber("10"),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
@@ -896,7 +893,7 @@ func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
 
 	for i, test := range tests {
 		ast := []node.Node{
-			CreateAssignmentStatement("number", CreateNumber("0")),
+			CreateAssignmentNode("number", CreateNumber("0")),
 			CreateWhenNode(
 				CreateBoolean(test.WhenCondition),
 				[]node.Node{
@@ -929,6 +926,7 @@ func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
 
 		actualResults := getEvaluatorResults(ast)
 		expectedResults := []node.Node{
+			CreateNumber("0"),
 			CreateMonad(CreateNumber(test.ExpectedValue).Ptr()),
 		}
 		AssertNodesEqual(t, i, expectedResults, actualResults)
@@ -938,8 +936,8 @@ func TestEvaluator_WhenExpressionIfStatement(t *testing.T) {
 func TestEvaluator_VariablesFromOuterScopes(t *testing.T) {
 	// "var" is defined outside the function "f", but is still accessible within that function.
 	ast := []node.Node{
-		CreateAssignmentStatement("var", CreateNumber("10")),
-		CreateAssignmentStatement(
+		CreateAssignmentNode("var", CreateNumber("10")),
+		CreateAssignmentNode(
 			"f",
 			CreateFunction(
 				[]node.Node{CreateIdentifier("c")},
@@ -963,6 +961,17 @@ func TestEvaluator_VariablesFromOuterScopes(t *testing.T) {
 
 	actualResults := getEvaluatorResults(ast)
 	expectedResults := []node.Node{
+		CreateNumber("10"),
+		CreateFunction(
+			[]node.Node{CreateIdentifier("c")},
+			[]node.Node{
+				node.CreateBinaryExpression(
+					CreateIdentifier("c"),
+					CreateTokenFromToken(tokens.PLUS_TOKEN),
+					CreateIdentifier("var"),
+				),
+			},
+		),
 		CreateMonad(CreateNumber("12").Ptr()),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
@@ -974,20 +983,6 @@ func TestEvaluator_ForLoop(t *testing.T) {
 		BlockStatement []node.Node
 		ReturnValue    node.Node
 	}{
-		{
-			BlockStatement: []node.Node{
-				CreateAssignmentStatement(
-					"i",
-					CreateIdentifier("e"),
-				),
-			},
-			ReturnValue: CreateList([]node.Node{
-				CreateBlockStatementReturnValue(nil),
-				CreateBlockStatementReturnValue(nil),
-				CreateBlockStatementReturnValue(nil),
-				CreateBlockStatementReturnValue(nil),
-			}),
-		},
 		{
 			BlockStatement: []node.Node{
 				node.CreateBinaryExpression(
@@ -1029,7 +1024,7 @@ func TestEvaluator_ForLoop(t *testing.T) {
 
 func TestEvaluator_WhileLoop(t *testing.T) {
 	ast := []node.Node{
-		CreateAssignmentStatement(
+		CreateAssignmentNode(
 			"i",
 			CreateNumber("0"),
 		),
@@ -1040,7 +1035,7 @@ func TestEvaluator_WhileLoop(t *testing.T) {
 				CreateNumber("10"),
 			),
 			[]node.Node{
-				CreateAssignmentStatement(
+				CreateAssignmentNode(
 					"i",
 					node.CreateBinaryExpression(
 						CreateIdentifier("i"),
@@ -1054,6 +1049,7 @@ func TestEvaluator_WhileLoop(t *testing.T) {
 	}
 	actualResults := getEvaluatorResults(ast)
 	expectedResults := []node.Node{
+		CreateNumber("0"),
 		CreateNumber("10"),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
@@ -1061,7 +1057,7 @@ func TestEvaluator_WhileLoop(t *testing.T) {
 
 func TestEvaluator_BreakStatement(t *testing.T) {
 	ast := []node.Node{
-		CreateAssignmentStatement("i", CreateNumber("0")),
+		CreateAssignmentNode("i", CreateNumber("0")),
 		CreateWhileLoop(
 			node.CreateBinaryExpression(
 				CreateIdentifier("i"),
@@ -1069,7 +1065,7 @@ func TestEvaluator_BreakStatement(t *testing.T) {
 				CreateNumber("10"),
 			),
 			[]node.Node{
-				CreateAssignmentStatement(
+				CreateAssignmentNode(
 					"i",
 					node.CreateBinaryExpression(
 						CreateIdentifier("i"),
@@ -1084,6 +1080,7 @@ func TestEvaluator_BreakStatement(t *testing.T) {
 	}
 	actualResults := getEvaluatorResults(ast)
 	expectedResults := []node.Node{
+		CreateNumber("0"),
 		CreateNumber("1"),
 	}
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
@@ -1143,7 +1140,7 @@ func TestEvaluator_FunctionCallErrors(t *testing.T) {
 			FunctionCall: CreateFunctionCall(
 				CreateFunction(
 					[]node.Node{
-						CreateAssignmentStatement("a", CreateNumber("1")),
+						CreateAssignmentNode("a", CreateNumber("1")),
 						CreateIdentifier("b"),
 					},
 					[]node.Node{},
@@ -1158,8 +1155,8 @@ func TestEvaluator_FunctionCallErrors(t *testing.T) {
 			FunctionCall: CreateFunctionCall(
 				CreateFunction(
 					[]node.Node{
-						CreateAssignmentStatement("a", CreateNumber("1")),
-						CreateAssignmentStatement("b", CreateNumber("2")),
+						CreateAssignmentNode("a", CreateNumber("1")),
+						CreateAssignmentNode("b", CreateNumber("2")),
 						CreateIdentifier("c"),
 					},
 					[]node.Node{},
@@ -1174,8 +1171,8 @@ func TestEvaluator_FunctionCallErrors(t *testing.T) {
 			FunctionCall: CreateFunctionCall(
 				CreateFunction(
 					[]node.Node{
-						CreateAssignmentStatement("a", CreateNumber("1")),
-						CreateAssignmentStatement("b", CreateNumber("2")),
+						CreateAssignmentNode("a", CreateNumber("1")),
+						CreateAssignmentNode("b", CreateNumber("2")),
 						CreateIdentifier("c"),
 					},
 					[]node.Node{},
@@ -1447,7 +1444,7 @@ func TestEvaluator_VariableNameSameAsBuiltinsError(t *testing.T) {
 
 	for i, identifier := range evaluator.GetBuiltinNames() {
 		ast := []node.Node{
-			CreateAssignmentStatement(identifier, CreateNumber("20")),
+			CreateAssignmentNode(identifier, CreateNumber("20")),
 		}
 
 		actualError := getEvaluatorError(t, ast)
