@@ -469,6 +469,41 @@ func TestBuiltin_Input(t *testing.T) {
 	}
 }
 
+func TestBuiltin_IsSuccess(t *testing.T) {
+
+	tests := []struct {
+		Param       node.Node
+		ReturnValue node.Node
+	}{
+		{
+			Param:       CreateMonad(nil),
+			ReturnValue: CreateBooleanFalse(),
+		},
+		{
+			Param:       CreateMonad(CreateNumber("5").Ptr()),
+			ReturnValue: CreateBooleanTrue(),
+		},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateBuiltinFunctionIdentifier("is_success"),
+				[]node.Node{
+					test.Param,
+				},
+			),
+		}
+
+		actualResults := getEvaluatorResults(ast)
+		expectedResults := []node.Node{
+			test.ReturnValue,
+		}
+
+		AssertNodesEqual(t, i, expectedResults, actualResults)
+	}
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */
@@ -850,6 +885,23 @@ func TestBuiltin_SliceInvalidTypeError(t *testing.T) {
 
 	actualError := getEvaluatorError(t, ast)
 	expectedError := "error at line 1: invalid type for slice: Boolean (\"true\")"
+
+	AssertErrorEqual(t, 0, expectedError, actualError)
+}
+
+func TestBuiltin_IsSuccessError(t *testing.T) {
+
+	ast := []node.Node{
+		CreateFunctionCall(
+			CreateBuiltinFunctionIdentifier("is_success"),
+			[]node.Node{
+				CreateNumber("5"),
+			},
+		),
+	}
+
+	actualError := getEvaluatorError(t, ast)
+	expectedError := "error at line 1: expected Monad, got Number"
 
 	AssertErrorEqual(t, 0, expectedError, actualError)
 }

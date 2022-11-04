@@ -192,3 +192,31 @@ random <- (10, 20)  # [10 to 20]
 random <- (0, 0)    # 0
 random <- (-10, -5)  # [-10 to -5]
 ```
+
+
+## is_success
+
+### Description
+Checks if a monad contains a value.
+
+### Arguments
+|Name|Type|Description|
+|----|----|-----------|
+|monad|MONAD|a monad object|
+
+### Returns
+* **Type:** BOOLEAN
+* **Value:** `true` if the monad contains a value; `false` otherwise.
+
+### Examples
+```
+add = func(a, b) {
+  a + b;
+};
+sum = add <- (3, 4);
+is_success <- (sum,)  # returns true
+
+do_nothing = func() {};
+did_nothing = do_nothing <- ();
+is_success <- (did_nothing,)  # returns false
+```

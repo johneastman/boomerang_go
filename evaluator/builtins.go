@@ -18,6 +18,7 @@ const (
 	BUILTIN_RANDOM     = "random"
 	BUILTIN_PRINT      = "print"
 	BUILTIN_INPUT      = "input"
+	BUILTIN_SUCCESS    = "is_success"
 
 	// Variables
 	BUILTIN_PI = "pi"
@@ -50,6 +51,7 @@ func init() {
 		BUILTIN_RANDOM:     {Type: node.BUILTIN_FUNCTION, NumArgs: 2, Function: evaluateBuiltinRandom},
 		BUILTIN_PRINT:      {Type: node.BUILTIN_FUNCTION, NumArgs: nArgsValue, Function: evaluateBuiltinPrint},
 		BUILTIN_INPUT:      {Type: node.BUILTIN_FUNCTION, NumArgs: 1, Function: evaluateBuiltinInput},
+		BUILTIN_SUCCESS:    {Type: node.BUILTIN_FUNCTION, NumArgs: 1, Function: evaluateBuiltinSuccess},
 
 		// Variables
 		BUILTIN_PI: {Type: node.BUILTIN_VARIABLE, NumArgs: 0, Function: evaluateBuiltinPi},
@@ -398,4 +400,18 @@ func evaluateBuiltinInput(eval *evaluator, lineNum int, callParameters []node.No
 	inputValue := utils.UserInput(prompt.Value)
 
 	return node.CreateRawString(lineNum, inputValue).Ptr(), nil
+}
+
+func evaluateBuiltinSuccess(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+	monad := callParameters[0]
+
+	if err := utils.CheckTypeError(lineNum, monad.Type, node.MONAD); err != nil {
+		return nil, err
+	}
+
+	// A monad with no value contains no parameters
+	if len(monad.Params) == 0 {
+		return node.CreateBooleanFalse(lineNum).Ptr(), nil
+	}
+	return node.CreateBooleanTrue(lineNum).Ptr(), nil
 }

@@ -23,7 +23,7 @@ func getEvaluatorResults(ast []node.Node) []node.Node {
 	if err != nil {
 		panic(err.Error())
 	}
-	return *actualResults
+	return actualResults
 }
 
 func getEvaluatorError(t *testing.T, ast []node.Node) string {
