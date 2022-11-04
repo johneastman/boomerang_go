@@ -10,6 +10,7 @@
     * [Block Statements](#block-statements)
 * [Expressions](#expressions)
     * [Variable Assignment](#variable-assignment)
+        * [Multiple Variable Assignment](#multiple-variable-assignments)
     * [Lists](#lists)
     * [Functions](#functions)
     * [When Expressions](#when-expressions)
@@ -184,6 +185,35 @@ number = -1 + 1;
 
 a = b = c = 20;  # a, b, and c are all assigned to the value "20"
 ```
+
+#### Multiple Variable Assignments
+Syntax: `(IDENTIFIER, IDENTIFIER, ..., IDENTIFIER) = (EXPRESSION, EXPRESSION, ..., EXPRESSION);`
+
+
+Allows multiple variables to be assigned values on one line. Each identifier in the list on the left is assigned to the value at the corresponding position in the list on the right. For example:
+Examples:
+```
+# a == 1
+# b == 2
+# c == 3
+(a, b, c) = (1, 2, 3);
+```
+
+If the number of identifiers is greater than the number of values, any identifier without a corresponding value will be assigned an empty Monad object. For example:
+```
+# a == 1
+# b == 2
+# c == Monad{} because there is no third value in the list on the right
+(a, b, c) = (1, 2);
+```
+
+If the number of identifiers is less than the number of values, the value corresponding with the last identifier, along with the remaining values, are stored in a list and assigned to the last identifier. For example:
+```
+# a == 1
+# b == (2, 3) because there are 3 values but only two identifiers, so `2` and `3` are stored in a list and assigned to `b`.
+(a, b) = (1, 2, 3);
+```
+
 
 ### Lists
 Syntax: `(EXPRESSION, EXPRESSION, ..., EXPRESSION)`

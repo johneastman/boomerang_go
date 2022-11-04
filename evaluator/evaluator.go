@@ -93,23 +93,106 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 }
 
 func (e *evaluator) evaluateAssignmentStatement(stmt node.Node) (*node.Node, error) {
-	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER)
+	variable := stmt.GetParam(node.ASSIGN_STMT_IDENTIFIER) // identifier, list of identifiers
+	value := stmt.GetParam(node.EXPR)                      // actual value(s)
 
-	// Check that the user hasn't created a variable with the same name as a builtin construct
-	if IsBuiltin(variable.Value) {
-		return nil, utils.CreateError(
-			stmt.LineNum,
-			"%#v is a builtin function or variable",
-			variable.Value,
-		)
+	if variable.Type == node.IDENTIFIER {
+		// Check that the user hasn't created a variable with the same name as a builtin construct
+		if IsBuiltin(variable.Value) {
+			return nil, utils.CreateError(
+				stmt.LineNum,
+				"%#v is a builtin function or variable",
+				variable.Value,
+			)
+		}
+
+		value, err := e.evaluateExpression(value)
+		if err != nil {
+			return nil, err
+		}
+		e.env.SetIdentifier(variable.Value, *value)
+		return value, nil
+
+	} else if variable.Type == node.LIST && value.Type == node.LIST {
+
+		evaluatedValues := []node.Node{}
+
+		assignments := e.partitionAssignmentVariables(variable, value)
+		for identifier, identifierValue := range assignments {
+
+			if identifier.Type != node.IDENTIFIER {
+				return nil, utils.CreateError(identifier.LineNum, "invalid type for assignment: %s", identifier.ErrorDisplay())
+			}
+
+			identifierValueEvaluated, err := e.evaluateExpression(identifierValue)
+			if err != nil {
+				return nil, err
+			}
+			e.env.SetIdentifier(identifier.Value, *identifierValueEvaluated)
+			evaluatedValues = append(evaluatedValues, *identifierValueEvaluated)
+		}
+
+		// multiple assignment expressions return the full list on the right side of the assignment operator
+		return node.CreateList(stmt.LineNum, evaluatedValues).Ptr(), nil
 	}
 
-	value, err := e.evaluateExpression(stmt.GetParam(node.EXPR))
-	if err != nil {
-		return nil, err
+	return nil, utils.CreateError(
+		stmt.LineNum,
+		"invalid type for assignment: %s",
+		variable.ErrorDisplay(),
+	)
+}
+
+func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) map[*node.Node]node.Node {
+
+	// TODO: refactor to avoid length checks
+	var assignments = make(map[*node.Node]node.Node)
+
+	if len(identifiers.Params) == len(values.Params) {
+		for index := 0; index < len(identifiers.Params); index++ {
+
+			identifier := identifiers.Params[index]
+			value := values.Params[index]
+
+			assignments[&identifier] = value
+		}
+	} else if len(identifiers.Params) > len(values.Params) {
+		for index := 0; index < len(identifiers.Params); index++ {
+
+			identifier := identifiers.Params[index]
+
+			var value node.Node
+			if index >= len(values.Params) {
+				// If the number of identifiers is greater than the number of values, set variables without a value to an empty monad.
+				value = node.CreateMonad(identifier.LineNum, nil)
+			} else {
+				value = values.Params[index]
+			}
+
+			assignments[&identifier] = value
+		}
+	} else if len(identifiers.Params) < len(values.Params) {
+		index := 0
+		for ; index < len(identifiers.Params)-1; index++ {
+
+			identifier := identifiers.Params[index]
+			value := values.Params[index]
+
+			assignments[&identifier] = value
+		}
+
+		lastIdentifier := identifiers.Params[index]
+
+		var lastIdentifierValue node.Node
+		if len(values.Params[index:]) == 1 {
+			lastIdentifierValue = values.Params[index]
+		} else {
+			lastIdentifierValue = node.CreateList(lastIdentifier.LineNum, values.Params[index:])
+		}
+		assignments[&lastIdentifier] = lastIdentifierValue
 	}
-	e.env.SetIdentifier(variable.Value, *value)
-	return value, nil
+
+	return assignments
 }
 
 func (e *evaluator) evaluateWhileLoop(stmt node.Node) error {

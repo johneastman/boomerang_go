@@ -118,9 +118,8 @@ func CreateList(values []node.Node) node.Node {
 	return node.CreateList(TEST_LINE_NUM, values)
 }
 
-func CreateAssignmentNode(variableName string, value node.Node) node.Node {
-	identifierNode := node.CreateIdentifier(TEST_LINE_NUM, variableName)
-	return node.CreateAssignmentNode(identifierNode, value)
+func CreateAssignmentNode(variable node.Node, value node.Node) node.Node {
+	return node.CreateAssignmentNode(variable, value)
 }
 
 func CreateFunction(parameters []node.Node, statements []node.Node) node.Node {

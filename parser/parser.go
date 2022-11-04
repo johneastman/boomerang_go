@@ -134,26 +134,6 @@ func (p *Parser) parseStatement() (*node.Node, error) {
 	return returnNode, err
 }
 
-// func (p *Parser) parseAssignmentStatement() (*node.Node, error) {
-// 	identifierToken := p.current
-
-// 	if err := p.advance(); err != nil {
-// 		return nil, err
-// 	}
-
-// 	if err := p.advance(); err != nil {
-// 		return nil, err
-// 	}
-
-// 	variableExpression, err := p.parseExpression(LOWEST)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	assignmentNode := node.CreateAssignmentStatement(identifierToken.LineNumber, identifierToken.Literal, *variableExpression)
-// 	return &assignmentNode, nil
-// }
-
 func (p *Parser) parseBreakStatement() (*node.Node, error) {
 
 	lineNum := p.current.LineNumber

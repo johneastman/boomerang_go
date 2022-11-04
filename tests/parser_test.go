@@ -281,7 +281,7 @@ func TestParser_VariableAssignment(t *testing.T) {
 	actualAST := getParserAST("variable = 8 / 2;")
 	expectedAST := []node.Node{
 		CreateAssignmentNode(
-			"variable",
+			CreateIdentifier("variable"),
 			node.CreateBinaryExpression(
 				CreateNumber("8"),
 				CreateTokenFromToken(tokens.FORWARD_SLASH_TOKEN),
@@ -355,8 +355,8 @@ func TestParser_FunctionKeywordArguments(t *testing.T) {
 		CreateFunction(
 			[]node.Node{
 				CreateIdentifier("a"),
-				CreateAssignmentNode("b", CreateNumber("2")),
-				CreateAssignmentNode("c", CreateNumber("3")),
+				CreateAssignmentNode(CreateIdentifier("b"), CreateNumber("2")),
+				CreateAssignmentNode(CreateIdentifier("c"), CreateNumber("3")),
 			},
 			[]node.Node{},
 		),
@@ -540,7 +540,7 @@ func TestParser_WhileLoop(t *testing.T) {
 			),
 			[]node.Node{
 				CreateAssignmentNode(
-					"i",
+					CreateIdentifier("i"),
 					node.CreateBinaryExpression(
 						CreateIdentifier("i"),
 						CreateTokenFromToken(tokens.PLUS_TOKEN),

@@ -82,7 +82,7 @@ func TestBuiltin_Unwrap(t *testing.T) {
 	for i, test := range tests {
 		functionName := "function"
 		functionAssignment := CreateAssignmentNode(
-			functionName,
+			CreateIdentifier(functionName),
 			CreateFunction(
 				[]node.Node{},
 				test.Body,
@@ -91,7 +91,7 @@ func TestBuiltin_Unwrap(t *testing.T) {
 
 		resultVariableName := "result"
 		functionCallAssignment := CreateAssignmentNode(
-			resultVariableName,
+			CreateIdentifier(resultVariableName),
 			CreateFunctionCall(
 				CreateIdentifier(functionName),
 				[]node.Node{},
