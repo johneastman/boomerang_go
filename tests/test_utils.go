@@ -70,8 +70,13 @@ func CreateTokenFromToken(token tokens.Token) tokens.Token {
 	return tokens.Token{Type: token.Type, Literal: token.Literal, LineNumber: TEST_LINE_NUM}
 }
 
-func CreateTokenFromValues(type_ string, literal string) tokens.Token {
-	return tokens.Token{Type: type_, Literal: literal, LineNumber: TEST_LINE_NUM}
+func CreateTokenWithLineNum(token tokens.Token, lineNum int) tokens.Token {
+	return tokens.Token{Type: token.Type, Literal: token.Literal, LineNumber: lineNum}
+}
+
+func CreateTokenFromValues(tokenType, literal string) tokens.Token {
+	token := tokens.Token{Type: tokenType, Literal: literal}
+	return CreateTokenWithLineNum(token, TEST_LINE_NUM)
 }
 
 func CreateNumber(value string) node.Node {
@@ -139,7 +144,7 @@ func CreateBlockStatementReturnValue(statement *node.Node) node.Node {
 }
 
 func CreateBlockStatements(statements []node.Node) node.Node {
-	return node.CreateBlockStatements(TEST_LINE_NUM, statements)
+	return node.CreateBlockStatements(statements)
 }
 
 func CreateWhenNode(whenExpression node.Node, cases []node.Node, defaultStatements []node.Node) node.Node {
@@ -221,7 +226,11 @@ func AssertNodesEqual(t *testing.T, testNumber int, expectedNodes []node.Node, a
 
 func assertNodesEqual(expectedNodes []node.Node, actualNodes []node.Node) error {
 	if len(expectedNodes) != len(actualNodes) {
-		return fmt.Errorf("expected length: %d, actual length: %d", len(expectedNodes), len(actualNodes))
+		return fmt.Errorf(
+			"expected length: %d, actual length: %d",
+			len(expectedNodes),
+			len(actualNodes),
+		)
 	}
 	for i := range expectedNodes {
 		expected := expectedNodes[i]
@@ -254,11 +263,23 @@ func assertNodeEqual(expected node.Node, actual node.Node) error {
 	}
 
 	if expected.LineNum != actual.LineNum {
-		return fmt.Errorf("expected line number: %d, actual line number: %d", expected.LineNum, actual.LineNum)
+		return fmt.Errorf(
+			"expected line number: %d (%s), actual line number: %d (%s)",
+			expected.LineNum,
+			expected.String(),
+			actual.LineNum,
+			actual.String(),
+		)
 	}
 
 	if len(expected.Params) != len(actual.Params) {
-		return fmt.Errorf("expected %d params, got %d", len(expected.Params), len(actual.Params))
+		return fmt.Errorf(
+			"expected %d (%s) params, got %d (%s)",
+			len(expected.Params),
+			expected.String(),
+			len(actual.Params),
+			actual.String(),
+		)
 	}
 
 	for i := 0; i < len(expected.Params); i++ {

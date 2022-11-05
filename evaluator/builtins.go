@@ -111,7 +111,12 @@ func evaluateBuiltinFunction(name string, eval *evaluator, lineNum int, callPara
 		)
 	}
 
-	return builtinFunction.Function(eval, lineNum, callParam)
+	result, err := builtinFunction.Function(eval, lineNum, callParam)
+	if err != nil {
+		return nil, err
+	}
+	result.UpdateLineNumbers(lineNum)
+	return result, nil
 }
 
 func evaluateBuiltinSlice(eval *evaluator, lineNum int, callParam []node.Node) (*node.Node, error) {

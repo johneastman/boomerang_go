@@ -97,13 +97,12 @@ func (p *Parser) parseGlobalStatements() (*[]node.Node, error) {
 }
 
 func (p *Parser) parseBlockStatements() (*node.Node, error) {
-	lineNum := p.current.LineNumber
 	statements, err := p.parseStatements(tokens.CLOSED_CURLY_BRACKET_TOKEN)
 	if err != nil {
 		return nil, err
 	}
 
-	blockStatementsNode := node.CreateBlockStatements(lineNum, *statements)
+	blockStatementsNode := node.CreateBlockStatements(*statements)
 	return &blockStatementsNode, nil
 }
 
@@ -176,7 +175,6 @@ func (p *Parser) parseWhileLoop() (*node.Node, error) {
 	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
 		return nil, err
 	}
-
 	blockStatement, err := p.parseBlockStatements()
 	if err != nil {
 		return nil, err
@@ -560,7 +558,6 @@ func (p *Parser) parseFunction() (*node.Node, error) {
 	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
 		return nil, err
 	}
-
 	statements, err := p.parseBlockStatements()
 	if err != nil {
 		return nil, err
@@ -663,7 +660,6 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 		if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
 			return nil, err
 		}
-
 		caseStatements, err := p.parseBlockStatements()
 		if err != nil {
 			return nil, err
@@ -677,7 +673,7 @@ func (p *Parser) parseWhenExpression() (*node.Node, error) {
 		}
 	}
 
-	elseStatements := node.CreateBlockStatements(lineNumber, []node.Node{}).Ptr()
+	elseStatements := node.CreateBlockStatements([]node.Node{}).Ptr()
 
 	if p.current.Type == tokens.ELSE {
 		if err := p.advance(); err != nil {
@@ -742,7 +738,6 @@ func (p *Parser) parseForLoop() (*node.Node, error) {
 	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
 		return nil, err
 	}
-
 	blockStatements, err := p.parseBlockStatements()
 	if err != nil {
 		return nil, err

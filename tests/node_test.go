@@ -246,7 +246,7 @@ func TestNode_CreateFunction(t *testing.T) {
 			node.CreateIdentifier(TEST_LINE_NUM, "y"),
 			node.CreateIdentifier(TEST_LINE_NUM, "z"),
 		},
-		node.CreateBlockStatements(TEST_LINE_NUM,
+		node.CreateBlockStatements(
 			[]node.Node{
 				node.CreateBinaryExpression(
 					node.CreateIdentifier(TEST_LINE_NUM, "x"),
@@ -269,7 +269,7 @@ func TestNode_CreateFunction(t *testing.T) {
 				{Type: node.IDENTIFIER, Value: "y", LineNum: TEST_LINE_NUM},
 				{Type: node.IDENTIFIER, Value: "z", LineNum: TEST_LINE_NUM},
 			}},
-			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+			{Type: node.BLOCK_STATEMENTS, Params: []node.Node{
 				{Type: node.BIN_EXPR, LineNum: TEST_LINE_NUM, Params: []node.Node{
 					{Type: node.IDENTIFIER, Value: "x", LineNum: TEST_LINE_NUM},
 					{Type: multiplyToken.Type, Value: multiplyToken.Literal, LineNum: multiplyToken.LineNumber},
@@ -458,19 +458,19 @@ func TestNode_CreateWhenNode(t *testing.T) {
 			node.CreateCaseNode(
 				TEST_LINE_NUM,
 				node.CreateNumber(TEST_LINE_NUM, "1"),
-				node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+				node.CreateBlockStatements([]node.Node{
 					CreateNumber("1"),
 				}),
 			),
 			node.CreateCaseNode(
 				TEST_LINE_NUM,
 				node.CreateNumber(TEST_LINE_NUM, "2"),
-				node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+				node.CreateBlockStatements([]node.Node{
 					CreateNumber("2"),
 				}),
 			),
 		},
-		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+		node.CreateBlockStatements([]node.Node{
 			CreateNumber("0"),
 		}),
 	)
@@ -483,18 +483,18 @@ func TestNode_CreateWhenNode(t *testing.T) {
 			{Type: node.WHEN_CASES, LineNum: TEST_LINE_NUM, Params: []node.Node{
 				{Type: node.CASE, LineNum: TEST_LINE_NUM, Params: []node.Node{
 					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
-					{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+					{Type: node.BLOCK_STATEMENTS, Params: []node.Node{
 						{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
 					}},
 				}},
 				{Type: node.CASE, LineNum: TEST_LINE_NUM, Params: []node.Node{
 					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "2"},
-					{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+					{Type: node.BLOCK_STATEMENTS, Params: []node.Node{
 						{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "2"},
 					}},
 				}},
 			}},
-			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+			{Type: node.BLOCK_STATEMENTS, Params: []node.Node{
 				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "0"},
 			}},
 		},
@@ -507,7 +507,7 @@ func TestNode_CreateCaseNode(t *testing.T) {
 	actualNode := node.CreateCaseNode(
 		TEST_LINE_NUM,
 		node.CreateNumber(TEST_LINE_NUM, "1"),
-		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+		node.CreateBlockStatements([]node.Node{
 			node.CreateUnaryExpression(
 				CreateTokenFromToken(tokens.MINUS_TOKEN),
 				node.CreateNumber(TEST_LINE_NUM, "1"),
@@ -520,7 +520,7 @@ func TestNode_CreateCaseNode(t *testing.T) {
 		LineNum: TEST_LINE_NUM,
 		Params: []node.Node{
 			{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
-			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+			{Type: node.BLOCK_STATEMENTS, Params: []node.Node{
 				{Type: node.UNARY_EXPR, LineNum: TEST_LINE_NUM, Params: []node.Node{
 					{Type: tokens.MINUS, LineNum: TEST_LINE_NUM, Value: tokens.MINUS_TOKEN.Literal},
 					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
@@ -544,7 +544,7 @@ func TestNode_ForLoop(t *testing.T) {
 				node.CreateNumber(TEST_LINE_NUM, "3"),
 			},
 		),
-		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+		node.CreateBlockStatements([]node.Node{
 			node.CreateIdentifier(TEST_LINE_NUM, "element"),
 		}),
 	)
@@ -559,7 +559,7 @@ func TestNode_ForLoop(t *testing.T) {
 				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "2"},
 				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "3"},
 			}},
-			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+			{Type: node.BLOCK_STATEMENTS, Params: []node.Node{
 				{Type: node.IDENTIFIER, LineNum: TEST_LINE_NUM, Value: "element"},
 			}},
 		},
@@ -571,7 +571,7 @@ func TestNode_WhileLoop(t *testing.T) {
 	actualNode := node.CreateWhileLoop(
 		TEST_LINE_NUM,
 		node.CreateBooleanTrue(TEST_LINE_NUM),
-		node.CreateBlockStatements(TEST_LINE_NUM, []node.Node{
+		node.CreateBlockStatements([]node.Node{
 			node.CreateRawString(TEST_LINE_NUM, "hello, world!"),
 		}),
 	)
@@ -580,7 +580,7 @@ func TestNode_WhileLoop(t *testing.T) {
 		LineNum: TEST_LINE_NUM,
 		Params: []node.Node{
 			{Type: node.BOOLEAN, Value: "true", LineNum: TEST_LINE_NUM},
-			{Type: node.BLOCK_STATEMENTS, LineNum: TEST_LINE_NUM, Params: []node.Node{
+			{Type: node.BLOCK_STATEMENTS, Params: []node.Node{
 				{Type: node.STRING, Value: "hello, world!", LineNum: TEST_LINE_NUM},
 			}},
 		},

@@ -1,0 +1,21 @@
+editList = func(list, pos, new_value) {
+  list_len = len <- (list,);
+
+  new_numbers = when pos {
+    is 0 {
+      (new_value,) <- (slice <- (list, 1, list_len - 1));
+    }
+    is list_len - 1 {
+      (slice <- (list, 0, list_len - 2)) <- new_value;
+    }
+    else {
+      (slice <- (list, 0, pos - 1)) <- new_value <- (slice <- (list, pos + 1, list_len - 1));
+    }
+  };
+  unwrap <- (new_numbers, ());
+};
+
+numbers = (1, 2, 3, 4, 5, 6, 7);
+list_len = len <- (numbers,);
+pos = list_len - 3;
+unwrap <- (editList <- (numbers, pos, 20), ());

@@ -43,6 +43,13 @@ func (n *Node) GetParamByKeys(keys []string) Node {
 	panic(fmt.Sprintf("no keys matching provided keys: %s", strings.Join(keys, ", ")))
 }
 
+func (n *Node) UpdateLineNumbers(lineNum int) {
+	n.LineNum = lineNum
+	for i := range n.Params {
+		n.Params[i].UpdateLineNumbers(lineNum)
+	}
+}
+
 func (n *Node) String() string {
 
 	switch n.Type {
@@ -382,11 +389,10 @@ func CreateBlockStatementReturnValue(linenum int, statement *Node) Node {
 	return CreateMonad(linenum, statement)
 }
 
-func CreateBlockStatements(lineNum int, statements []Node) Node {
+func CreateBlockStatements(statements []Node) Node {
 	return Node{
-		Type:    BLOCK_STATEMENTS,
-		LineNum: lineNum,
-		Params:  statements,
+		Type:   BLOCK_STATEMENTS,
+		Params: statements,
 	}
 }
 

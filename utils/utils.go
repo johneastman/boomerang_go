@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 )
@@ -71,4 +72,12 @@ func UserInput(prompt string) string {
 		return line
 	}
 	return ""
+}
+
+func GetSource(path string) string {
+	fileContent, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(fileContent)
 }

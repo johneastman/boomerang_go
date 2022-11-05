@@ -4,21 +4,12 @@ import (
 	"boomerang/evaluator"
 	"boomerang/parser"
 	"boomerang/tokens"
+	"boomerang/utils"
 	"fmt"
-	"log"
-	"os"
 )
 
-func getSource(path string) string {
-	fileContent, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(fileContent)
-}
-
 func main() {
-	source := getSource("source.bmg")
+	source := utils.GetSource("source.bmg")
 	tokenizer := tokens.NewTokenizer(source)
 
 	parser, err := parser.NewParser(tokenizer)
