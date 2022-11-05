@@ -30,6 +30,7 @@ var precedenceLevels = map[string]int{
 	tokens.AND:           SUM,
 	tokens.ASTERISK:      PRODUCT,
 	tokens.FORWARD_SLASH: PRODUCT,
+	tokens.MODULO:        PRODUCT,
 	tokens.EQ:            COMPARE,
 	tokens.LT:            COMPARE,
 	tokens.IN:            COMPARE,

@@ -284,6 +284,22 @@ func TestEvaluator_BinaryExpressions(t *testing.T) {
 			),
 			Result: CreateNumber("5"),
 		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateNumber("10"),
+				CreateTokenFromToken(tokens.MODULO_TOKEN),
+				CreateNumber("2"),
+			),
+			Result: CreateNumber("0"),
+		},
+		{
+			AST: node.CreateBinaryExpression(
+				CreateNumber("10"),
+				CreateTokenFromToken(tokens.MODULO_TOKEN),
+				CreateNumber("3"),
+			),
+			Result: CreateNumber("1"),
+		},
 
 		// List append
 		{

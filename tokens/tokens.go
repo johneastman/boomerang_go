@@ -36,6 +36,7 @@ const (
 	MINUS                = "MINUS"
 	ASTERISK             = "ASTERISK"
 	FORWARD_SLASH        = "FORWARD_SLASH"
+	MODULO               = "MODULO"
 	SEMICOLON            = "SEMICOLON"
 	OPEN_PAREN           = "OPEN_PAREN"
 	CLOSED_PAREN         = "CLOSED_PAREN"
@@ -78,6 +79,7 @@ var (
 	MINUS_TOKEN                = getToken(MINUS)
 	ASTERISK_TOKEN             = getToken(ASTERISK)
 	FORWARD_SLASH_TOKEN        = getToken(FORWARD_SLASH)
+	MODULO_TOKEN               = getToken(MODULO)
 	SEMICOLON_TOKEN            = getToken(SEMICOLON)
 	OPEN_PAREN_TOKEN           = getToken(OPEN_PAREN)
 	CLOSED_PAREN_TOKEN         = getToken(CLOSED_PAREN)
@@ -154,6 +156,7 @@ var tokenData = []TokenMetaData{
 	{Type: MINUS, Literal: "-"},
 	{Type: ASTERISK, Literal: "*", IsRegexChar: true},
 	{Type: FORWARD_SLASH, Literal: "/", IsRegexChar: true},
+	{Type: MODULO, Literal: "%", IsRegexChar: true},
 	{Type: SEMICOLON, Literal: ";"},
 	{Type: OPEN_PAREN, Literal: "(", IsRegexChar: true},
 	{Type: CLOSED_PAREN, Literal: ")", IsRegexChar: true},

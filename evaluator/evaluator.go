@@ -429,6 +429,9 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 	case tokens.FORWARD_SLASH:
 		return e.divide(*left, *right)
 
+	case tokens.MODULO:
+		return e.modulo(*left, *right)
+
 	case tokens.SEND:
 		return e.send(*left, *right)
 
@@ -749,6 +752,34 @@ func (e *evaluator) divide(left node.Node, right node.Node) (*node.Node, error) 
 	return nil, utils.CreateError(
 		left.LineNum,
 		"cannot divide types %s and %s",
+		left.ErrorDisplay(),
+		right.ErrorDisplay(),
+	)
+}
+
+func (e *evaluator) modulo(left, right node.Node) (*node.Node, error) {
+	if left.Type == node.NUMBER && right.Type == node.NUMBER {
+
+		if right.Value == "0" {
+			return nil, utils.CreateError(left.LineNum, "cannot divide by zero")
+		}
+
+		leftValue := utils.ConvertStringToInteger(left.Value)
+		if leftValue == nil {
+			return nil, utils.CreateError(left.LineNum, "modulo only valid for whole (integer) numbers")
+		}
+
+		rightValue := utils.ConvertStringToInteger(right.Value)
+		if rightValue == nil {
+			return nil, utils.CreateError(right.LineNum, "modulo only valid for whole (integer) numbers")
+		}
+
+		result := *leftValue % *rightValue
+		return node.CreateNumber(left.LineNum, utils.IntToString(result)).Ptr(), nil
+	}
+	return nil, utils.CreateError(
+		left.LineNum,
+		"cannot use modulus operator on types %s and %s",
 		left.ErrorDisplay(),
 		right.ErrorDisplay(),
 	)

@@ -203,6 +203,14 @@ func TestParser_BinaryExpression(t *testing.T) {
 			),
 		},
 		{
+			"13 % 4",
+			node.CreateBinaryExpression(
+				CreateNumber("13"),
+				CreateTokenFromToken(tokens.MODULO_TOKEN),
+				CreateNumber("4"),
+			),
+		},
+		{
 			"14 == 13",
 			node.CreateBinaryExpression(
 				CreateNumber("14"),
