@@ -66,6 +66,9 @@ print(i)
 #### Division
 * `NUMBER / NUMBER`: divide two numbers together. The right number cannot be zero
 
+#### Modulo
+* `NUMBER % NUMBER`: divide two numbers and return the remainder. Both values must be whole (integer) numbers.
+
 #### Send
 * `FUNCTION <- LIST`: perform a function call, where the left side is a function and the right side is the arguments being passed to that function
 * `LIST <- EXPRESSION`: append the right value to the list on the left
