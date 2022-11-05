@@ -180,6 +180,10 @@ func CreateBreakStatement() node.Node {
 	return node.CreateBreakStatement(TEST_LINE_NUM)
 }
 
+func CreateContinueStatement() node.Node {
+	return node.CreateContinueStatement(TEST_LINE_NUM)
+}
+
 func AssertTokenEqual(t *testing.T, testNumber int, expected tokens.Token, actual tokens.Token) {
 	testName := fmt.Sprintf("Test #%d", testNumber)
 

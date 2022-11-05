@@ -70,6 +70,7 @@ const (
 	IN                   = "IN"
 	WHILE                = "WHILE"
 	BREAK                = "BREAK"
+	CONTINUE             = "CONTINUE"
 )
 
 // Tokens
@@ -110,6 +111,7 @@ var (
 	IN_TOKEN       = getToken(IN)
 	WHILE_TOKEN    = getToken(WHILE)
 	BREAK_TOKEN    = getToken(BREAK)
+	CONTINUE_TOKEN = getToken(CONTINUE)
 
 	// Data Types
 	NUMBER_TOKEN  = getToken(NUMBER)
@@ -141,6 +143,7 @@ var tokenData = []TokenMetaData{
 	{Type: BOOLEAN, Literal: "false", IsKeyword: true},
 	{Type: WHILE, Literal: "while", IsKeyword: true},
 	{Type: BREAK, Literal: "break", IsKeyword: true},
+	{Type: CONTINUE, Literal: "continue", IsKeyword: true},
 
 	// Identifier
 	{Type: IDENTIFIER, Literal: "[a-zA-Z]+[a-zA-Z0-9_]*"},

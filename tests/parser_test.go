@@ -593,6 +593,14 @@ func TestParser_BreakStatement(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
+func TestParser_ContinueStatement(t *testing.T) {
+	actualAST := getParserAST("continue;")
+	expectedAST := []node.Node{
+		CreateContinueStatement(),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */

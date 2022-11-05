@@ -594,6 +594,12 @@ func TestNode_BreakStatement(t *testing.T) {
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
+func TestNode_ContinueStatement(t *testing.T) {
+	actualNode := node.CreateContinueStatement(TEST_LINE_NUM)
+	expectedNode := node.Node{Type: node.CONTINUE, LineNum: TEST_LINE_NUM}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
 func TestNode_MonadWithValue(t *testing.T) {
 	actualNode := node.CreateMonad(
 		TEST_LINE_NUM,

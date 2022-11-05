@@ -1235,6 +1235,55 @@ func TestEvaluator_BreakStatement(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedResults, actualResults)
 }
 
+func TestEvaluator_Continue(t *testing.T) {
+	ast := []node.Node{
+		CreateForLoop(
+			CreateIdentifier("e"),
+			CreateList([]node.Node{
+				CreateNumber("1"),
+				CreateNumber("2"),
+				CreateNumber("3"),
+				CreateNumber("4"),
+				CreateNumber("5"),
+				CreateNumber("6"),
+			}),
+			[]node.Node{
+				CreateWhenNode(
+					CreateBooleanTrue(),
+					[]node.Node{
+						CreateWhenCaseNode(
+							node.CreateBinaryExpression(
+								node.CreateBinaryExpression(
+									CreateIdentifier("e"),
+									CreateTokenFromToken(tokens.MODULO_TOKEN),
+									CreateNumber("2"),
+								),
+								CreateTokenFromToken(tokens.EQ_TOKEN),
+								CreateNumber("0"),
+							),
+							[]node.Node{
+								CreateIdentifier("e"),
+							},
+						),
+					},
+					[]node.Node{
+						CreateContinueStatement(),
+					},
+				),
+			},
+		),
+	}
+	actualResults := getEvaluatorResults(ast)
+	expectedResults := []node.Node{
+		CreateList([]node.Node{
+			CreateMonad(CreateNumber("2").Ptr()),
+			CreateMonad(CreateNumber("4").Ptr()),
+			CreateMonad(CreateNumber("6").Ptr()),
+		}),
+	}
+	AssertNodesEqual(t, 0, expectedResults, actualResults)
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */

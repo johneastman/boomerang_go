@@ -7,6 +7,7 @@
 * [Statements](#statements)
     * [While Loop](#while-loop)
     * [Break](#break)
+    * [Continue](#continue)
     * [Block Statements](#block-statements)
 * [Expressions](#expressions)
     * [Variable Assignment](#variable-assignment)
@@ -142,6 +143,40 @@ for i in range <- (0, 10) {
   };
   i;  # Because "i" is returned for every element, the list returned by this loop will be `((true, 0), (true, 1), (true, 2), (true, 3), (true, 4))`.
 };
+```
+
+### Continue
+Syntax: `continue;`
+
+
+Skip to the beginning of the next iteration in a loop. In for-loops, `contine` acts like filter functions in other languages; the last expression in the block statement will not be returned after a `continue` statement.
+
+
+Examples:
+```
+i = 0;
+while i < 10 {
+  when {
+    i % 2 == 0 {
+      i = i + 1;
+      continue;
+    }
+  };
+  print <- (i,);  # only prints 1, 3, 5, 7, 9
+  i = i + 1;
+};
+
+list = range <- (10, 0);
+new_list = for e in list {
+  when {
+    e % 2 == 0 {
+      e;
+    } else {
+      continue;
+    }
+  };
+};
+print <- (new_list,);  # new_list == (Monad{10}, Monad{8}, Monad{6}, Monad{4}, Monad{2}, Monad{0})
 ```
 
 ### Block Statements

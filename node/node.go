@@ -173,6 +173,7 @@ const (
 	WHILE_LOOP_CONDITION  = "WhileLoopCondition"
 	WHILE_LOOP_STATEMENTS = "WhileLoopStatements"
 	BREAK                 = "Break"
+	CONTINUE              = "Continue"
 
 	// Expressions
 	EXPR                   = "Expression"
@@ -437,6 +438,10 @@ func CreateWhileLoop(lineNum int, conditionExpression Node, statements Node) Nod
 
 func CreateBreakStatement(lineNum int) Node {
 	return Node{Type: BREAK, LineNum: lineNum}
+}
+
+func CreateContinueStatement(lineNum int) Node {
+	return Node{Type: CONTINUE, LineNum: lineNum}
 }
 
 func CreateMonad(lineNum int, value *Node) Node {
