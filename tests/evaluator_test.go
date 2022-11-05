@@ -1596,45 +1596,83 @@ func TestEvaluator_MinusUnayError(t *testing.T) {
 	AssertErrorEqual(t, 0, expectedError, actualError)
 }
 
-func TestEvaluator_BreakStatementOutsideLoopError(t *testing.T) {
+func TestEvaluator_InvalidLoopStatementsError(t *testing.T) {
 
-	tests := []node.Node{
-		CreateBreakStatement(),
-
-		// "break" in "when" expression
-		CreateWhenNode(
-			CreateBooleanTrue(),
-			[]node.Node{
-				CreateWhenCaseNode(
-					CreateBooleanTrue(),
+	tests := []struct {
+		Statement node.Node
+		Error     string
+	}{
+		{
+			Statement: CreateBreakStatement(),
+			Error:     "error at line 1: break statements not allowed outside loops",
+		},
+		{
+			Statement: CreateWhenNode(
+				CreateBooleanTrue(),
+				[]node.Node{
+					CreateWhenCaseNode(
+						CreateBooleanTrue(),
+						[]node.Node{
+							CreateBreakStatement(),
+						},
+					),
+				},
+				[]node.Node{},
+			),
+			Error: "error at line 1: break statements not allowed outside loops",
+		},
+		{
+			Statement: CreateFunctionCall(
+				CreateFunction(
+					[]node.Node{},
 					[]node.Node{
 						CreateBreakStatement(),
 					},
 				),
-			},
-			[]node.Node{},
-		),
-
-		// "break" in function
-		CreateFunctionCall(
-			CreateFunction(
 				[]node.Node{},
-				[]node.Node{
-					CreateBreakStatement(),
-				},
 			),
-			[]node.Node{},
-		),
+			Error: "error at line 1: break statements not allowed outside loops",
+		},
+		{
+			Statement: CreateContinueStatement(),
+			Error:     "error at line 1: continue statements not allowed outside loops",
+		},
+		{
+			Statement: CreateWhenNode(
+				CreateBooleanTrue(),
+				[]node.Node{
+					CreateWhenCaseNode(
+						CreateBooleanTrue(),
+						[]node.Node{
+							CreateContinueStatement(),
+						},
+					),
+				},
+				[]node.Node{},
+			),
+			Error: "error at line 1: continue statements not allowed outside loops",
+		},
+		{
+			Statement: CreateFunctionCall(
+				CreateFunction(
+					[]node.Node{},
+					[]node.Node{
+						CreateContinueStatement(),
+					},
+				),
+				[]node.Node{},
+			),
+			Error: "error at line 1: continue statements not allowed outside loops",
+		},
 	}
 
 	for i, test := range tests {
 		ast := []node.Node{
-			test,
+			test.Statement,
 		}
 		actualError := getEvaluatorError(t, ast)
-		expectedError := "error at line 1: break statements not allowed outside loops"
 
-		AssertErrorEqual(t, i, expectedError, actualError)
+		AssertErrorEqual(t, i, test.Error, actualError)
 	}
 }
 

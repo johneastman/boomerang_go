@@ -40,7 +40,7 @@ func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) ([]node.Node, er
 		// If 'result' is not nil, then the statement returned a value (likely an expression statement)
 		if result != nil {
 			if result.Type == node.BREAK || result.Type == node.CONTINUE {
-				return nil, utils.CreateError(result.LineNum, "break statements not allowed outside loops")
+				return nil, utils.CreateError(result.LineNum, "%s statements not allowed outside loops", result.Value)
 			}
 			results = append(results, *result)
 		}
@@ -351,7 +351,6 @@ func (e *evaluator) evaluateForLoop(expr node.Node) (*node.Node, error) {
 		}
 
 		if result != nil {
-
 			switch result.Type {
 			case node.BREAK:
 				return node.CreateList(lineNum, values).Ptr(), nil
