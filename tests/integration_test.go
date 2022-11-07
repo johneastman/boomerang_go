@@ -14,9 +14,8 @@ import (
 const INTEGRATION_TESTS_DIRECTORY = "integration_tests"
 
 func TestIntegration_EditList(t *testing.T) {
-	path := strings.Join([]string{INTEGRATION_TESTS_DIRECTORY, "edit_list.bmg"}, string(os.PathSeparator))
 
-	actualResults := evaluateSource(t, path)
+	actualResults := evaluateSource(t, "edit_list.bmg")
 	expectedResult := []node.Node{
 
 		node.CreateFunction(
@@ -193,7 +192,9 @@ func TestIntegration_EditList(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedResult, actualResults)
 }
 
-func evaluateSource(t *testing.T, path string) []node.Node {
+func evaluateSource(t *testing.T, testFileName string) []node.Node {
+
+	path := strings.Join([]string{INTEGRATION_TESTS_DIRECTORY, testFileName}, string(os.PathSeparator))
 	source := utils.GetSource(path)
 
 	tokenizer := tokens.NewTokenizer(source)
