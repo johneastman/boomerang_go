@@ -916,6 +916,7 @@ func TestEvaluator_CompareOperators(t *testing.T) {
 		BinaryExpressionAST node.Node
 		ExpectedResult      node.Node
 	}{
+		// Equals
 		{
 			BinaryExpressionAST: node.CreateBinaryExpression(
 				CreateNumber("7"),
@@ -937,6 +938,24 @@ func TestEvaluator_CompareOperators(t *testing.T) {
 				CreateBooleanTrue(),
 				CreateTokenFromToken(tokens.EQ_TOKEN),
 				CreateRawString("true"),
+			),
+			ExpectedResult: CreateBooleanFalse(),
+		},
+
+		// Not Equals
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateNumber("16"),
+				CreateTokenFromToken(tokens.NE_TOKEN),
+				CreateNumber("13"),
+			),
+			ExpectedResult: CreateBooleanTrue(),
+		},
+		{
+			BinaryExpressionAST: node.CreateBinaryExpression(
+				CreateNumber("16"),
+				CreateTokenFromToken(tokens.NE_TOKEN),
+				CreateNumber("16"),
 			),
 			ExpectedResult: CreateBooleanFalse(),
 		},

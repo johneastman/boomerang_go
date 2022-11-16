@@ -452,6 +452,9 @@ func (e *evaluator) evaluateBinaryExpression(binaryExpression node.Node) (*node.
 	case tokens.EQ:
 		return e.compareEQ(*left, *right)
 
+	case tokens.NE:
+		return e.compareNE(*left, *right)
+
 	case tokens.LT:
 		return e.compareLT(*left, *right)
 
@@ -585,6 +588,18 @@ func (e *evaluator) compareEQ(left node.Node, right node.Node) (*node.Node, erro
 		booleanValue = tokens.TRUE_TOKEN.Literal
 	} else {
 		booleanValue = tokens.FALSE_TOKEN.Literal
+	}
+
+	return node.CreateBoolean(left.LineNum, booleanValue).Ptr(), nil
+}
+
+func (e *evaluator) compareNE(left, right node.Node) (*node.Node, error) {
+
+	var booleanValue string
+	if left.Equals(right) {
+		booleanValue = tokens.FALSE_TOKEN.Literal
+	} else {
+		booleanValue = tokens.TRUE_TOKEN.Literal
 	}
 
 	return node.CreateBoolean(left.LineNum, booleanValue).Ptr(), nil

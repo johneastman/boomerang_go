@@ -219,6 +219,14 @@ func TestParser_BinaryExpression(t *testing.T) {
 			),
 		},
 		{
+			"true != false",
+			node.CreateBinaryExpression(
+				CreateBooleanTrue(),
+				CreateTokenFromToken(tokens.NE_TOKEN),
+				CreateBooleanFalse(),
+			),
+		},
+		{
 			"true or false",
 			node.CreateBinaryExpression(
 				CreateBooleanTrue(),

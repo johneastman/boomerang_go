@@ -61,6 +61,7 @@ const (
 	BLOCK_COMMENT        = "BLOCK_COMMENT"
 	NOT                  = "NOT"
 	EQ                   = "EQUAL"
+	NE                   = "NOT_EQUAL"
 	LT                   = "LESS_THAN"
 	WHEN                 = "WHEN"
 	IS                   = "IS"
@@ -95,6 +96,7 @@ var (
 	INLINE_COMMENT_TOKEN       = getToken(INLINE_COMMENT)
 	BLOCK_COMMENT_TOKEN        = getToken(BLOCK_COMMENT)
 	EQ_TOKEN                   = getToken(EQ)
+	NE_TOKEN                   = getToken(NE)
 	LT_TOKEN                   = getToken(LT)
 
 	// Keywords
@@ -165,6 +167,7 @@ var tokenData = []TokenMetaData{
 	{Type: CLOSED_PAREN, Literal: ")", IsRegexChar: true},
 	{Type: SEND, Literal: "<-"},
 	{Type: EQ, Literal: "=="},
+	{Type: NE, Literal: "!="},
 	{Type: LT, Literal: "<"},
 	{Type: ASSIGN, Literal: "="},
 	{Type: COMMA, Literal: ","},
