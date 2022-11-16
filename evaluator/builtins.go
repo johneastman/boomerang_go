@@ -19,6 +19,7 @@ const (
 	BUILTIN_PRINT      = "print"
 	BUILTIN_INPUT      = "input"
 	BUILTIN_SUCCESS    = "is_success"
+	BUILTIN_ENUMERATE  = "enumerate"
 
 	// Variables
 	BUILTIN_PI = "pi"
@@ -52,6 +53,7 @@ func init() {
 		BUILTIN_PRINT:      {Type: node.BUILTIN_FUNCTION, NumArgs: nArgsValue, Function: evaluateBuiltinPrint},
 		BUILTIN_INPUT:      {Type: node.BUILTIN_FUNCTION, NumArgs: 1, Function: evaluateBuiltinInput},
 		BUILTIN_SUCCESS:    {Type: node.BUILTIN_FUNCTION, NumArgs: 1, Function: evaluateBuiltinSuccess},
+		BUILTIN_ENUMERATE:  {Type: node.BUILTIN_FUNCTION, NumArgs: 1, Function: evaluateBuiltinEnumerate},
 
 		// Variables
 		BUILTIN_PI: {Type: node.BUILTIN_VARIABLE, NumArgs: 0, Function: evaluateBuiltinPi},
@@ -419,4 +421,22 @@ func evaluateBuiltinSuccess(eval *evaluator, lineNum int, callParameters []node.
 		return node.CreateBooleanFalse(lineNum).Ptr(), nil
 	}
 	return node.CreateBooleanTrue(lineNum).Ptr(), nil
+}
+
+func evaluateBuiltinEnumerate(eval *evaluator, lineNum int, callParameters []node.Node) (*node.Node, error) {
+	list := callParameters[0]
+
+	if err := utils.CheckTypeError(lineNum, list.Type, node.LIST); err != nil {
+		return nil, err
+	}
+
+	newList := []node.Node{}
+	for i, value := range list.Params {
+		index := node.CreateNumber(lineNum, utils.IntToString(i))
+		indexList := node.CreateList(lineNum, []node.Node{index, value})
+
+		newList = append(newList, indexList)
+	}
+
+	return node.CreateList(lineNum, newList).Ptr(), nil
 }

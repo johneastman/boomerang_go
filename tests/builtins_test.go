@@ -504,6 +504,56 @@ func TestBuiltin_IsSuccess(t *testing.T) {
 	}
 }
 
+func TestBuiltin_Enumerate(t *testing.T) {
+
+	list := CreateList([]node.Node{
+		CreateRawString("hello"),
+		CreateRawString("world"),
+		CreateBooleanTrue(),
+		CreateBooleanFalse(),
+	})
+
+	tests := []struct {
+		Args           []node.Node
+		ExpectedResult node.Node
+	}{
+		{
+			Args: []node.Node{
+				list,
+			},
+			ExpectedResult: CreateList([]node.Node{
+				CreateList([]node.Node{CreateNumber("0"), CreateRawString("hello")}),
+				CreateList([]node.Node{CreateNumber("1"), CreateRawString("world")}),
+				CreateList([]node.Node{CreateNumber("2"), CreateBooleanTrue()}),
+				CreateList([]node.Node{CreateNumber("3"), CreateBooleanFalse()}),
+			}),
+		},
+		{
+			Args: []node.Node{
+				CreateList([]node.Node{}),
+			},
+			ExpectedResult: CreateList([]node.Node{}),
+		},
+	}
+
+	for i, test := range tests {
+
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateBuiltinFunctionIdentifier("enumerate"),
+				test.Args,
+			),
+		}
+
+		actualResult := getEvaluatorResults(ast)
+		expectedResults := []node.Node{
+			test.ExpectedResult,
+		}
+
+		AssertNodesEqual(t, i, expectedResults, actualResult)
+	}
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */
@@ -904,4 +954,45 @@ func TestBuiltin_IsSuccessError(t *testing.T) {
 	expectedError := "error at line 1: expected Monad, got Number"
 
 	AssertErrorEqual(t, 0, expectedError, actualError)
+}
+
+func TestBuiltin_EnumerateErrors(t *testing.T) {
+
+	tests := []struct {
+		Args  []node.Node
+		Error string
+	}{
+		{
+			Args:  []node.Node{},
+			Error: "error at line 1: incorrect number of arguments. expected 1, got 0",
+		},
+		{
+			Args: []node.Node{
+				CreateNumber("5"),
+				CreateNumber("10"),
+			},
+			Error: "error at line 1: incorrect number of arguments. expected 1, got 2",
+		},
+		{
+			Args: []node.Node{
+				CreateNumber("5"),
+			},
+			Error: "error at line 1: expected List, got Number",
+		},
+	}
+
+	for i, test := range tests {
+
+		ast := []node.Node{
+			CreateFunctionCall(
+				CreateBuiltinFunctionIdentifier("enumerate"),
+				test.Args,
+			),
+		}
+
+		actualError := getEvaluatorError(t, ast)
+		expectedError := test.Error
+
+		AssertErrorEqual(t, i, expectedError, actualError)
+	}
 }

@@ -220,3 +220,26 @@ do_nothing = func() {};
 did_nothing = do_nothing <- ();
 is_success <- (did_nothing,)  # returns false
 ```
+
+## enumerate
+
+### Description
+Return a list of lists where each element in the original list is paired with its index in that list. If passed an empty list, an empty list will be returned.
+
+### Arguments
+|Name|Type|Description|
+|----|----|-----------|
+|list|LIST|a list object|
+
+### Returns
+* **Type:** LIST
+* **Value:** list of lists mapping list values to their indicies.
+
+### Examples
+```
+list = ("hello", "world");
+enumerate <- (list,); # returns ( (0, "hello"), (1, "world") )
+
+list = ("hello", "world");
+enumerate <- (list,); # returns ( (0, "hello"), (1, "world") )
+```

@@ -81,6 +81,12 @@ print(i)
 #### Equal
 * `EXPRESSION == EXPRESSION`: Compare two values and return `true` if they are the same; `false` otherwise
 
+#### Not Equal
+* `EXPRESSION != EXPRESSION`: Compare two values and return `true` if they are not the same; `false` otherwise
+
+#### Less Than
+* `EXPRESSION < EXPRESSION`: Compare two values and return `true` if the left value is less than the right value; `false` otherwise
+
 #### And
 * `BOOLEAN and BOOLEAN`: `true` if left and right are both `true`; `false` otherwise
 

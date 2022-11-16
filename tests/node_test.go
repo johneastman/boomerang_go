@@ -535,14 +535,17 @@ func TestNode_CreateCaseNode(t *testing.T) {
 func TestNode_ForLoop(t *testing.T) {
 	actualNode := node.CreateForLoop(
 		TEST_LINE_NUM,
-		node.CreateIdentifier(TEST_LINE_NUM, "element"),
-		node.CreateList(
-			TEST_LINE_NUM,
-			[]node.Node{
-				node.CreateNumber(TEST_LINE_NUM, "1"),
-				node.CreateNumber(TEST_LINE_NUM, "2"),
-				node.CreateNumber(TEST_LINE_NUM, "3"),
-			},
+		node.CreateBinaryExpression(
+			node.CreateIdentifier(TEST_LINE_NUM, "element"),
+			CreateTokenFromToken(tokens.ASSIGN_TOKEN),
+			node.CreateList(
+				TEST_LINE_NUM,
+				[]node.Node{
+					node.CreateNumber(TEST_LINE_NUM, "1"),
+					node.CreateNumber(TEST_LINE_NUM, "2"),
+					node.CreateNumber(TEST_LINE_NUM, "3"),
+				},
+			),
 		),
 		node.CreateBlockStatements([]node.Node{
 			node.CreateIdentifier(TEST_LINE_NUM, "element"),
@@ -553,11 +556,14 @@ func TestNode_ForLoop(t *testing.T) {
 		Type:    node.FOR_LOOP,
 		LineNum: TEST_LINE_NUM,
 		Params: []node.Node{
-			{Type: node.IDENTIFIER, LineNum: TEST_LINE_NUM, Value: "element"},
-			{Type: node.LIST, LineNum: TEST_LINE_NUM, Params: []node.Node{
-				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
-				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "2"},
-				{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "3"},
+			{Type: node.BIN_EXPR, LineNum: TEST_LINE_NUM, Params: []node.Node{
+				{Type: node.IDENTIFIER, LineNum: TEST_LINE_NUM, Value: "element"},
+				{Type: tokens.ASSIGN_TOKEN.Type, Value: tokens.ASSIGN_TOKEN.Literal, LineNum: TEST_LINE_NUM},
+				{Type: node.LIST, LineNum: TEST_LINE_NUM, Params: []node.Node{
+					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "1"},
+					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "2"},
+					{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "3"},
+				}},
 			}},
 			{Type: node.BLOCK_STATEMENTS, Params: []node.Node{
 				{Type: node.IDENTIFIER, LineNum: TEST_LINE_NUM, Value: "element"},

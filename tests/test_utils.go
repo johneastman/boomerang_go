@@ -167,8 +167,10 @@ func CreateWhenCaseNode(expression node.Node, statements []node.Node) node.Node 
 func CreateForLoop(placeholder node.Node, list node.Node, statements []node.Node) node.Node {
 	return node.CreateForLoop(
 		TEST_LINE_NUM,
-		placeholder,
-		list,
+		CreateAssignmentNode(
+			placeholder,
+			list,
+		),
 		CreateBlockStatements(statements),
 	)
 }

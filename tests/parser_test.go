@@ -574,7 +574,7 @@ func TestParser_WhileLoop(t *testing.T) {
 }
 
 func TestParser_ForLoop(t *testing.T) {
-	actualAST := getParserAST("for e in list { print <- (e,); };")
+	actualAST := getParserAST("for e = list { print <- (e,); };")
 	expectedAST := []node.Node{
 		CreateForLoop(
 			CreateIdentifier("e"),

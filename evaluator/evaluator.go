@@ -317,10 +317,12 @@ func (e *evaluator) evaluateString(stringExpression node.Node) (*node.Node, erro
 func (e *evaluator) evaluateForLoop(expr node.Node) (*node.Node, error) {
 	lineNum := expr.LineNum
 
-	elementVariableName := expr.GetParam(node.FOR_LOOP_ELEMENT)
-	list := expr.GetParam(node.LIST)
-	statements := expr.GetParam(node.BLOCK_STATEMENTS)
+	elementVariableExpression := expr.GetParam(node.FOR_LOOP_ELEM_ASSIGN)
+	if err := utils.CheckTypeError(lineNum, elementVariableExpression.Type, node.ASSIGN_STMT); err != nil {
+		return nil, err
+	}
 
+	list := elementVariableExpression.GetParam(node.EXPR)
 	evaluatedList, err := e.evaluateExpression(list)
 	if err != nil {
 		return nil, err
@@ -334,11 +336,14 @@ func (e *evaluator) evaluateForLoop(expr node.Node) (*node.Node, error) {
 		)
 	}
 
+	variables := elementVariableExpression.GetParam(node.IDENTIFIER)
+	statements := expr.GetParam(node.BLOCK_STATEMENTS)
+
 	var values = []node.Node{}
 
 	for _, element := range evaluatedList.Params {
 		// Assign the placeholder/element variable to the value of the current list element
-		placeHolderVariable := node.CreateAssignmentNode(elementVariableName, element)
+		placeHolderVariable := node.CreateAssignmentNode(variables, element)
 		_, err = e.evaluateStatement(placeHolderVariable)
 		if err != nil {
 			return nil, err

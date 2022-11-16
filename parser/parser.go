@@ -712,26 +712,7 @@ func (p *Parser) parseForLoop() (*node.Node, error) {
 		return nil, err
 	}
 
-	// placeholder variable for each element in the list
-	elementPlaceholder := p.current
-	if elementPlaceholder.Type != tokens.IDENTIFIER {
-		return nil, utils.CreateError(
-			lineNumber,
-			"invalid type for for-loop element placeholder: %s",
-			elementPlaceholder.ErrorDisplay(),
-		)
-	}
-
-	if err := p.advance(); err != nil {
-		return nil, err
-	}
-
-	// "in" keyword
-	if err := p.expectToken(tokens.IN_TOKEN); err != nil {
-		return nil, err
-	}
-
-	list, err := p.parseExpression(LOWEST)
+	elementPlaceholder, err := p.parseExpression(LOWEST)
 	if err != nil {
 		return nil, err
 	}
@@ -746,8 +727,7 @@ func (p *Parser) parseForLoop() (*node.Node, error) {
 
 	return node.CreateForLoop(
 		lineNumber,
-		node.CreateIdentifier(lineNumber, elementPlaceholder.Literal),
-		*list,
+		*elementPlaceholder,
 		*blockStatements,
 	).Ptr(), nil
 }

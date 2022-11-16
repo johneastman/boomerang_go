@@ -201,7 +201,7 @@ const (
 	CASE_VALUE             = "CaseValue"
 	CASE_STMTS             = "CaseStatements"
 	FOR_LOOP               = "ForLoop"
-	FOR_LOOP_ELEMENT       = "ForLoopElement"
+	FOR_LOOP_ELEM_ASSIGN   = "ForLoopElementAssignment"
 
 	// Factors
 	NUMBER           = "Number"
@@ -265,9 +265,8 @@ var indexMap = map[string]map[string]int{
 		CASE_STMTS: 1,
 	},
 	FOR_LOOP: {
-		FOR_LOOP_ELEMENT: 0,
-		LIST:             1,
-		BLOCK_STATEMENTS: 2,
+		FOR_LOOP_ELEM_ASSIGN: 0,
+		BLOCK_STATEMENTS:     1,
 	},
 	WHILE_LOOP: {
 		WHILE_LOOP_CONDITION:  0,
@@ -419,13 +418,12 @@ func CreateCaseNode(lineNum int, expression Node, statements Node) Node {
 	}
 }
 
-func CreateForLoop(lineNum int, elementPlaceholder Node, list Node, statements Node) Node {
+func CreateForLoop(lineNum int, forLoopElementAssignment Node, statements Node) Node {
 	return Node{
 		Type:    FOR_LOOP,
 		LineNum: lineNum,
 		Params: []Node{
-			elementPlaceholder,
-			list,
+			forLoopElementAssignment,
 			statements,
 		},
 	}
