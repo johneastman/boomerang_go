@@ -1190,6 +1190,103 @@ func TestEvaluator_ForLoop(t *testing.T) {
 	}
 }
 
+func TestEvaluator_ForLoopUnpacking(t *testing.T) {
+
+	tests := []struct {
+		Identifiers     node.Node
+		List            node.Node
+		BlockStatements []node.Node
+		Output          string
+	}{
+		{
+			Identifiers: CreateList([]node.Node{
+				CreateIdentifier("i"),
+			}),
+			List: CreateList([]node.Node{
+				CreateList([]node.Node{
+					CreateNumber("0"), CreateBooleanTrue(),
+				}),
+				CreateList([]node.Node{
+					CreateNumber("1"), CreateBooleanFalse(),
+				}),
+			}),
+			BlockStatements: []node.Node{
+				CreateFunctionCall(
+					CreateBuiltinFunctionIdentifier("print"),
+					[]node.Node{
+						CreateIdentifier("i"),
+					},
+				),
+			},
+			Output: "(0, true)\n(1, false)\n",
+		},
+		{
+			Identifiers: CreateList([]node.Node{
+				CreateIdentifier("i"),
+				CreateIdentifier("j"),
+			}),
+			List: CreateList([]node.Node{
+				CreateList([]node.Node{
+					CreateNumber("0"), CreateBooleanTrue(),
+				}),
+				CreateList([]node.Node{
+					CreateNumber("1"), CreateBooleanFalse(),
+				}),
+			}),
+			BlockStatements: []node.Node{
+				CreateFunctionCall(
+					CreateBuiltinFunctionIdentifier("print"),
+					[]node.Node{
+						CreateIdentifier("i"),
+						CreateIdentifier("j"),
+					},
+				),
+			},
+			Output: "0 true\n1 false\n",
+		},
+		{
+			Identifiers: CreateList([]node.Node{
+				CreateIdentifier("i"),
+				CreateIdentifier("j"),
+				CreateIdentifier("k"),
+			}),
+			List: CreateList([]node.Node{
+				CreateList([]node.Node{
+					CreateNumber("0"), CreateBooleanTrue(),
+				}),
+				CreateList([]node.Node{
+					CreateNumber("1"), CreateBooleanFalse(),
+				}),
+			}),
+			BlockStatements: []node.Node{
+				CreateFunctionCall(
+					CreateBuiltinFunctionIdentifier("print"),
+					[]node.Node{
+						CreateIdentifier("i"),
+						CreateIdentifier("j"),
+						CreateIdentifier("k"),
+					},
+				),
+			},
+			Output: "0 true Monad{}\n1 false Monad{}\n",
+		},
+	}
+
+	for i, test := range tests {
+		ast := []node.Node{
+			CreateForLoop(
+				test.Identifiers,
+				test.List,
+				test.BlockStatements,
+			),
+		}
+
+		AssertExpectedOutput(t, i, test.Output, func() {
+			getEvaluatorResults(ast)
+		})
+	}
+}
+
 func TestEvaluator_WhileLoop(t *testing.T) {
 	ast := []node.Node{
 		CreateAssignmentNode(

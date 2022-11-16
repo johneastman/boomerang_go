@@ -712,7 +712,22 @@ func (p *Parser) parseForLoop() (*node.Node, error) {
 		return nil, err
 	}
 
-	elementPlaceholder, err := p.parseExpression(LOWEST)
+	/*
+		Variables. Call parsePrefix because "in" is also a binary operator, and in a for-loop, we want the parser to stop
+		parsing at "in".
+	*/
+	variables, err := p.parsePrefix()
+	if err != nil {
+		return nil, err
+	}
+
+	// Expect "in" keyword
+	if p.expectToken(tokens.IN_TOKEN); err != nil {
+		return nil, err
+	}
+
+	// List of values
+	values, err := p.parseExpression(LOWEST)
 	if err != nil {
 		return nil, err
 	}
@@ -720,6 +735,7 @@ func (p *Parser) parseForLoop() (*node.Node, error) {
 	if err := p.expectToken(tokens.OPEN_CURLY_BRACKET_TOKEN); err != nil {
 		return nil, err
 	}
+
 	blockStatements, err := p.parseBlockStatements()
 	if err != nil {
 		return nil, err
@@ -727,7 +743,7 @@ func (p *Parser) parseForLoop() (*node.Node, error) {
 
 	return node.CreateForLoop(
 		lineNumber,
-		*elementPlaceholder,
+		node.CreateAssignmentNode(*variables, *values),
 		*blockStatements,
 	).Ptr(), nil
 }
