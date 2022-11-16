@@ -240,6 +240,7 @@ Return a list of lists where each element in the original list is paired with it
 list = ("hello", "world");
 enumerate <- (list,); # returns ( (0, "hello"), (1, "world") )
 
-list = ("hello", "world");
-enumerate <- (list,); # returns ( (0, "hello"), (1, "world") )
+# Empty list will return an empty list
+list = ();
+enumerate <- (list,); # returns an empty list
 ```
