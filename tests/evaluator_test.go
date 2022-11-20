@@ -1529,7 +1529,7 @@ func TestEvaluator_FunctionCallErrors(t *testing.T) {
 					CreateNumber("1"),
 				},
 			),
-			Error: "error at line 1: Function paramter \"b\" does not have a value. Either add 1 more parameters to the function call or assign \"b\" a default value in the function definition.",
+			Error: "error at line 1: Function paramter \"b\" does not have a value. Either add 1 more values to the function call or assign \"b\" a default value in the function definition parameters.",
 		},
 		{
 			FunctionCall: CreateFunctionCall(
@@ -1545,7 +1545,7 @@ func TestEvaluator_FunctionCallErrors(t *testing.T) {
 					CreateNumber("1"),
 				},
 			),
-			Error: "error at line 1: Function paramter \"c\" does not have a value. Either add 2 more parameters to the function call or assign \"c\" a default value in the function definition.",
+			Error: "error at line 1: Function paramter \"c\" does not have a value. Either add 2 more values to the function call or assign \"c\" a default value in the function definition parameters.",
 		},
 		{
 			FunctionCall: CreateFunctionCall(
@@ -1562,7 +1562,7 @@ func TestEvaluator_FunctionCallErrors(t *testing.T) {
 					CreateNumber("5"),
 				},
 			),
-			Error: "error at line 1: Function paramter \"c\" does not have a value. Either add 1 more parameters to the function call or assign \"c\" a default value in the function definition.",
+			Error: "error at line 1: Function paramter \"c\" does not have a value. Either add 1 more values to the function call or assign \"c\" a default value in the function definition parameters.",
 		},
 		{
 			FunctionCall: CreateFunctionCall(

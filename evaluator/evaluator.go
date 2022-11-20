@@ -521,21 +521,56 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		)
 	}
 
-	// Check that the number of arguments passed to the function matches the number of arguments in the function definition
-	functionParams := function.GetParam(node.LIST) // Parameters included in function definition
-
+	/*
+		Create a new environment/scope for the function call. This ensures that variables defined within the function
+		are not accessible outside of that function.
+	*/
 	oldEnv := e.env
 	e.env = CreateEnvironment(&oldEnv)
+
+	// Evaluate function/function call parameters
+	if err := e.evaluateParameters(function, callParams); err != nil {
+		return nil, err
+	}
+
+	// Evaluate what the function will return
+	wrappedReturnValue, err := e.evaluateFunctionReturnValue(function)
+	if err != nil {
+		return nil, err
+	}
+
+	// Reset environment back to original scope environment
+	e.env = *e.env.parentEnv
+
+	return wrappedReturnValue, nil
+}
+
+func (e *evaluator) evaluateParameters(function, callParams node.Node) error {
+
+	functionParams := function.GetParam(node.LIST) // Parameters included in function definition
 
 	// Keyword arguments do not count as arguments passed to the function
 	callParamsIndex := 0
 	for _, functionParam := range functionParams.Params {
-		if functionParam.Type == node.IDENTIFIER {
 
+		switch functionParam.Type {
+
+		case node.IDENTIFIER:
 			if callParamsIndex >= len(callParams.Params) {
-				return nil, utils.CreateError(
+				/*
+					The user has overwritten default parameter values, but has not provided value(s) for additional parameters that do not
+					have default values. For example:
+					```
+					f = func(a=1, b=2, c) { ... };
+					f <- (3, 4);
+					```
+
+					"a" and "b" are overwritten with "3" and "4", respectively, but "c" does not have a default value, and the user has
+					only provided two values in the function call.
+				*/
+				return utils.CreateError(
 					function.LineNum,
-					"Function paramter %#v does not have a value. Either add %d more parameters to the function call or assign %#v a default value in the function definition.",
+					"Function paramter %#v does not have a value. Either add %d more values to the function call or assign %#v a default value in the function definition parameters.",
 					functionParam.Value,
 					callParamsIndex-len(callParams.Params)+1,
 					functionParam.Value,
@@ -546,73 +581,78 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 
 			evaluatedParameterValue, err := e.evaluateExpression(parameterValue)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			e.env.SetIdentifier(functionParam.Value, *evaluatedParameterValue)
 
-		} else if functionParam.Type == node.ASSIGN_STMT {
-
+		case node.ASSIGN_STMT:
 			if callParamsIndex < len(callParams.Params) {
+				// The user is overwriting a default parameter value
 				parameterValue := callParams.Params[callParamsIndex]
 
 				evaluatedParameterValue, err := e.evaluateExpression(parameterValue)
 				if err != nil {
-					return nil, err
+					return err
 				}
 				parameterName := functionParam.GetParam(node.ASSIGN_STMT_IDENTIFIER).Value
 				e.env.SetIdentifier(parameterName, *evaluatedParameterValue)
 
 			} else {
+				// The user is not overriding a default parameter value
 				e.evaluateExpression(functionParam)
 			}
 		}
-
 		callParamsIndex += 1
 	}
 
 	if callParamsIndex < len(callParams.Params) {
 		/*
-			After evaluating each expression, the value of "callParamsIndex" will be the expected number of call parameters,
-			and "len(callParams.Params)" will be the number of call parameters provided.
+			After evaluating each expression, the value of "callParamsIndex" will be the expected number of call parameters (the
+			number of parameters in the function definition), and "len(callParams.Params)" will be the actual number of call
+			parameters provided (the number of values in the function call).
+
+			If "callParamsIndex" is less than "len(callParams.Params)", the user has not provided enough values to the function call.
 		*/
-		return nil, utils.CreateError(
+		return utils.CreateError(
 			function.LineNum,
 			"expected %d arguments, got %d",
 			callParamsIndex,
 			len(callParams.Params),
 		)
 	}
+	return nil
+}
+
+func (e *evaluator) evaluateFunctionReturnValue(function node.Node) (*node.Node, error) {
 
 	functionStatements := function.GetParam(node.STMTS)
+
 	if len(functionStatements.Params) == 0 {
-		return node.CreateBlockStatementReturnValue(callParams.LineNum, nil).Ptr(), nil
+		return node.CreateBlockStatementReturnValue(function.LineNum, nil).Ptr(), nil
 	}
 
-	returnValue, err := e.evaluateBlockStatements(functionStatements)
+	functionReturnValue, err := e.evaluateBlockStatements(functionStatements)
 	if err != nil {
 		return nil, err
 	}
 
-	if returnValue.Type == node.CONTINUE || returnValue.Type == node.BREAK {
-		return returnValue, nil
-	}
+	switch functionReturnValue.Type {
 
-	var wrappedReturnValue *node.Node
-	if returnValue.Type == node.RETURN {
-		wrappedReturnValue, err = e.evaluateExpression(returnValue.GetParam(node.EXPR))
+	case node.CONTINUE, node.BREAK:
+		// Propagated up to next level for loops
+		return functionReturnValue, nil
+
+	case node.RETURN:
+		returnValueExpression, err := e.evaluateExpression(functionReturnValue.GetParam(node.EXPR))
 		if err != nil {
 			return nil, err
 		}
-		wrappedReturnValue = node.CreateMonad(returnValue.LineNum, wrappedReturnValue).Ptr()
+		return node.CreateBlockStatementReturnValue(functionReturnValue.LineNum, returnValueExpression).Ptr(), nil
 
-	} else {
-		wrappedReturnValue = node.CreateMonad(returnValue.LineNum, nil).Ptr()
+	default:
+		// When the function returns no values
+		return node.CreateBlockStatementReturnValue(functionReturnValue.LineNum, nil).Ptr(), nil
 	}
-
-	// Reset environment back to original scope environment
-	e.env = *e.env.parentEnv
-
-	return wrappedReturnValue, nil
 }
 
 func (e *evaluator) compareEQ(left node.Node, right node.Node) (*node.Node, error) {
