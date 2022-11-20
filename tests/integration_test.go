@@ -152,13 +152,16 @@ func TestIntegration_EditList(t *testing.T) {
 					),
 
 					// FUNCTION THIRD EXPRESSION
-					node.CreateBinaryExpression(
-						node.CreateBuiltinFunctionIdentifier(15, "unwrap"),
-						CreateTokenWithLineNum(tokens.SEND_TOKEN, 15),
-						node.CreateList(15, []node.Node{
-							node.CreateIdentifier(15, "new_numbers"),
-							node.CreateList(15, []node.Node{}),
-						}),
+					node.CreateReturnStatement(
+						15,
+						node.CreateBinaryExpression(
+							node.CreateBuiltinFunctionIdentifier(15, "unwrap"),
+							CreateTokenWithLineNum(tokens.SEND_TOKEN, 15),
+							node.CreateList(15, []node.Node{
+								node.CreateIdentifier(15, "new_numbers"),
+								node.CreateList(15, []node.Node{}),
+							}),
+						),
 					),
 				},
 			),

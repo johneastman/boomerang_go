@@ -14,6 +14,7 @@
         * [Multiple Variable Assignment](#multiple-variable-assignments)
     * [Lists](#lists)
     * [Functions](#functions)
+        * [Return Statements](#return-statements)
     * [When Expressions](#when-expressions)
     * [For Loops](#for-loops)
 
@@ -150,7 +151,7 @@ for i in range <- (0, 10) {
       break;
     }
   };
-  i;  # Because "i" is returned for every element, the list returned by this loop will be `((true, 0), (true, 1), (true, 2), (true, 3), (true, 4))`.
+  i;  # Because "i" is returned for every element, the list returned by this loop will be `(Monad{0}, Monad{1}, Monad{2}, Monad{3}, Monad{4})`.
 };
 ```
 
@@ -189,7 +190,7 @@ print <- (new_list,);  # new_list == (Monad{10}, Monad{8}, Monad{6}, Monad{4}, M
 ```
 
 ### Block Statements
-Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, when-expressions, for-loops, etc.). Block statements return the value of the last statement wrapped in a builtin Monad object.
+Block statements are multiple statements defined between `{` and `}`. These statements cannot be independently defined and appear as part of other constructs (functions, when-expressions, for-loops, etc.). Block statements return the value of the last statement wrapped in a builtin Monad object. For functions, a `return` statement is required to return a value from the associated block statement.
 
 Monad objects may or may not contain a value. Monads containing a value will be represented as `Monad{<VALUE>}`, whereas monads without a value are represented as `Monad{}`. Below are some examples:
 ```
@@ -294,23 +295,23 @@ Functions return monads (see [Block Statements](#block-statements) for more info
 Examples:
 ```
 add = func(a, b) {
-  a + b;
+  return a + b;
 };
-sum = add <- (1, 2); # sum: (true, 3)
+sum = add <- (1, 2); # sum: Monad{3}
 value = unwrap <- (sum, 0) # value: 3
 
 sum = func(c, d) {
-  c + d;
-} <- (1, 2); # sum = (true, 3)
+  return c + d;
+} <- (1, 2); # sum = Monad{3}
 value = unwrap <- (sum, 0) # value: 3
 
-value = func() { # value: (true, 24)
+value = func() { # value: Monad{24}
   number = 1 + 1;
-  (number + 2) * 6;
+  return (number + 2) * 6;
 } <- ();
 value = unwrap <- (value, 0) # value: 24
 
-value = func() {} <- ();  # value: (false)
+value = func() {} <- ();  # value: Monad{}
 
 result = unwrap <- (value, 2) # result: 2
 ```
@@ -318,18 +319,41 @@ result = unwrap <- (value, 2) # result: 2
 Functions can also be created with default parameter values. These default values will be used if no values is provided in the function call, but providing a value for that parameter in the function call will override the default value. Additionally, default values must be declared after any non-default parameters. Below are some examples:
 ```
 add = func(a, b = 2) {
-  a + b;
+  return a + b;
 };
 
-sum = add <- (5,); # sum equals 7
-sum = add <- (5, 10); # sum equals 15
+sum = add <- (5,); # sum equals Monad{7}
+sum = add <- (5, 10); # sum equals Monad{15}
 
 add = func(a = 1, b) {
-  a + b;
+  return a + b;
 };
 
 sum = add <- (5,); # this will cause an error because "5" will override "a", but "b" will have no value.
 sum = add <- (5, 10); # "5" overrides "a", and "10" is passed for "b", so sum equals 15.
+```
+
+#### Return Statements
+Syntax: `return EXPRESSION`
+
+
+Specify a return value for functions. Functions with return statement return a value, and functions without return statements return nothing/an empty monad.
+
+
+Return statements propagate up through embedded block statements. For example:
+```
+loop = func() {
+  i = 0;
+  while i < 10 {
+    when i {
+      is 5 {
+        return i;
+      }
+    };
+    i = i + 1;
+  };
+};
+loop <- ();  # returns Monad{5}.
 ```
 
 ### When Expressions
@@ -401,14 +425,14 @@ when {
   false { ... }
 };
 ```
-If none of the conditions are a match, the `when` expression will return `(false)`:
+If none of the conditions are a match, the `when` expression will return `Monad{}`:
 ```
 num = 0;
 value = when num {
   is 1 { ... }
   is 2 { ... }
 };
-print(value); # value: (false)
+print(value); # value: Monad{}
 ```
 
 Be aware that these slight syntactic differences are enforced by the language. The following examples will produce errors:

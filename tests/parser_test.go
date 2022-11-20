@@ -631,6 +631,20 @@ func TestParser_ContinueStatement(t *testing.T) {
 	AssertNodesEqual(t, 0, expectedAST, actualAST)
 }
 
+func TestParser_ReturnStatement(t *testing.T) {
+	actualAST := getParserAST("return 1 + 1;")
+	expectedAST := []node.Node{
+		CreateReturnStatement(
+			node.CreateBinaryExpression(
+				CreateNumber("1"),
+				CreateTokenFromToken(tokens.PLUS_TOKEN),
+				CreateNumber("1"),
+			),
+		),
+	}
+	AssertNodesEqual(t, 0, expectedAST, actualAST)
+}
+
 /* * * * * * * *
  * ERROR TESTS *
  * * * * * * * */

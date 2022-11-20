@@ -181,6 +181,7 @@ const (
 	WHILE_LOOP_STATEMENTS = "WhileLoopStatements"
 	BREAK                 = "Break"
 	CONTINUE              = "Continue"
+	RETURN                = "Return"
 
 	// Expressions
 	EXPR                   = "Expression"
@@ -274,6 +275,9 @@ var indexMap = map[string]map[string]int{
 	},
 	MONAD: {
 		MONAD_VALUE: 0,
+	},
+	RETURN: {
+		EXPR: 0,
 	},
 }
 
@@ -446,6 +450,15 @@ func CreateBreakStatement(lineNum int) Node {
 
 func CreateContinueStatement(lineNum int) Node {
 	return Node{Value: tokens.CONTINUE_TOKEN.Literal, Type: CONTINUE, LineNum: lineNum}
+}
+
+func CreateReturnStatement(lineNum int, expr Node) Node {
+	return Node{
+		Value:   tokens.RETURN_TOKEN.Literal,
+		Type:    RETURN,
+		LineNum: lineNum,
+		Params:  []Node{expr},
+	}
 }
 
 func CreateMonad(lineNum int, value *Node) Node {

@@ -191,6 +191,10 @@ func CreateContinueStatement() node.Node {
 	return node.CreateContinueStatement(TEST_LINE_NUM)
 }
 
+func CreateReturnStatement(expr node.Node) node.Node {
+	return node.CreateReturnStatement(TEST_LINE_NUM, expr)
+}
+
 func AssertTokenEqual(t *testing.T, testNumber int, expected tokens.Token, actual tokens.Token) {
 	testName := fmt.Sprintf("Test #%d", testNumber)
 

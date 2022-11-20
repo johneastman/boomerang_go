@@ -12,7 +12,7 @@ editList = func(list, pos, new_value) {
       (slice <- (list, 0, pos - 1)) <- new_value <- (slice <- (list, pos + 1, list_len - 1));
     }
   };
-  unwrap <- (new_numbers, ());
+  return unwrap <- (new_numbers, ());
 };
 
 numbers = (1, 2, 3, 4, 5, 6, 7);

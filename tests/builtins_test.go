@@ -63,10 +63,12 @@ func TestBuiltin_Unwrap(t *testing.T) {
 	}{
 		{
 			Body: []node.Node{
-				node.CreateBinaryExpression(
-					CreateNumber("13"),
-					tokens.PLUS_TOKEN,
-					CreateNumber("7"),
+				CreateReturnStatement(
+					node.CreateBinaryExpression(
+						CreateNumber("13"),
+						tokens.PLUS_TOKEN,
+						CreateNumber("7"),
+					),
 				),
 			},
 			FunctionReturnValue: CreateMonad(CreateNumber("20").Ptr()),

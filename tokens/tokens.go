@@ -72,6 +72,7 @@ const (
 	WHILE                = "WHILE"
 	BREAK                = "BREAK"
 	CONTINUE             = "CONTINUE"
+	RETURN               = "RETURN"
 )
 
 // Tokens
@@ -114,6 +115,7 @@ var (
 	WHILE_TOKEN    = getToken(WHILE)
 	BREAK_TOKEN    = getToken(BREAK)
 	CONTINUE_TOKEN = getToken(CONTINUE)
+	RETURN_TOKEN   = getToken(RETURN)
 
 	// Data Types
 	NUMBER_TOKEN  = getToken(NUMBER)
@@ -146,6 +148,7 @@ var tokenData = []TokenMetaData{
 	{Type: WHILE, Literal: "while", IsKeyword: true},
 	{Type: BREAK, Literal: "break", IsKeyword: true},
 	{Type: CONTINUE, Literal: "continue", IsKeyword: true},
+	{Type: RETURN, Literal: "return", IsKeyword: true},
 
 	// Identifier
 	{Type: IDENTIFIER, Literal: "[a-zA-Z]+[a-zA-Z0-9_]*"},

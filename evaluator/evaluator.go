@@ -39,7 +39,7 @@ func (e *evaluator) evaluateGlobalStatements(stmts []node.Node) ([]node.Node, er
 
 		// If 'result' is not nil, then the statement returned a value (likely an expression statement)
 		if result != nil {
-			if result.Type == node.BREAK || result.Type == node.CONTINUE {
+			if result.Type == node.BREAK || result.Type == node.CONTINUE || result.Type == node.RETURN {
 				return nil, utils.CreateError(result.LineNum, "%s statements not allowed outside loops", result.Value)
 			}
 			results = append(results, *result)
@@ -64,7 +64,7 @@ func (e *evaluator) evaluateBlockStatements(statements node.Node) (*node.Node, e
 		}
 
 		if result != nil {
-			if result.Type == node.BREAK || result.Type == node.CONTINUE {
+			if result.Type == node.BREAK || result.Type == node.CONTINUE || result.Type == node.RETURN {
 				return result, nil
 			}
 		}
@@ -80,14 +80,19 @@ func (e *evaluator) evaluateStatement(stmt node.Node) (*node.Node, error) {
 
 	switch stmt.Type {
 
+	case node.BREAK, node.CONTINUE, node.RETURN:
+		return &stmt, nil
+
 	case node.WHILE_LOOP:
-		if err := e.evaluateWhileLoop(stmt); err != nil {
+		returnValue, err := e.evaluateWhileLoop(stmt)
+		if err != nil {
 			return nil, err
 		}
-		return nil, nil
 
-	case node.BREAK, node.CONTINUE:
-		return &stmt, nil
+		if returnValue != nil && returnValue.Type == node.RETURN {
+			return returnValue, nil
+		}
+		return nil, nil
 
 	default:
 		return e.evaluateExpression(stmt)
@@ -201,20 +206,20 @@ func (e *evaluator) partitionAssignmentVariables(identifiers, values node.Node) 
 	return identifierValuePairs
 }
 
-func (e *evaluator) evaluateWhileLoop(stmt node.Node) error {
+func (e *evaluator) evaluateWhileLoop(stmt node.Node) (*node.Node, error) {
 	condition := stmt.GetParam(node.WHILE_LOOP_CONDITION)
 	statements := stmt.GetParam(node.WHILE_LOOP_STATEMENTS)
 
 	for {
 		evaluatedCondition, err := e.evaluateExpression(condition)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if evaluatedCondition.Equals(node.CreateBooleanTrue(stmt.LineNum)) {
 			stmt, err := e.evaluateBlockStatements(statements)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			if stmt.Type == node.BREAK {
@@ -224,11 +229,17 @@ func (e *evaluator) evaluateWhileLoop(stmt node.Node) error {
 			if stmt.Type == node.CONTINUE {
 				continue
 			}
+
+			if stmt.Type == node.RETURN {
+				return stmt, nil
+			}
+
+			// TODO: Figure out returns in while loops
 		} else {
 			break
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (e *evaluator) evaluateExpression(expr node.Node) (*node.Node, error) {
@@ -361,6 +372,8 @@ func (e *evaluator) evaluateForLoop(expr node.Node) (*node.Node, error) {
 				return node.CreateList(lineNum, values).Ptr(), nil
 			case node.CONTINUE:
 				continue
+			case node.RETURN:
+				return result, nil
 			}
 		}
 
@@ -580,10 +593,26 @@ func (e *evaluator) evaluateFunctionCall(functionCallExpression node.Node) (*nod
 		return nil, err
 	}
 
+	if returnValue.Type == node.CONTINUE || returnValue.Type == node.BREAK {
+		return returnValue, nil
+	}
+
+	var wrappedReturnValue *node.Node
+	if returnValue.Type == node.RETURN {
+		wrappedReturnValue, err = e.evaluateExpression(returnValue.GetParam(node.EXPR))
+		if err != nil {
+			return nil, err
+		}
+		wrappedReturnValue = node.CreateMonad(returnValue.LineNum, wrappedReturnValue).Ptr()
+
+	} else {
+		wrappedReturnValue = node.CreateMonad(returnValue.LineNum, nil).Ptr()
+	}
+
 	// Reset environment back to original scope environment
 	e.env = *e.env.parentEnv
 
-	return returnValue, nil
+	return wrappedReturnValue, nil
 }
 
 func (e *evaluator) compareEQ(left node.Node, right node.Node) (*node.Node, error) {

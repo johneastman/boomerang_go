@@ -606,6 +606,19 @@ func TestNode_ContinueStatement(t *testing.T) {
 	AssertNodeEqual(t, 0, expectedNode, actualNode)
 }
 
+func TestNode_ReturnStatement(t *testing.T) {
+	actualNode := node.CreateReturnStatement(TEST_LINE_NUM, node.CreateNumber(TEST_LINE_NUM, "5"))
+	expectedNode := node.Node{
+		Value:   "return",
+		Type:    node.RETURN,
+		LineNum: TEST_LINE_NUM,
+		Params: []node.Node{
+			{Type: node.NUMBER, LineNum: TEST_LINE_NUM, Value: "5"},
+		},
+	}
+	AssertNodeEqual(t, 0, expectedNode, actualNode)
+}
+
 func TestNode_MonadWithValue(t *testing.T) {
 	actualNode := node.CreateMonad(
 		TEST_LINE_NUM,
