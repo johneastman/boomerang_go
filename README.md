@@ -1,6 +1,8 @@
 # Boomerang
 A custom programming language written in Go.
 
+**NOTE:** This project has been archived. The Boomerang project is being continued in [this repository](https://github.com/johneastman/boomerang).
+
 Boomerang is:
 * **Interpreted.** Code executes in the runtime of another language (in this case, Go).
 * **Multi-paradigm** 
